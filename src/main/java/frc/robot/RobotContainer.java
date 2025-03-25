@@ -406,11 +406,7 @@ public class RobotContainer {
         m_driver.rightTrigger().and(isCoralMode.negate())
             .onTrue(Commands.either(m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
                 m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
-                () -> m_clawRoller.getState() == ClawRoller.State.ALGAE_REVERSE))
-            .onFalse(Commands.waitUntil(m_clawRoller.stalled.negate())
-                .andThen(Commands.waitSeconds(0.25))
-                .andThen(m_clawRoller.setStateCommand(ClawRoller.State.OFF))
-                .andThen(m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+                () -> m_clawRoller.getState() == ClawRoller.State.ALGAE_REVERSE));
 
         m_driver.leftTrigger().and(isCoralMode)
             .whileTrue(
@@ -425,7 +421,6 @@ public class RobotContainer {
                             .and(m_clawRoller.stopped)),
                     m_clawRoller.shuffleCommand(),
                     m_clawRoller.setStateCommand(ClawRoller.State.OFF)))
-
             .onFalse(
                 Commands.sequence(
                     m_clawRoller.setStateCommand(ClawRoller.State.OFF),
@@ -534,7 +529,7 @@ public class RobotContainer {
                     Units.degreesToRotations(10),
                     0.8),
                 m_clawRoller.L4ShuffleCommand(),
-                Commands.waitSeconds(0.25)));
+                Commands.waitSeconds(0.1)));
 
         NamedCommands.registerCommand(
             "L4Prep",
@@ -556,18 +551,20 @@ public class RobotContainer {
             "IntakeCoral",
             Commands.either(
                 Commands.sequence(
-                    m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
                     m_tounge.setStateCommand(Tounge.State.RAISED),
                     m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
                         Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
-                    Commands.waitUntil(
-                        m_clawRollerLaserCAN.triggered
+                    Commands.repeatingSequence(
+                        m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                        Commands.waitUntil(m_clawRoller.stalled.debounce(0.2)),
+                        m_clawRoller.shuffleCommand())
+                        .until(m_clawRollerLaserCAN.triggered
                             .and(m_clawRoller.stopped)),
                     m_clawRoller.shuffleCommand(),
                     m_tounge.lowerToungeCommand()),
                 Commands.sequence(
                     m_clawRoller.shuffleCommand(),
-                    m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                    m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
                     m_tounge.setStateCommand(Tounge.State.DOWN)),
                 m_clawRollerLaserCAN.triggered.negate()));
 
