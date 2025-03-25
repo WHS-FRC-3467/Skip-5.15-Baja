@@ -1,0 +1,55 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Test Autos Path"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlgaeHigh"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlgaeBarge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlgaeScore"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlgaeLow"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlgaeBarge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlgaeScore"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": "Self Test",
+  "choreoAuto": false
+}
