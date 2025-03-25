@@ -19,25 +19,24 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
     @RequiredArgsConstructor
     @Getter
     public enum State implements TargetState {
-        // HOME is climber upright, Prep - Assuming that PREP position is parallel to the x axis,
-        // CLIMB is inwards
+        HOLD(new ProfileType.DISABLED_BRAKE()),
         HOME(new ProfileType.MM_POSITION(() -> 0, 0)),
-        PREP(new ProfileType.MM_POSITION(() -> -200, 0)),
-        CLIMB(new ProfileType.MM_POSITION(() -> -15, 0)),
-        ClIMB_MORE(new ProfileType.MM_POSITION(() -> -5, 0)),
+        PREP(new ProfileType.POSITION(() -> 200, 0)),
+        CLIMB(new ProfileType.MM_POSITION(() -> 15, 0)),
+        MANUAL_CLIMB(new ProfileType.OPEN_VOLTAGE(() -> 12)),
         HOMING(new ProfileType.OPEN_VOLTAGE(() -> 4));
 
         private final ProfileType profileType;
     }
 
     @Getter
-    @Setter
     private State state = State.HOME;
 
     public Climber(ClimberIO io, boolean isSim)
     {
         super(State.HOME.profileType, ClimberConstants.kSubSysConstants, io, isSim);
-        SmartDashboard.putData("Home Climber Command", getHomeCommand());
+        SmartDashboard.putData("Climber Home Command", homeCommand());
+        SmartDashboard.putData("Climber Zero Command", zeroPositionCommand());
     }
 
     public Command setStateCommand(State state)
@@ -45,8 +44,36 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
         return this.runOnce(() -> this.state = state);
     }
 
+    public boolean atPosition(double tolerance)
+    {
+        return io.atPosition(state.profileType, tolerance);
+    }
+
+    public Command zeroPositionCommand()
+    {
+        return Commands.runOnce(() -> io.zeroSensors());
+    }
+
+    public Command setClimbRequestCommand(boolean enabled)
+    {
+        return Commands.runOnce(() -> this.climbRequested = enabled);
+    }
+
+    public Command indexClimbState()
+    {
+        return Commands.runOnce(() -> this.climbStep += 1);
+    }
+
+    public Command resetClimb()
+    {
+        return Commands.runOnce(() -> {
+            this.climbRequested = false;
+            this.climbStep = 0;
+        }).andThen(this.setStateCommand(State.HOME));
+    }
+
     // Climbing Triggers
-    public boolean climbRequested = false; // Whether or not a climb request is active
+    private boolean climbRequested = false; // Whether or not a climb request is active
     private Trigger climbRequest = new Trigger(() -> climbRequested); // Trigger for climb request
     public int climbStep = 0; // Tracking what step in the climb sequence we are on, is at zero when
                               // not climbing
@@ -56,20 +83,6 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
     private Trigger climbStep2 = new Trigger(() -> climbStep == 2);
     private Trigger climbStep3 = new Trigger(() -> climbStep == 3);
 
-    // Debouncer and trigger checks to see if the climber has finished climbing
-    private Debouncer climbedDebouncer = new Debouncer(.25, DebounceType.kRising);
-
-    public Trigger climbedTrigger =
-        new Trigger(
-            () -> climbedDebouncer.calculate(
-                this.state == State.CLIMB
-                    && (Math.abs(io.getSupplyCurrent()) > ClimberConstants.kSupplyCurrentLimit)));
-
-    public boolean atPosition(double tolerance)
-    {
-        return io.atPosition(state.profileType, tolerance);
-    }
-
     private Debouncer homedDebouncer = new Debouncer(0.1, DebounceType.kRising);
     private Debouncer stateDebouncer = new Debouncer(1, DebounceType.kRising);
 
@@ -78,11 +91,12 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
             .calculate(Math.abs(super.inputs.torqueCurrentAmps[0]) > 10)
             && stateDebouncer.calculate(this.state == State.HOMING));
 
-    private Command getHomeCommand()
+    private Command homeCommand()
     {
-        return this.setStateCommand(State.HOMING)
-            .andThen(Commands.waitUntil(homedTrigger))
-            .andThen(Commands.runOnce(() -> io.zeroSensors()))
-            .andThen(this.setStateCommand(State.HOME));
+        return Commands.sequence(
+            this.setStateCommand(State.HOMING),
+            Commands.waitUntil(homedTrigger),
+            this.zeroPositionCommand(),
+            this.setStateCommand(State.HOME));
     }
 }
