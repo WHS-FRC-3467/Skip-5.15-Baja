@@ -35,9 +35,9 @@ public class FieldConstants {
 
     public static class Barge {
         public static final List<Pose2d> align = Arrays.asList(
-            new Pose2d(fieldLength / 2 + Units.inchesToMeters(40), fieldWidth / 2,
+            new Pose2d(fieldLength / 2 + Units.inchesToMeters(40.5), fieldWidth / 2,
                 Rotation2d.kZero),
-            new Pose2d(fieldLength / 2 - Units.inchesToMeters(40), fieldWidth / 2,
+            new Pose2d(fieldLength / 2 - Units.inchesToMeters(40.5), fieldWidth / 2,
                 Rotation2d.k180deg));
         public static final Translation2d farCage =
             new Translation2d(Units.inchesToMeters(345.428), Units.inchesToMeters(286.779));

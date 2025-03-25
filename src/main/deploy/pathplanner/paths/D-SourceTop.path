@@ -3,24 +3,24 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.955942622950819,
-        "y": 2.7902663934426233
+        "x": 3.94875,
+        "y": 2.74775
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.242546612303553,
-        "y": 2.9088777426891848
+        "x": 4.235353989352733,
+        "y": 2.8663613492465614
       },
       "isLocked": false,
       "linkedName": "ReefD"
     },
     {
       "anchor": {
-        "x": 1.56,
+        "x": 1.443,
         "y": 0.8659999999999991
       },
       "prevControl": {
-        "x": 1.3400459545192598,
+        "x": 1.2230459545192598,
         "y": 0.7060206358909238
       },
       "nextControl": null,
@@ -34,23 +34,16 @@
   "eventMarkers": [
     {
       "name": "IntakeCoral",
-      "waypointRelativePos": 0.1,
+      "waypointRelativePos": 0.0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "deadline",
         "data": {
           "commands": [
             {
-              "type": "sequential",
+              "type": "named",
               "data": {
-                "commands": [
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "IntakeCoral"
-                    }
-                  }
-                ]
+                "name": "IntakePrep"
               }
             }
           ]

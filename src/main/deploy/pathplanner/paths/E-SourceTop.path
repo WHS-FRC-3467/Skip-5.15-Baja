@@ -3,24 +3,24 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.998872950819672,
-        "y": 2.766290983606557
+        "x": 5.02125,
+        "y": 2.7769999999999992
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.699180327868852,
-        "y": 2.0650102459016386
+        "x": 4.72155737704918,
+        "y": 2.075719262295081
       },
       "isLocked": false,
       "linkedName": "ReefE"
     },
     {
       "anchor": {
-        "x": 1.56,
+        "x": 1.443,
         "y": 0.8659999999999991
       },
       "prevControl": {
-        "x": 1.8204210227595239,
+        "x": 1.703421022759524,
         "y": 0.9022728934568967
       },
       "nextControl": null,
@@ -34,23 +34,16 @@
   "eventMarkers": [
     {
       "name": "IntakeCoral",
-      "waypointRelativePos": 0.1,
+      "waypointRelativePos": 0.0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "deadline",
         "data": {
           "commands": [
             {
-              "type": "sequential",
+              "type": "named",
               "data": {
-                "commands": [
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "IntakeCoral"
-                    }
-                  }
-                ]
+                "name": "IntakePrep"
               }
             }
           ]
@@ -74,7 +67,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 118.17859010995923
+    "rotation": 119.87599269168945
   },
   "useDefaultConstraints": true
 }

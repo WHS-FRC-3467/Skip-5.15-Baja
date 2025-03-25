@@ -42,9 +42,9 @@ public final class ClawRollerConstants {
 
         /* REAL system profile constants */
 
-        kSubSysConstants.kMotorConfig.Slot0.kP = 1000;
+        kSubSysConstants.kMotorConfig.Slot0.kP = 500;
         kSubSysConstants.kMotorConfig.Slot0.kI = 0;
-        kSubSysConstants.kMotorConfig.Slot0.kD = 0;
+        kSubSysConstants.kMotorConfig.Slot0.kD = 5;
         kSubSysConstants.kMotorConfig.Slot0.kG = 0;
         kSubSysConstants.kMotorConfig.Slot0.kS = 9;
         kSubSysConstants.kMotorConfig.Slot0.kV = 0;

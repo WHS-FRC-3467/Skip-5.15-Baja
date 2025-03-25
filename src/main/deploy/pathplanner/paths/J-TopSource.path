@@ -4,23 +4,23 @@
     {
       "anchor": {
         "x": 5.02125,
-        "y": 5.253499999999999
+        "y": 5.273
       },
       "prevControl": null,
       "nextControl": {
         "x": 4.390056818181819,
-        "y": 6.140829545454545
+        "y": 6.1603295454545455
       },
       "isLocked": false,
       "linkedName": "ReefJ"
     },
     {
       "anchor": {
-        "x": 1.4722500000000003,
+        "x": 1.4625,
         "y": 7.2132499999999995
       },
       "prevControl": {
-        "x": 2.0604692153118993,
+        "x": 2.050719215311899,
         "y": 6.837744411035235
       },
       "nextControl": null,
@@ -41,16 +41,9 @@
         "data": {
           "commands": [
             {
-              "type": "sequential",
+              "type": "named",
               "data": {
-                "commands": [
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "IntakeCoral"
-                    }
-                  }
-                ]
+                "name": "IntakePrep"
               }
             }
           ]
@@ -74,7 +67,7 @@
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -119.89890183861462
+    "rotation": -119.74488129694222
   },
   "useDefaultConstraints": true
 }

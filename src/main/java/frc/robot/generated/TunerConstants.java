@@ -91,7 +91,7 @@ public class TunerConstants {
 
     private static final double kDriveGearRatio = 6.746031746031747;
     private static final double kSteerGearRatio = 21.428571428571427;
-    private static final Distance kWheelRadius = Inches.of(1.914);
+    private static final Distance kWheelRadius = Inches.of(1.885);
 
     private static final boolean kInvertLeftSide = false;
     private static final boolean kInvertRightSide = true;
@@ -179,10 +179,10 @@ public class TunerConstants {
     public static final Angle kGortBackLeftEncoderOffset = Rotations.of(-0.00927734375);
     public static final Angle kGortBackRightEncoderOffset = Rotations.of(-0.0615234375);
 
-    public static final Angle kBajaFrontLeftEncoderOffset = Rotations.of(-0.169677734375);
-    public static final Angle kBajaFrontRightEncoderOffset = Rotations.of(-0.471435546875);
-    public static final Angle kBajaBackLeftEncoderOffset = Rotations.of(-0.197265625);
-    public static final Angle kBajaBackRightEncoderOffset = Rotations.of(-0.140380859375);
+    public static final Angle kBajaFrontLeftEncoderOffset = Rotations.of(-0.171142578125);
+    public static final Angle kBajaFrontRightEncoderOffset = Rotations.of(-0.47412109375);
+    public static final Angle kBajaBackLeftEncoderOffset = Rotations.of(-0.010986328125);
+    public static final Angle kBajaBackRightEncoderOffset = Rotations.of(-0.142578125);
 
     public static final SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> FrontLeft =
         ConstantCreator.createModuleConstants(

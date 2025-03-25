@@ -8,9 +8,11 @@ import static frc.robot.subsystems.Vision.VisionConstants.*;
 import java.util.function.Supplier;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -45,6 +47,7 @@ import frc.robot.subsystems.Tounge.ToungeIOTalonFX;
 import frc.robot.subsystems.Vision.*;
 import frc.robot.subsystems.drive.*;
 import frc.robot.util.WindupXboxController;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -81,7 +84,7 @@ public class RobotContainer {
     private Trigger isProcessorMode = new Trigger(() -> isProcessorModeEnabled);
 
 
-    private double speedMultiplier = 0.9;
+    private double speedMultiplier = 0.90;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
@@ -99,7 +102,7 @@ public class RobotContainer {
 
                 m_profiledArm = new Arm(new ArmIOTalonFX(), false);
                 m_profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
-                m_profiledClimber = new Climber(new ClimberIOTalonFX(), false);
+                m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tounge = new Tounge(new ToungeIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
@@ -181,6 +184,8 @@ public class RobotContainer {
         // Pathplanner commands
         registerNamedCommands();
 
+
+
         // Add all PathPlanner autos to dashboard
         m_autoChooser =
             new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -192,6 +197,8 @@ public class RobotContainer {
 
         // Configure the controller button and joystick bindings
         configureControllerBindings();
+
+        registerPathPlannerLogging();
 
         // Detect if controllers are missing / Stop multiple warnings
         if (Robot.isReal()) {
@@ -241,6 +248,27 @@ public class RobotContainer {
             () -> {
                 isProcessorModeEnabled = !isProcessorModeEnabled;
             });
+    }
+
+    private void registerPathPlannerLogging()
+    {
+        PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
+            // Do whatever you want with the pose here
+            Logger.recordOutput("Pathplanner Auto/Current Pose", pose);
+        });
+
+        // Logging callback for target robot pose
+        PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
+            // Do whatever you want with the pose here
+            Logger.recordOutput("Pathplanner Auto/Target Pose", pose);
+        });
+
+        // Logging callback for the active path, this is sent as a list of poses
+        // PathPlannerLogging.setLogActivePathCallback((poses) -> {
+        // Pose2d[] temp = poses.toArray().;
+        // // Do whatever you want with the poses here
+        // Logger.recordOutput("Pathplanner Auto/Active Path", poses.toArray());
+        // });
     }
 
     /** Button and Command mappings */
@@ -364,7 +392,7 @@ public class RobotContainer {
         m_driver
             .y().and(isCoralMode.negate())
             .onTrue(
-                m_superStruct.getTransitionCommand(Arm.State.BARGE, Elevator.State.BARGE));
+                (m_superStruct.getTransitionCommand(Arm.State.BARGE, Elevator.State.BARGE)));
 
         // Driver Right Trigger: Place Coral or Algae (Should be done once the robot is in position)
         m_driver.rightTrigger().and(isCoralMode)
@@ -380,7 +408,7 @@ public class RobotContainer {
                 m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
                 () -> m_clawRoller.getState() == ClawRoller.State.ALGAE_REVERSE))
             .onFalse(Commands.waitUntil(m_clawRoller.stalled.negate())
-                .andThen(Commands.waitSeconds(1))
+                .andThen(Commands.waitSeconds(0.25))
                 .andThen(m_clawRoller.setStateCommand(ClawRoller.State.OFF))
                 .andThen(m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
@@ -393,15 +421,33 @@ public class RobotContainer {
                         Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
                     Commands.waitUntil(
                         m_clawRollerLaserCAN.triggered
-                            .and(m_tounge.coralContactTrigger)),
+                            .and(m_tounge.coralContactTrigger)
+                            .and(m_clawRoller.stopped)),
                     m_clawRoller.shuffleCommand(),
                     m_clawRoller.setStateCommand(ClawRoller.State.OFF)))
+
             .onFalse(
                 Commands.sequence(
                     m_clawRoller.setStateCommand(ClawRoller.State.OFF),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW),
                     m_tounge.lowerToungeCommand(),
                     m_driver.rumbleForTime(1, 1)));
+
+        SmartDashboard.putData("Auto Intake Command",
+            Commands.either(
+                Commands.sequence(
+                    m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                    m_tounge.setStateCommand(Tounge.State.RAISED),
+                    m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                        Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
+                    Commands.waitUntil(
+                        m_clawRollerLaserCAN.triggered
+                            .and(m_clawRoller.stopped)),
+                    m_clawRoller.shuffleCommand(),
+                    m_tounge.lowerToungeCommand()),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF)
+                    .andThen(m_tounge.setStateCommand(Tounge.State.DOWN)),
+                m_clawRollerLaserCAN.triggered.negate()));
 
         m_driver.back().onTrue(Commands.runOnce(() -> {
             m_profiledClimber.climbRequested = true;
@@ -445,7 +491,7 @@ public class RobotContainer {
                 m_drive,
                 () -> -m_driver.getLeftY() * 0.5,
                 () -> -m_driver.getLeftX() * 0.5,
-                () -> -m_driver.getRightX() * 0.5));
+                () -> -m_driver.getRightX() * 0.75));
 
         // Driver POV Down: Zero the Elevator (HOMING)
         m_driver.povDown().onTrue(m_profiledArm.setStateCommand(Arm.State.STOW)
@@ -462,6 +508,7 @@ public class RobotContainer {
             .onTrue(setCoralAlgaeModeCommand()
                 .andThen(m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW))
                 .andThen(m_clawRoller.setStateCommand(ClawRoller.State.OFF))
+                .andThen(m_tounge.lowerToungeCommand())
                 .andThen(m_driver.rumbleForTime(0.25, 1)));
 
     }
@@ -474,15 +521,23 @@ public class RobotContainer {
         // Go to the L4 Position
         NamedCommands.registerCommand(
             "L4",
-            m_superStruct.getTransitionCommand(Arm.State.LEVEL_4, Elevator.State.LEVEL_4,
-                Units.degreesToRotations(10),
-                0.8));
+            Commands.sequence(
+                Commands.waitUntil(m_clawRollerLaserCAN.triggered),
+                m_tounge.setStateCommand(Tounge.State.DOWN),
+                m_superStruct.getTransitionCommand(Arm.State.LEVEL_4, Elevator.State.LEVEL_4,
+                    Units.degreesToRotations(10),
+                    0.8),
+                m_clawRoller.L4ShuffleCommand(),
+                Commands.waitSeconds(0.25)));
 
         NamedCommands.registerCommand(
             "L4Prep",
-            m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.LEVEL_4,
-                Units.degreesToRotations(10),
-                0.8));
+            Commands.sequence(
+                Commands.waitUntil(m_clawRollerLaserCAN.triggered),
+                m_tounge.setStateCommand(Tounge.State.DOWN),
+                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.LEVEL_4,
+                    Units.degreesToRotations(10),
+                    0.8)));
 
         // Go to the Home Position
         NamedCommands.registerCommand(
@@ -501,11 +556,22 @@ public class RobotContainer {
                         Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
                     Commands.waitUntil(
                         m_clawRollerLaserCAN.triggered
-                            .and(m_tounge.coralContactTrigger)),
+                            .and(m_clawRoller.stopped)),
                     m_clawRoller.shuffleCommand(),
                     m_tounge.lowerToungeCommand()),
-                m_tounge.lowerToungeCommand(),
+                Commands.sequence(
+                    m_clawRoller.shuffleCommand(),
+                    m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                    m_tounge.setStateCommand(Tounge.State.DOWN)),
                 m_clawRollerLaserCAN.triggered.negate()));
+
+        NamedCommands.registerCommand(
+            "IntakePrep",
+            Commands.sequence(
+                m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                m_tounge.setStateCommand(Tounge.State.RAISED),
+                m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                    Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2)));
 
 
         NamedCommands.registerCommand(

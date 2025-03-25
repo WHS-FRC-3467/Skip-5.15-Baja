@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4722500000000003,
+        "x": 1.4625,
         "y": 7.2132499999999995
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.8385675318804542,
+        "x": 1.8288175318804538,
         "y": 6.9058053521405505
       },
       "isLocked": false,
@@ -41,22 +41,9 @@
         "data": {
           "commands": [
             {
-              "type": "sequential",
+              "type": "named",
               "data": {
-                "commands": [
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "IntakeCoral"
-                    }
-                  },
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "L4Prep"
-                    }
-                  }
-                ]
+                "name": "IntakeCoral"
               }
             }
           ]

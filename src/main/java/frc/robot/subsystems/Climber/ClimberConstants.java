@@ -55,8 +55,8 @@ public final class ClimberConstants {
         kSubSysConstants.kMotorConfig.Voltage.PeakReverseVoltage = -12.0;
 
         kSubSysConstants.kMotorConfig.CurrentLimits.SupplyCurrentLimit = 50;
-        kSubSysConstants.kMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        kSubSysConstants.kMotorConfig.CurrentLimits.StatorCurrentLimit = 70;
+        kSubSysConstants.kMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = false;
+        kSubSysConstants.kMotorConfig.CurrentLimits.StatorCurrentLimit = 90;
         kSubSysConstants.kMotorConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
         /* REAL system profile constants */
@@ -68,7 +68,7 @@ public final class ClimberConstants {
         kSubSysConstants.kMotorConfig.Slot0.kS = 0;
         kSubSysConstants.kMotorConfig.Slot0.kV = 0;
         kSubSysConstants.kMotorConfig.Slot0.kA = 0;
-        kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 100;
+        kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 40;
         kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicAcceleration = 50;
         kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicJerk = 0;
 
