@@ -470,7 +470,8 @@ public class RobotContainer {
                 m_profiledClimber.setStateCommand(Climber.State.CLIMB));
 
         // Manually climb more
-        m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep3())
+        m_driver.back().and(m_profiledClimber.getClimbRequest())
+            .and(m_profiledClimber.getClimbStep3())
             .whileTrue(
                 m_profiledClimber.setStateCommand(Climber.State.MANUAL_CLIMB))
             .onFalse(m_profiledClimber.setStateCommand(Climber.State.HOLD));
