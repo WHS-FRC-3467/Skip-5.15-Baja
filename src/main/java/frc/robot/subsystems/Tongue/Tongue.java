@@ -58,7 +58,7 @@ public class Tongue extends GenericMotionProfiledSubsystem<Tongue.State> {
 
     public Command zeroSensorCommand()
     {
-        return new InstantCommand(() -> io.zeroSensors());
+        return new InstantCommand(() -> io.zeroSensors()).withName("Zero Tongue");
     }
 
     private Debouncer homedDebouncer = new Debouncer(0.1, DebounceType.kRising);

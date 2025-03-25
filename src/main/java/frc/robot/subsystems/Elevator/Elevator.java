@@ -134,7 +134,7 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
 
     public Command zeroSensorCommand()
     {
-        return new InstantCommand(() -> io.zeroSensors());
+        return new InstantCommand(() -> io.zeroSensors()).withName("Zero Elevator");
     }
 
     public boolean atPosition(double tolerance)
