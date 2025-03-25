@@ -70,7 +70,7 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
         return io.atPosition(state.profileType, tolerance);
     }
 
-    private Debouncer homedDebouncer = new Debouncer(0.1, DebounceType.kRising);
+    private Debouncer homedDebouncer = new Debouncer(0.2, DebounceType.kRising);
     private Debouncer stateDebouncer = new Debouncer(1, DebounceType.kRising);
 
     private Trigger homedTrigger =
