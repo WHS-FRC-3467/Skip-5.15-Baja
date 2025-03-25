@@ -22,10 +22,10 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
         // HOME is climber upright, Prep - Assuming that PREP position is parallel to the x axis,
         // CLIMB is inwards
         HOME(new ProfileType.MM_POSITION(() -> 0, 0)),
-        PREP(new ProfileType.MM_POSITION(() -> -160, 0)),
-        CLIMB(new ProfileType.MM_POSITION(() -> 60, 0)),
-        ClIMB_MORE(new ProfileType.MM_POSITION(() -> 75, 0)),
-        HOMING(new ProfileType.OPEN_VOLTAGE(() -> 3));
+        PREP(new ProfileType.MM_POSITION(() -> -200, 0)),
+        CLIMB(new ProfileType.MM_POSITION(() -> -15, 0)),
+        ClIMB_MORE(new ProfileType.MM_POSITION(() -> -5, 0)),
+        HOMING(new ProfileType.OPEN_VOLTAGE(() -> 4));
 
         private final ProfileType profileType;
     }
@@ -75,7 +75,7 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
 
     private Trigger homedTrigger =
         new Trigger(() -> homedDebouncer
-            .calculate(Math.abs(super.inputs.torqueCurrentAmps[0]) > 7.8)
+            .calculate(Math.abs(super.inputs.torqueCurrentAmps[0]) > 10)
             && stateDebouncer.calculate(this.state == State.HOMING));
 
     private Command getHomeCommand()

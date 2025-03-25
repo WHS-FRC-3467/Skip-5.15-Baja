@@ -16,11 +16,11 @@
     },
     {
       "anchor": {
-        "x": 1.4722500000000003,
+        "x": 1.4625,
         "y": 7.2132499999999995
       },
       "prevControl": {
-        "x": 1.2283774668042495,
+        "x": 1.2186274668042492,
         "y": 7.364527155944966
       },
       "nextControl": null,
@@ -41,16 +41,9 @@
         "data": {
           "commands": [
             {
-              "type": "sequential",
+              "type": "named",
               "data": {
-                "commands": [
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "IntakeCoral"
-                    }
-                  }
-                ]
+                "name": "IntakePrep"
               }
             }
           ]

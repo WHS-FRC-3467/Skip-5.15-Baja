@@ -27,8 +27,9 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
 
     Alert ledConfigError = new Alert("CANdle Configuration Error!", Alert.AlertType.kWarning);
 
+    boolean m_teleopBegun = false;
     LEDState m_currentState = LEDState.NOT_SET;
-    GPMode m_currentGPMode = GPMode.CORAL;
+    GPMode m_currentGPMode = GPMode.NOT_SET;
     AllianceColor m_DSAlliance = AllianceColor.UNDETERMINED;
     Color m_allianceColor = Color.kBlack;
     MatchTimerState m_mtState = MatchTimerState.END;
@@ -142,11 +143,17 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
             case AUTONOMOUS:
                 // Mode is not displayed in these cases
                 // so just break out
-                newGPMode = GPMode.NOT_SET;
+                m_currentGPMode = GPMode.NOT_SET;
                 m_tipColor = Color.kBlack.toHexString();
                 break;
             default:
                 if (newGPMode != m_currentGPMode) {
+
+                    if (!m_teleopBegun) {
+                        m_FullLeft.setOff();
+                        m_FullRight.setOff();
+                        m_teleopBegun = true;
+                    }
                     switch (newGPMode) {
                         case PROCESSOR:
                             m_LeftTip.setAnimation(a_FastFlashGreen);

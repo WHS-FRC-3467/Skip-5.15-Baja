@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4722500000000003,
+        "x": 1.4625,
         "y": 7.2132499999999995
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7052689248180992,
+        "x": 1.6955189248180988,
         "y": 6.94633443415027
       },
       "isLocked": false,
@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 3.6855,
-        "y": 5.08775
+        "x": 3.6660000000000004,
+        "y": 5.117
       },
       "prevControl": {
-        "x": 3.3431272688810987,
-        "y": 5.406171453923808
+        "x": 3.323627268881099,
+        "y": 5.435421453923809
       },
       "nextControl": null,
       "isLocked": false,
@@ -41,22 +41,9 @@
         "data": {
           "commands": [
             {
-              "type": "sequential",
+              "type": "named",
               "data": {
-                "commands": [
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "IntakeCoral"
-                    }
-                  },
-                  {
-                    "type": "named",
-                    "data": {
-                      "name": "L4Prep"
-                    }
-                  }
-                ]
+                "name": "IntakeCoral"
               }
             }
           ]
