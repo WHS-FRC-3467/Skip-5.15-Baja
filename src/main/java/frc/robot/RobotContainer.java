@@ -460,8 +460,9 @@ public class RobotContainer {
         m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep1())
             .onTrue(
                 Commands.sequence(
-                    m_profiledArm.setStateCommand(Arm.State.CLIMB),
-                    m_profiledClimber.setStateCommand(Climber.State.PREP)));
+                    m_profiledClimber.setStateCommand(Climber.State.PREP),
+                    m_superStruct.getTransitionCommand(Arm.State.CLIMB,
+                        Elevator.State.STOW, Units.degreesToRotations(10), .2)));
 
         // Retract climber
         m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep2())
