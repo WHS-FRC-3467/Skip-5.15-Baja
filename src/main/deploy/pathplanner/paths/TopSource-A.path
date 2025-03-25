@@ -1,0 +1,91 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 1.4722500000000003,
+        "y": 7.2132499999999995
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 2.256787534774138,
+        "y": 5.741670544638731
+      },
+      "isLocked": false,
+      "linkedName": "LSourceTop"
+    },
+    {
+      "anchor": {
+        "x": 3.1527663934426227,
+        "y": 4.192827868852459
+      },
+      "prevControl": {
+        "x": 2.898600928283939,
+        "y": 4.811697705729912
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "ReefA"
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 1,
+      "rotationDegrees": 0.0
+    }
+  ],
+  "constraintZones": [],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "L4",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "deadline",
+        "data": {
+          "commands": [
+            {
+              "type": "sequential",
+              "data": {
+                "commands": [
+                  {
+                    "type": "named",
+                    "data": {
+                      "name": "IntakeCoral"
+                    }
+                  },
+                  {
+                    "type": "named",
+                    "data": {
+                      "name": "L4"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -0.5787255656077198
+  },
+  "reversed": false,
+  "folder": null,
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": -54.605204155013034
+  },
+  "useDefaultConstraints": true
+}
