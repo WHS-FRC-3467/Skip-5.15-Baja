@@ -75,13 +75,14 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
     // Climbing Triggers
     private boolean climbRequested = false; // Whether or not a climb request is active
     private Trigger climbRequest = new Trigger(() -> climbRequested); // Trigger for climb request
-    public int climbStep = 0; // Tracking what step in the climb sequence we are on, is at zero when
-                              // not climbing
+    private int climbStep = 0; // Tracking what step in the climb sequence we are on, is at zero
+                               // when
+                               // not climbing
 
     // Triggers for each step of the climb sequence
-    private Trigger climbStep1 = new Trigger(() -> climbStep == 1);
-    private Trigger climbStep2 = new Trigger(() -> climbStep == 2);
-    private Trigger climbStep3 = new Trigger(() -> climbStep == 3);
+    public Trigger climbStep1 = new Trigger(() -> climbStep == 1);
+    public Trigger climbStep2 = new Trigger(() -> climbStep == 2);
+    public Trigger climbStep3 = new Trigger(() -> climbStep == 3);
 
     private Debouncer homedDebouncer = new Debouncer(0.1, DebounceType.kRising);
     private Debouncer stateDebouncer = new Debouncer(1, DebounceType.kRising);
