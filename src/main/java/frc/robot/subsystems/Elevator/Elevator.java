@@ -80,7 +80,8 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
 
     public Command setStateCommand(State state)
     {
-        return this.runOnce(() -> this.state = state);
+        return this.runOnce(() -> this.state = state)
+            .withName("Elevator Set State: " + state.name());
     }
 
     public Command setCoastStateCommand()

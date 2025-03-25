@@ -121,7 +121,7 @@ public class DriveCommands {
                             ? drive.getRotation().plus(new Rotation2d(Math.PI))
                             : drive.getRotation()));
             },
-            drive);
+            drive).withName("Drivetrain: Joystick Drive");
     }
 
     /**
@@ -178,7 +178,8 @@ public class DriveCommands {
             drive)
 
             // Reset PID controller when command starts
-            .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+            .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()))
+            .withName("Drivetrain: Drive At Angle");
     }
 
     /**
@@ -271,7 +272,8 @@ public class DriveCommands {
             drive)
 
             // Reset PID controller when command starts
-            .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+            .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()))
+            .withName("Drivetrain: Joystick Approach");
     }
 
     /**
@@ -375,7 +377,8 @@ public class DriveCommands {
             drive)
 
             // Reset PID controller when command starts
-            .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
+            .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()))
+            .withName("Drivetrain: Joystick Strafe");
     }
 
     /**
