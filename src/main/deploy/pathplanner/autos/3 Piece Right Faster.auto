@@ -96,12 +96,6 @@
           "data": {
             "pathName": "C-TopSource"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "IntakeCoral"
-          }
         }
       ]
     }

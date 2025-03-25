@@ -239,9 +239,11 @@ public class Robot extends LoggedRobot {
 
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(0);
+        } else {
+            m_robotContainer.zeroTounge().schedule(); // Zeros the tounge on enable
         }
 
-        m_robotContainer.zeroTounge().schedule(); // Zeros the tounge on enable
+
     }
 
     /** This function is called periodically during operator control. */
