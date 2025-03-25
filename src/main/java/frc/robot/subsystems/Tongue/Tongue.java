@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Tounge;
+package frc.robot.subsystems.Tongue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
@@ -17,13 +17,13 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class Tounge extends GenericMotionProfiledSubsystem<Tounge.State> {
+public class Tongue extends GenericMotionProfiledSubsystem<Tongue.State> {
 
     static LoggedTunableNumber positionTuning =
-        new LoggedTunableNumber("Tounge/PositionTuningSP", 10.0);
+        new LoggedTunableNumber("Tongue/PositionTuningSP", 10.0);
 
     static LoggedTunableNumber homingTuning =
-        new LoggedTunableNumber("Tounge/HomingVoltageSP", -1);
+        new LoggedTunableNumber("Tongue/HomingVoltageSP", -1);
 
     @RequiredArgsConstructor
     @Getter
@@ -40,15 +40,15 @@ public class Tounge extends GenericMotionProfiledSubsystem<Tounge.State> {
     @Setter
     private State state = State.STOW;
 
-    public Tounge(ToungeIO io, boolean isSim)
+    public Tongue(TongueIO io, boolean isSim)
     {
-        super(State.STOW.profileType, ToungeConstants.kSubSysConstants, io, isSim);
-        SmartDashboard.putData("Tounge homing command", homeCommand());
+        super(State.STOW.profileType, TongueConstants.kSubSysConstants, io, isSim);
+        SmartDashboard.putData("Tongue homing command", homeCommand());
     }
 
     public Command setStateCommand(State state)
     {
-        return this.runOnce(() -> this.state = state).withName("Tounge Set State: " + state.name());
+        return this.runOnce(() -> this.state = state).withName("Tongue Set State: " + state.name());
     }
 
     public boolean atPosition(double tolerance)
@@ -83,7 +83,7 @@ public class Tounge extends GenericMotionProfiledSubsystem<Tounge.State> {
                 .andThen(this.setStateCommand(State.STOW)));
     }
 
-    public Command lowerToungeCommand()
+    public Command lowerTongueCommand()
     {
         return Commands.sequence(
             this.setStateCommand(State.DOWN),

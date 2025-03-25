@@ -211,7 +211,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit()
     {
-        m_robotContainer.zeroTounge().schedule(); // Zeros the tounge on enable
+        m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
         // schedule the autonomous command (example)
@@ -240,7 +240,7 @@ public class Robot extends LoggedRobot {
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(0);
         } else {
-            m_robotContainer.zeroTounge().schedule(); // Zeros the tounge on enable
+            m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
         }
 
 
