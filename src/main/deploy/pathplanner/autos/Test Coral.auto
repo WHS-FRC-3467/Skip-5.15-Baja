@@ -85,7 +85,7 @@
       ]
     }
   },
-  "resetOdom": false,
+  "resetOdom": true,
   "folder": "Self Test",
   "choreoAuto": false
 }
