@@ -294,6 +294,10 @@ public class RobotContainer {
             .whileTrue(
                 joystickApproach(() -> FieldConstants.getNearestReefFace(m_drive.getPose())));
 
+
+
+        SmartDashboard.putData("Is Algae High?", printAlgae());
+
         // Driver Left Bumper and Algae mode: Approach Nearest Reef Face
         m_driver.leftBumper().and(isCoralMode.negate())
             .whileTrue(
@@ -576,5 +580,11 @@ public class RobotContainer {
     public Command zeroTongue()
     {
         return m_tongue.zeroSensorCommand();
+    }
+
+    public Command printAlgae()
+    {
+        return Commands.runOnce(() -> System.out
+            .println("Algae is High: " + FieldConstants.isAlgaeHigh(m_drive.getPose())));
     }
 }

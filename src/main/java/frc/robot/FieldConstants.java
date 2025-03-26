@@ -226,6 +226,12 @@ public class FieldConstants {
             .get(FieldConstants.ReefHeight.L1).toPose2d();
     }
 
+    public static boolean isAlgaeHigh(Pose2d currentPose)
+    {
+        return List.of(FieldConstants.Reef.centerFaces).indexOf(getNearestReefFace(currentPose))
+            % 2 == 0;
+    }
+
     public static Pose2d getNearestCoralStation(Pose2d currentPose)
     {
         if (currentPose.getTranslation().getX() > FieldConstants.fieldLength / 2) {
