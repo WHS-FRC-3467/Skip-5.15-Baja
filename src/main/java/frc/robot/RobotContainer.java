@@ -303,7 +303,8 @@ public class RobotContainer {
         m_driver
             .a().and(isCoralMode)
             .onTrue(
-                m_superStruct.getTransitionCommand(Arm.State.LEVEL_1, Elevator.State.LEVEL_1));
+                m_superStruct.getTransitionCommand(Arm.State.LEVEL_1, Elevator.State.LEVEL_1)
+                    .andThen(m_tounge.setStateCommand(Tounge.State.LEVEL_1)));
 
         // Driver A Button and Algae mode: Send Arm and Elevator to Ground Intake
         m_driver
