@@ -316,7 +316,6 @@ public class DriveCommands {
                 // Name constants
                 Translation2d currentTranslation = drive.getPose().getTranslation();
                 Translation2d approachTranslation = approachSupplier.get().getTranslation();
-                double distanceToApproach = currentTranslation.getDistance(approachTranslation);
 
                 Rotation2d alignmentDirection = approachSupplier.get().getRotation();
 
