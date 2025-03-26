@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Tounge;
+package frc.robot.subsystems.Tongue;
 
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -11,17 +11,17 @@ import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiled
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemConstants.simType;
 
 /** Add your docs here. */
-public final class ToungeConstants {
+public final class TongueConstants {
 
     public static final GenericMotionProfiledSubsystemConstants kSubSysConstants =
         new GenericMotionProfiledSubsystemConstants();
 
     static {
-        kSubSysConstants.kName = "Tounge";
+        kSubSysConstants.kName = "Tongue";
 
         kSubSysConstants.kminTolerance = Units.degreesToRotations(5);
 
-        kSubSysConstants.kLeaderMotor = Ports.TOUNGE;
+        kSubSysConstants.kLeaderMotor = Ports.TONGUE;
 
         // Using TalonFX internal encoder
         kSubSysConstants.kCANcoder = null;

@@ -25,7 +25,10 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.util.Elastic;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -109,6 +112,25 @@ public class Robot extends LoggedRobot {
             }
         }
 
+        // Log active commands
+        Map<String, Integer> commandCounts = new HashMap<>();
+        BiConsumer<Command, Boolean> logCommandFunction =
+            (Command command, Boolean active) -> {
+                String name = command.getName();
+                int count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
+                commandCounts.put(name, count);
+                Logger.recordOutput(
+                    "CommandsUnique/" + name + "_" + Integer.toHexString(command.hashCode()),
+                    active);
+                Logger.recordOutput("CommandsAll/" + name, count > 0);
+            };
+        CommandScheduler.getInstance()
+            .onCommandInitialize((Command command) -> logCommandFunction.accept(command, true));
+        CommandScheduler.getInstance()
+            .onCommandFinish((Command command) -> logCommandFunction.accept(command, false));
+        CommandScheduler.getInstance()
+            .onCommandInterrupt((Command command) -> logCommandFunction.accept(command, false));
+
         // Instantiate our RobotContainer. This will perform all our button bindings,
         // and put our autonomous chooser on the dashboard.
         m_robotContainer = new RobotContainer();
@@ -189,7 +211,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit()
     {
-        m_robotContainer.zeroTounge().schedule(); // Zeros the tounge on enable
+        m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
         // schedule the autonomous command (example)
@@ -218,7 +240,7 @@ public class Robot extends LoggedRobot {
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(0);
         } else {
-            m_robotContainer.zeroTounge().schedule(); // Zeros the tounge on enable
+            m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
         }
 
 

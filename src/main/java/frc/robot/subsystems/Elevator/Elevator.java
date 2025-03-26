@@ -11,12 +11,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
-import frc.robot.Constants.RobotType;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.TargetState;
 import frc.robot.util.LoggedTunableNumber;
-import frc.robot.util.Util;
 import frc.robot.util.sim.mechanisms.ArmElevComboReplay;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -80,7 +77,8 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
 
     public Command setStateCommand(State state)
     {
-        return this.runOnce(() -> this.state = state);
+        return this.runOnce(() -> this.state = state)
+            .withName("Elevator Set State: " + state.name());
     }
 
     public Command setCoastStateCommand()
@@ -133,7 +131,7 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
 
     public Command zeroSensorCommand()
     {
-        return new InstantCommand(() -> io.zeroSensors());
+        return new InstantCommand(() -> io.zeroSensors()).withName("Zero Elevator");
     }
 
     public boolean atPosition(double tolerance)

@@ -42,7 +42,8 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
 
     public Command setStateCommand(State state)
     {
-        return this.runOnce(() -> this.state = state);
+        return this.runOnce(() -> this.state = state)
+            .withName("Climber Set State: " + state.name()).withName("Zero Climber");
     }
 
     // Climbing Triggers
