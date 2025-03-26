@@ -28,6 +28,7 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
         ALGAE_HIGH(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(103.3), 0)),
         ALGAE_HIGH_P(new ProfileType.MM_POSITION(() -> .2446, 0)),
         ALGAE_GROUND(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(70.0), 0)),
+        ALGAE_LOLLIPOP(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(75.0), 0)),
         PROCESSOR_SCORE(
             new ProfileType.MM_POSITION(() -> Units.degreesToRotations(120.0), 0)),
         BARGE(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(130.0), 0)),

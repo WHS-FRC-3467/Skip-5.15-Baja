@@ -317,6 +317,19 @@ public class RobotContainer {
                     Commands.waitUntil(m_clawRoller.stalled),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
+        // Driver A Button and Horns Mode: Lollipop Intake
+        m_driver
+            .a()
+            .and(isCoralMode.negate())
+            .and(isProcessorMode.negate())
+            .and(m_clawRoller.stalled.negate())
+            .onTrue(
+                Commands.sequence(m_superStruct.getTransitionCommand(Arm.State.ALGAE_LOLLIPOP,
+                    Elevator.State.ALGAE_LOLLIPOP),
+                    m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+                    Commands.waitUntil(m_clawRoller.stalled),
+                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+
         // Driver X Button: Send Arm and Elevator to LEVEL_2
         m_driver
             .x().and(isCoralMode)
@@ -336,6 +349,7 @@ public class RobotContainer {
                     Commands.waitUntil(m_clawRoller.stalled),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
+        // Driver X Button & Processor Mode: Descore Low Algae
         m_driver
             .x().and(isCoralMode.negate())
             .and(isProcessorMode)
@@ -348,13 +362,13 @@ public class RobotContainer {
                     Commands.waitUntil(m_clawRoller.stalled),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
+
         // Driver B Button: Send Arm and Elevator to LEVEL_3
         m_driver
             .b().and(isCoralMode)
             .onTrue(
                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_3, Elevator.State.LEVEL_3));
 
-        // Driver B Button and Algae mode: Send Arm and Elevator to ALGAE_HIGH position
         m_driver
             .b().and(isCoralMode.negate())
             .and(isProcessorMode.negate())
@@ -367,6 +381,7 @@ public class RobotContainer {
                     Commands.waitUntil(m_clawRoller.stalled),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
+        // Driver B Button and Algae mode: Send Arm and Elevator to ALGAE_HIGH position
         m_driver
             .b().and(isCoralMode.negate())
             .and(isProcessorMode)
