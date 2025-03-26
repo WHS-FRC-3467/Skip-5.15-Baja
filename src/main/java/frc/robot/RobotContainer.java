@@ -184,8 +184,6 @@ public class RobotContainer {
         // Pathplanner commands
         registerNamedCommands();
 
-
-
         // Add all PathPlanner autos to dashboard
         m_autoChooser =
             new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -197,8 +195,6 @@ public class RobotContainer {
 
         // Configure the controller button and joystick bindings
         configureControllerBindings();
-
-        registerPathPlannerLogging();
 
         // Detect if controllers are missing / Stop multiple warnings
         if (Robot.isReal()) {
@@ -248,27 +244,6 @@ public class RobotContainer {
             () -> {
                 isProcessorModeEnabled = !isProcessorModeEnabled;
             });
-    }
-
-    private void registerPathPlannerLogging()
-    {
-        PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
-            // Do whatever you want with the pose here
-            Logger.recordOutput("Pathplanner Auto/Current Pose", pose);
-        });
-
-        // Logging callback for target robot pose
-        PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
-            // Do whatever you want with the pose here
-            Logger.recordOutput("Pathplanner Auto/Target Pose", pose);
-        });
-
-        // Logging callback for the active path, this is sent as a list of poses
-        // PathPlannerLogging.setLogActivePathCallback((poses) -> {
-        // Pose2d[] temp = poses.toArray().;
-        // // Do whatever you want with the poses here
-        // Logger.recordOutput("Pathplanner Auto/Active Path", poses.toArray());
-        // });
     }
 
     /** Button and Command mappings */

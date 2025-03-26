@@ -3,20 +3,16 @@ package frc.robot.subsystems.Elevator;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants;
-import frc.robot.Constants.RobotType;
+import frc.robot.subsystems.RobotState;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.TargetState;
 import frc.robot.util.LoggedTunableNumber;
-import frc.robot.util.Util;
 import frc.robot.util.sim.mechanisms.ArmElevComboReplay;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -61,12 +57,7 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
     @Setter
     private State state = State.STOW;
 
-    @Getter
-    public final Alert homedAlert = new Alert("NEW HOME SET", Alert.AlertType.kInfo);
-
-    /* For adjusting the Elevators's static characterization velocity threshold */
-    private static final LoggedTunableNumber staticCharacterizationVelocityThresh =
-        new LoggedTunableNumber("Elevator/StaticCharacterizationVelocityThresh", 0.1);
+    private RobotState robotState = RobotState.getInstance();
 
     public Elevator(ElevatorIO io, boolean isSim)
     {
@@ -74,8 +65,13 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         SmartDashboard.putData("Elevator Coast Command", setCoastStateCommand());
         SmartDashboard.putData("Elevator Brake Command", setBrakeStateCommand());
 
-        m_Replay = ArmElevComboReplay.getInstance();
+    }
 
+    @Override
+    public void periodic()
+    {
+        super.periodic();
+        robotState.setElevatorExtended(isElevated());
     }
 
     public Command setStateCommand(State state)
@@ -113,11 +109,6 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         }
     }
 
-    public boolean isL1()
-    {
-        return this.getState() == Elevator.State.LEVEL_1;
-    }
-
     private Debouncer homedDebouncer = new Debouncer(0.1, DebounceType.kRising);
 
     public Trigger homedTrigger =
@@ -141,13 +132,9 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         return io.atPosition(state.profileType, tolerance);
     }
 
-    public Command homedAlertCommand()
-    {
-        return new SequentialCommandGroup(
-            new InstantCommand(() -> homedAlert.set(true)),
-            Commands.waitSeconds(1),
-            new InstantCommand(() -> homedAlert.set(false)));
-    }
+    /* For adjusting the Elevators's static characterization velocity threshold */
+    private static final LoggedTunableNumber staticCharacterizationVelocityThresh =
+        new LoggedTunableNumber("Elevator/StaticCharacterizationVelocityThresh", 0.1);
 
     public Command staticCharacterization(double outputRampRate)
     {

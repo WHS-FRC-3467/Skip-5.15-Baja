@@ -4,10 +4,13 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import lombok.Getter;
+import lombok.Setter;
 
 public class RobotState {
-
+    private static RobotState instance;
 
     public enum TARGET {
         NONE,
@@ -20,7 +23,7 @@ public class RobotState {
     }
 
     @Getter
-    private TARGET target = TARGET.NONE;
+    private TARGET currentTarget = TARGET.NONE;
 
     public enum GAMEPIECE {
         NONE,
@@ -30,6 +33,23 @@ public class RobotState {
     }
 
     @Getter
-    private GAMEPIECE gamepiece = GAMEPIECE.NONE;
+    @Setter
+    private GAMEPIECE heldGamepiece = GAMEPIECE.NONE;
+
+    @Getter
+    @Setter
+    private boolean isElevatorExtended = false;
+
+    public static RobotState getInstance()
+    {
+        if (instance == null)
+            instance = new RobotState();
+        return instance;
+    }
+
+    public Command setTargetCommand(TARGET newTarget)
+    {
+        return Commands.runOnce(() -> this.currentTarget = newTarget);
+    }
 
 }
