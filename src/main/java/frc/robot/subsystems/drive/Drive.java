@@ -48,6 +48,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Vision.Vision;
@@ -136,7 +137,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         // Configure AutoBuilder for PathPlanner
         AutoBuilder.configure(
             this::getPose,
-            this::setPose,
+            this::setPoseIfSim,
             this::getChassisSpeeds,
             this::runVelocity,
             new PPHolonomicDriveController(
@@ -361,6 +362,13 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     public void setPose(Pose2d pose)
     {
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+    }
+
+    public void setPoseIfSim(Pose2d pose)
+    {
+        if (true) {
+            poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+        }
     }
 
     /** Adds a new timestamped vision measurement. */
