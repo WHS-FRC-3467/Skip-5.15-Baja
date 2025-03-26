@@ -67,9 +67,6 @@ public class Tongue extends GenericMotionProfiledSubsystem<Tongue.State> {
         () -> homedDebouncer.calculate(
             (this.state == State.HOMING && Math.abs(io.getSupplyCurrent()) > 2)));
 
-    // public Trigger coralContactTrigger = new Trigger(
-    // () -> atPosition(Units.degreesToRotations(5)) && Math.abs(io.getSupplyCurrent()) > 3);
-
     public Trigger coralContactTrigger = new Trigger(
         () -> MathUtil.isNear(.29, io.getPosition(), 0.1));
 
@@ -80,7 +77,8 @@ public class Tongue extends GenericMotionProfiledSubsystem<Tongue.State> {
     {
         return this.setStateCommand(State.HOMING)
             .andThen(Commands.waitUntil(homedTrigger).andThen(this.zeroSensorCommand())
-                .andThen(this.setStateCommand(State.STOW)));
+                .andThen(this.setStateCommand(State.STOW)))
+            .withName("Home Tongue Command");
     }
 
     public Command lowerTongueCommand()
@@ -90,7 +88,8 @@ public class Tongue extends GenericMotionProfiledSubsystem<Tongue.State> {
             Commands.race(
                 Commands.waitUntil(this.hasLoweredTrigger),
                 Commands.waitSeconds(0.5)),
-            this.setStateCommand(State.STOW));
+            this.setStateCommand(State.STOW))
+            .withName("Lower Tongue Command");
     }
 
 }

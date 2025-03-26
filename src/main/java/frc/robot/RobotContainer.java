@@ -239,7 +239,7 @@ public class RobotContainer {
         return Commands.runOnce(
             () -> {
                 coralModeEnabled = !coralModeEnabled;
-            });
+            }).withName("Coral Mode: " + coralModeEnabled);
     }
 
     public Command toggleProcessorMode()
@@ -247,7 +247,7 @@ public class RobotContainer {
         return Commands.runOnce(
             () -> {
                 isProcessorModeEnabled = !isProcessorModeEnabled;
-            });
+            }).withName("Processor Mode: " + isProcessorModeEnabled);
     }
 
     private void registerPathPlannerLogging()
