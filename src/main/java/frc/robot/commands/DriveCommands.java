@@ -96,13 +96,11 @@ public class DriveCommands {
                 currentDriveMode = DriveMode.dmJoystick;
                 // Get linear velocity
                 Translation2d linearVelocity =
-                    getLinearVelocityFromJoysticks(
-                        xSupplier.getAsDouble() * drive.speedMultiplier.getAsDouble(),
-                        ySupplier.getAsDouble() * drive.speedMultiplier.getAsDouble());
+                    getLinearVelocityFromJoysticks(xSupplier.getAsDouble(),
+                        ySupplier.getAsDouble());
 
                 // Apply rotation deadband
-                double omega = MathUtil.applyDeadband(
-                    omegaSupplier.getAsDouble() * drive.speedMultiplier.getAsDouble(), DEADBAND);
+                double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
                 // Square rotation value for more precise control
                 omega = Math.copySign(omega * omega, omega);
@@ -153,9 +151,8 @@ public class DriveCommands {
                 currentDriveMode = DriveMode.dmAngle;
                 // Get linear velocity
                 Translation2d linearVelocity =
-                    getLinearVelocityFromJoysticks(
-                        xSupplier.getAsDouble() * drive.speedMultiplier.getAsDouble(),
-                        ySupplier.getAsDouble() * drive.speedMultiplier.getAsDouble());
+                    getLinearVelocityFromJoysticks(xSupplier.getAsDouble(),
+                        ySupplier.getAsDouble());
 
                 // Calculate angular speed
                 double omega =
@@ -247,7 +244,7 @@ public class DriveCommands {
                 // Calculate total linear velocity
                 Translation2d linearVelocity =
                     getLinearVelocityFromJoysticks(0,
-                        ySupplier.getAsDouble() * drive.speedMultiplier.getAsDouble()).rotateBy(
+                        ySupplier.getAsDouble()).rotateBy(
                             approachSupplier.get().getRotation()).rotateBy(Rotation2d.kCCW_90deg)
                             .plus(offsetVector);
 
@@ -350,8 +347,7 @@ public class DriveCommands {
 
                 // Calculate total linear velocity
                 Translation2d linearVelocity =
-                    getLinearVelocityFromJoysticks(
-                        xSupplier.getAsDouble() * drive.speedMultiplier.getAsDouble(),
+                    getLinearVelocityFromJoysticks(xSupplier.getAsDouble(),
                         0).rotateBy(
                             approachSupplier.get().getRotation()).rotateBy(Rotation2d.kCCW_90deg)
                             .plus(offsetVector);

@@ -79,6 +79,8 @@ public class RobotContainer {
     public final Vision m_vision;
     public final LEDSubsystem m_LED;
 
+    public LoggedTunableNumber speedMultiplier = new LoggedTunableNumber("DriveBase Speed Multiplier", 1.0);
+
     // Trigger for algae/coral mode switching
     private boolean coralModeEnabled = true;
     private boolean isProcessorModeEnabled = true;
@@ -207,28 +209,28 @@ public class RobotContainer {
 
     }
 
-    private Command joystickDrive()
+    private Command joystickDrive(DoubleSupplier drivetrainSpeed)
     {
         return DriveCommands.joystickDrive(
             m_drive,
-            () -> -m_driver.getLeftY(),
-            () -> -m_driver.getLeftX(),
-            () -> -m_driver.getRightX());
+            () -> -m_driver.getLeftY() * drivetrainSpeed.getAsDouble(),
+            () -> -m_driver.getLeftX() * drivetrainSpeed.getAsDouble(),
+            () -> -m_driver.getRightX() * drivetrainSpeed.getAsDouble());
     }
 
-    private Command joystickApproach(Supplier<Pose2d> approachPose)
+    private Command joystickApproach(Supplier<Pose2d> approachPose, DoubleSupplier drivetrainSpeed)
     {
         return DriveCommands.joystickApproach(
             m_drive,
-            () -> -m_driver.getLeftY(),
+            () -> -m_driver.getLeftY() * drivetrainSpeed.getAsDouble(),
             approachPose);
     }
 
-    private Command joystickStrafe(Supplier<Pose2d> approachPose)
+    private Command joystickStrafe(Supplier<Pose2d> approachPose, DoubleSupplier drivetrainSpeed)
     {
         return DriveCommands.joystickStrafe(
             m_drive,
-            () -> m_driver.getLeftX(),
+            () -> m_driver.getLeftX() * drivetrainSpeed.getAsDouble(),
             approachPose);
     }
 
@@ -273,29 +275,29 @@ public class RobotContainer {
     private void configureControllerBindings()
     {
         // Default command, normal field-relative drive
-        m_drive.setDefaultCommand(joystickDrive());
+        m_drive.setDefaultCommand(joystickDrive(speedMultiplier));
 
         // Driver Right Bumper: Approach Nearest Right-Side Reef Branch
         m_driver.rightBumper().and(isCoralMode)
             .whileTrue(
                 joystickApproach(
-                    () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.RIGHT)));
+                    () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.RIGHT), speedMultiplier));
 
         // Driver Left Bumper: Approach Nearest Left-Side Reef Branch
         m_driver.leftBumper().and(isCoralMode)
             .whileTrue(
                 joystickApproach(
-                    () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.LEFT)));
+                    () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.LEFT), speedMultiplier));
 
         // Driver Right Bumper and Algae mode: Approach Nearest Reef Face
         m_driver.rightBumper().and(isCoralMode.negate())
             .whileTrue(
-                joystickApproach(() -> FieldConstants.getNearestReefFace(m_drive.getPose())));
+                joystickApproach(() -> FieldConstants.getNearestReefFace(m_drive.getPose()), speedMultiplier));
 
         // Driver Left Bumper and Algae mode: Approach Nearest Reef Face
         m_driver.leftBumper().and(isCoralMode.negate())
             .whileTrue(
-                joystickStrafe(() -> m_drive.getPose().nearest(FieldConstants.Barge.align)));
+                joystickStrafe(() -> m_drive.getPose().nearest(FieldConstants.Barge.align), speedMultiplier));
 
         // Driver A Button: Send Arm and Elevator to LEVEL_1
         m_driver
