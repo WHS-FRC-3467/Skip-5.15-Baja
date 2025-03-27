@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static frc.robot.subsystems.Vision.VisionConstants.*;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -46,6 +47,7 @@ import frc.robot.subsystems.Tounge.ToungeIOSim;
 import frc.robot.subsystems.Tounge.ToungeIOTalonFX;
 import frc.robot.subsystems.Vision.*;
 import frc.robot.subsystems.drive.*;
+import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.WindupXboxController;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -83,9 +85,6 @@ public class RobotContainer {
     private Trigger isCoralMode = new Trigger(() -> coralModeEnabled);
     private Trigger isProcessorMode = new Trigger(() -> isProcessorModeEnabled);
 
-
-    private double speedMultiplier = 0.90;
-
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
     {
@@ -102,7 +101,8 @@ public class RobotContainer {
 
                 m_profiledArm = new Arm(new ArmIOTalonFX(), false);
                 m_profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
-                m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
+                // m_profiledClimber = new Climber(new ClimberIOTalonFX(), false);
+                m_profiledClimber = new Climber(new ClimberIO() {}, false);
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tounge = new Tounge(new ToungeIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
@@ -184,8 +184,6 @@ public class RobotContainer {
         // Pathplanner commands
         registerNamedCommands();
 
-
-
         // Add all PathPlanner autos to dashboard
         m_autoChooser =
             new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -213,8 +211,8 @@ public class RobotContainer {
     {
         return DriveCommands.joystickDrive(
             m_drive,
-            () -> -m_driver.getLeftY() * speedMultiplier,
-            () -> -m_driver.getLeftX() * speedMultiplier,
+            () -> -m_driver.getLeftY(),
+            () -> -m_driver.getLeftX(),
             () -> -m_driver.getRightX());
     }
 
@@ -222,7 +220,7 @@ public class RobotContainer {
     {
         return DriveCommands.joystickApproach(
             m_drive,
-            () -> -m_driver.getLeftY() * speedMultiplier,
+            () -> -m_driver.getLeftY(),
             approachPose);
     }
 
@@ -230,7 +228,7 @@ public class RobotContainer {
     {
         return DriveCommands.joystickStrafe(
             m_drive,
-            () -> m_driver.getLeftX() * speedMultiplier,
+            () -> m_driver.getLeftX(),
             approachPose);
     }
 

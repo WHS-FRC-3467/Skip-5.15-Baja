@@ -51,6 +51,7 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Vision.Vision;
+import frc.robot.util.LoggedTunableNumber;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -75,6 +76,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     private static final double ROBOT_MASS_KG = 64.728;
     private static final double ROBOT_MOI = 8.835;
     private static final double WHEEL_COF = 1.13; // https://www.chiefdelphi.com/t/vexpro-new-products-2023-2024/446005/91?
+    public LoggedTunableNumber speedMultiplier;
     private static final RobotConfig PP_CONFIG =
         new RobotConfig(
             ROBOT_MASS_KG,
@@ -169,6 +171,8 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     @Override
     public void periodic()
     {
+        speedMultiplier = new LoggedTunableNumber("DriveBase Speed Multiplier", 1.0);
+
         odometryLock.lock(); // Prevents odometry updates while reading data
         gyroIO.updateInputs(gyroInputs);
         Logger.processInputs("Drive/Gyro", gyroInputs);
