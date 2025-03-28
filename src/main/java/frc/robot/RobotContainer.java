@@ -47,6 +47,7 @@ import frc.robot.subsystems.Tounge.ToungeIOTalonFX;
 import frc.robot.subsystems.Vision.*;
 import frc.robot.subsystems.drive.*;
 import frc.robot.util.WindupXboxController;
+import frc.robot.util.PPCalcEndpoint.PPCalcEndpoint;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -63,6 +64,9 @@ public class RobotContainer {
 
     // Autonomous Selector
     private final LoggedDashboardChooser<Command> m_autoChooser;
+
+    // Utilities
+    public final PPCalcEndpoint ppAuto;
 
     // Subsystems
     public final Drive m_drive;
@@ -89,6 +93,7 @@ public class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
     {
+        ppAuto = new PPCalcEndpoint();
         switch (Constants.currentMode) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
@@ -512,6 +517,12 @@ public class RobotContainer {
                 .andThen(m_tounge.lowerToungeCommand())
                 .andThen(m_driver.rumbleForTime(0.25, 1)));
 
+
+
+        // MJW Test:
+        SmartDashboard.putData("CalcPPEndpoints",
+            Commands.runOnce(() -> ppAuto.calculateEndPose()));
+
     }
 
     /**
@@ -519,70 +530,128 @@ public class RobotContainer {
      */
     private void registerNamedCommands()
     {
-        // Go to the L4 Position
-        NamedCommands.registerCommand(
-            "L4",
-            Commands.sequence(
-                Commands.waitUntil(m_clawRollerLaserCAN.triggered),
-                m_tounge.setStateCommand(Tounge.State.DOWN),
-                m_superStruct.getTransitionCommand(Arm.State.LEVEL_4, Elevator.State.LEVEL_4,
-                    Units.degreesToRotations(10),
-                    0.8),
-                m_clawRoller.L4ShuffleCommand(),
-                Commands.waitSeconds(0.1)));
+        switch (Constants.currentMode) {
+            case REAL:
+                // Go to the L4 Position
+                NamedCommands.registerCommand(
+                    "L4",
+                    Commands.sequence(
+                        Commands.waitUntil(m_clawRollerLaserCAN.triggered),
+                        m_tounge.setStateCommand(Tounge.State.DOWN),
+                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
+                            Elevator.State.LEVEL_4,
+                            Units.degreesToRotations(10),
+                            0.8),
+                        m_clawRoller.L4ShuffleCommand(),
+                        Commands.waitSeconds(0.1)));
 
-        NamedCommands.registerCommand(
-            "L4Prep",
-            Commands.sequence(
-                Commands.waitUntil(m_clawRollerLaserCAN.triggered),
-                m_tounge.setStateCommand(Tounge.State.DOWN),
-                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.LEVEL_4,
-                    Units.degreesToRotations(10),
-                    0.8)));
+                NamedCommands.registerCommand(
+                    "L4Prep",
+                    Commands.sequence(
+                        Commands.waitUntil(m_clawRollerLaserCAN.triggered),
+                        m_tounge.setStateCommand(Tounge.State.DOWN),
+                        m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.LEVEL_4,
+                            Units.degreesToRotations(10),
+                            0.8)));
 
-        // Go to the Home Position
-        NamedCommands.registerCommand(
-            "Home",
-            m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
-                Units.degreesToRotations(10), 0.8));
+                // Go to the Home Position
+                NamedCommands.registerCommand(
+                    "Home",
+                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
+                        Units.degreesToRotations(10), 0.8));
 
-        // Intake Coral
-        NamedCommands.registerCommand(
-            "IntakeCoral",
-            Commands.either(
-                Commands.sequence(
-                    m_tounge.setStateCommand(Tounge.State.RAISED),
-                    m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
-                        Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
-                    Commands.repeatingSequence(
+                // Intake Coral
+                NamedCommands.registerCommand(
+                    "IntakeCoral",
+                    Commands.either(
+                        Commands.sequence(
+                            m_tounge.setStateCommand(Tounge.State.RAISED),
+                            m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                                Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
+                            Commands.repeatingSequence(
+                                m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                                Commands.waitUntil(m_clawRoller.stalled.debounce(0.2)),
+                                m_clawRoller.shuffleCommand())
+                                .until(m_clawRollerLaserCAN.triggered
+                                    .and(m_clawRoller.stopped)),
+                            m_clawRoller.shuffleCommand(),
+                            m_tounge.lowerToungeCommand()),
+                        Commands.sequence(
+                            m_clawRoller.shuffleCommand(),
+                            m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
+                            m_tounge.setStateCommand(Tounge.State.DOWN)),
+                        m_clawRollerLaserCAN.triggered.negate()));
+
+                NamedCommands.registerCommand(
+                    "IntakePrep",
+                    Commands.sequence(
                         m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
-                        Commands.waitUntil(m_clawRoller.stalled.debounce(0.2)),
-                        m_clawRoller.shuffleCommand())
-                        .until(m_clawRollerLaserCAN.triggered
-                            .and(m_clawRoller.stopped)),
-                    m_clawRoller.shuffleCommand(),
-                    m_tounge.lowerToungeCommand()),
-                Commands.sequence(
-                    m_clawRoller.shuffleCommand(),
-                    m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
-                    m_tounge.setStateCommand(Tounge.State.DOWN)),
-                m_clawRollerLaserCAN.triggered.negate()));
-
-        NamedCommands.registerCommand(
-            "IntakePrep",
-            Commands.sequence(
-                m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
-                m_tounge.setStateCommand(Tounge.State.RAISED),
-                m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
-                    Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2)));
+                        m_tounge.setStateCommand(Tounge.State.RAISED),
+                        m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                            Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2)));
 
 
-        NamedCommands.registerCommand(
-            "Score",
-            Commands.sequence(
-                m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
-                Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
-                m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
+                NamedCommands.registerCommand(
+                    "Score",
+                    Commands.sequence(
+                        m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
+                        Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+                        m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
+                break;
+
+            case SIM:
+                // Go to the L4 Position
+                NamedCommands.registerCommand(
+                    "L4",
+                    Commands.sequence(
+                        m_tounge.setStateCommand(Tounge.State.DOWN),
+                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
+                            Elevator.State.LEVEL_4,
+                            Units.degreesToRotations(10),
+                            0.8),
+                        m_clawRoller.L4ShuffleCommand()));
+
+                NamedCommands.registerCommand(
+                    "L4Prep",
+                    Commands.sequence(
+                        m_tounge.setStateCommand(Tounge.State.DOWN),
+                        m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.LEVEL_4,
+                            Units.degreesToRotations(10),
+                            0.8)));
+
+                // Go to the Home Position
+                NamedCommands.registerCommand(
+                    "Home",
+                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
+                        Units.degreesToRotations(10), 0.8));
+
+                // Intake Coral
+                NamedCommands.registerCommand(
+                    "IntakeCoral",
+                    Commands.sequence(
+                        m_tounge.setStateCommand(Tounge.State.RAISED),
+                        m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                            Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
+                        m_clawRoller.shuffleCommand(),
+                        m_tounge.lowerToungeCommand()));
+
+                NamedCommands.registerCommand(
+                    "IntakePrep",
+                    Commands.sequence(
+                        m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                        m_tounge.setStateCommand(Tounge.State.RAISED),
+                        m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                            Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2)));
+
+
+                NamedCommands.registerCommand(
+                    "Score",
+                    Commands.sequence(
+                        m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
+                        Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+                        m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
+                break;
+        }
     }
 
     /**
