@@ -22,6 +22,7 @@ import frc.robot.Constants.RobotType;
 import frc.robot.FieldConstants.ReefSide;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.JoystickApproachCommand;
+import frc.robot.commands.JoystickStrafeCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Arm.*;
@@ -233,7 +234,7 @@ public class RobotContainer {
 
     private Command joystickStrafe(Supplier<Pose2d> approachPose)
     {
-        return DriveCommands.joystickStrafe(
+        return new JoystickStrafeCommand(
             m_drive,
             () -> m_driver.getLeftX() * speedMultiplier,
             approachPose);
@@ -299,8 +300,7 @@ public class RobotContainer {
 
         // Driver Left Bumper and Algae mode: Approach Nearest Reef Face
         m_driver.leftBumper().and(isAlgaeMode)
-            .whileTrue(
-                joystickStrafe(() -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine)));
+            .whileTrue(BargeAlgae());
 
         SmartDashboard.putData("Barge Pose",
             Commands.runOnce(() -> Logger.recordOutput("Barge Pose",
@@ -611,7 +611,25 @@ public class RobotContainer {
 
     public Command BargeAlgae()
     {
-        return null;
+        var strafeCommand = new JoystickStrafeCommand(
+            m_drive,
+            () -> -m_driver.getLeftX() * speedMultiplier,
+            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine));
+
+        return Commands.deadline(
+            Commands.sequence(
+                Commands.waitUntil(() -> strafeCommand.withinTolerance(Units.inchesToMeters(2.0))),
+                Commands.deadline(
+                    Commands.waitUntil(m_profiledElevator.launchHeightTrigger)
+                        .andThen(m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE)),
+                    m_superStruct.getTransitionCommand(Arm.State.BARGE,
+                        Elevator.State.BARGE, Units.degreesToRotations(10), 0.1)),
+                Commands.waitUntil(m_clawRoller.stalled.negate()),
+                // Commands.waitSeconds(0.5),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                m_superStruct.getTransitionCommand(Arm.State.STOW,
+                    Elevator.State.STOW, Units.degreesToRotations(10), 0.1)),
+            strafeCommand);
     }
 
 }

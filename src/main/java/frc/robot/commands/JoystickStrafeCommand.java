@@ -50,11 +50,11 @@ public class JoystickStrafeCommand extends Command {
 
     public JoystickStrafeCommand(
         Drive drive,
-        DoubleSupplier ySupplier,
+        DoubleSupplier xSupplier,
         Supplier<Pose2d> targetSupplier)
     {
         this.drive = drive;
-        this.xSupplier = ySupplier;
+        this.xSupplier = xSupplier;
         this.targetSupplier = targetSupplier;
 
         angleController.enableContinuousInput(-Math.PI, Math.PI);
@@ -127,7 +127,7 @@ public class JoystickStrafeCommand extends Command {
     // Returns true when withing a lateral tolerance
     public boolean withinTolerance(double dist)
     {
-        return running ? Math.abs(relativePose2d.getY()) < dist : false;
+        return running ? Math.abs(relativePose2d.getX()) < dist : false;
     }
 
     private static Translation2d getLinearVelocityFromJoysticks(double x, double y)

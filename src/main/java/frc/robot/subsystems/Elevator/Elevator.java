@@ -28,6 +28,9 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
     static LoggedTunableNumber homingTuning =
         new LoggedTunableNumber("Elevator/HomingVoltageSP", -1);
 
+    static LoggedTunableNumber launchHeight =
+        new LoggedTunableNumber("Elevator/LaunchHeight", 5.0);
+
     @RequiredArgsConstructor
     @Getter
     public enum State implements TargetState {
@@ -138,6 +141,9 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
     {
         return io.atPosition(state.profileType, tolerance);
     }
+
+    public Trigger launchHeightTrigger =
+        new Trigger(() -> io.getPosition() > launchHeight.getAsDouble());
 
     public Command homedAlertCommand()
     {
