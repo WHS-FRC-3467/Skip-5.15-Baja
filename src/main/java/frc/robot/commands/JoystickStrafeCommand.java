@@ -16,9 +16,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.TuneableProfiledPID;
 
-public class JoystickApproachCommand extends Command {
+public class JoystickStrafeCommand extends Command {
     Drive drive;
-    DoubleSupplier ySupplier;
+    DoubleSupplier xSupplier;
     Supplier<Pose2d> targetSupplier;
 
     Pose2d targetPose2d;
@@ -48,13 +48,13 @@ public class JoystickApproachCommand extends Command {
             20,
             8);
 
-    public JoystickApproachCommand(
+    public JoystickStrafeCommand(
         Drive drive,
         DoubleSupplier ySupplier,
         Supplier<Pose2d> targetSupplier)
     {
         this.drive = drive;
-        this.ySupplier = ySupplier;
+        this.xSupplier = ySupplier;
         this.targetSupplier = targetSupplier;
 
         angleController.enableContinuousInput(-Math.PI, Math.PI);
@@ -82,11 +82,11 @@ public class JoystickApproachCommand extends Command {
 
         // Calculate lateral linear velocity
         Translation2d offsetVector =
-            new Translation2d(0, alignController.calculate(relativePose2d.getY()));
+            new Translation2d(alignController.calculate(relativePose2d.getX()), 0);
 
         // Calculate total linear velocity
         Translation2d linearVelocity =
-            getLinearVelocityFromJoysticks(-ySupplier.getAsDouble(), 0)
+            getLinearVelocityFromJoysticks(0, -xSupplier.getAsDouble())
                 .plus(offsetVector)
                 .rotateBy(targetRotation2d);
 

@@ -34,7 +34,7 @@ public class FieldConstants {
     }
 
     public static class Barge {
-        public static final List<Pose2d> align = Arrays.asList(
+        public static final List<Pose2d> bargeLine = Arrays.asList(
             new Pose2d(fieldLength / 2 + Units.inchesToMeters(40.5), fieldWidth / 2,
                 Rotation2d.kZero),
             new Pose2d(fieldLength / 2 - Units.inchesToMeters(40.5), fieldWidth / 2,
