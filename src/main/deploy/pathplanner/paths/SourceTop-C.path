@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 3.6562499999999996,
-        "y": 2.9377467105263158
+        "x": 3.69,
+        "y": 2.97
       },
       "prevControl": {
-        "x": 3.404261422428523,
-        "y": 2.702271483236556
+        "x": 3.438011422428523,
+        "y": 2.7345247727102406
       },
       "nextControl": null,
       "isLocked": false,
@@ -61,10 +61,10 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 58.67130713219583
+    "rotation": 59.99999999999999
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Normal",
   "idealStartingState": {
     "velocity": 0,
     "rotation": 53.47114463301483

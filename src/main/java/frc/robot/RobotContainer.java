@@ -147,11 +147,7 @@ public class RobotContainer {
                 m_tounge = new Tounge(new ToungeIOSim(), true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOSim());
 
-                m_vision =
-                    new Vision(
-                        m_drive,
-                        new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, m_drive::getPose),
-                        new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, m_drive::getPose));
+                m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
 
                 m_LED = new LEDSubsystem(new LEDSubsystemIOWPILib(),
                     m_clawRoller, m_profiledArm, m_profiledElevator, m_profiledClimber,
@@ -522,6 +518,9 @@ public class RobotContainer {
         // MJW Test:
         SmartDashboard.putData("CalcPPEndpoints",
             Commands.runOnce(() -> ppAuto.calculateEndPose()));
+
+        SmartDashboard.putData("Print",
+            Commands.runOnce(() -> System.out.println("AAAAAAAAAAAAAAAA")));
 
     }
 

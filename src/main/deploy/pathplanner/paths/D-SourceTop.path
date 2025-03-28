@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.9449013157894735,
-        "y": 2.7549342105263155
+        "x": 3.945,
+        "y": 2.806
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.231505305142207,
-        "y": 2.873545559772877
+        "x": 4.231603989352733,
+        "y": 2.9246113492465615
       },
       "isLocked": false,
       "linkedName": "ReefD"
@@ -64,10 +64,10 @@
     "rotation": 53.47114463301483
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Normal",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 60.25511870305781
+    "rotation": 59.99999999999999
   },
   "useDefaultConstraints": true
 }
