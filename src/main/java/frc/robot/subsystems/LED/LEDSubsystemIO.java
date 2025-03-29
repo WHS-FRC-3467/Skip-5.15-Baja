@@ -31,7 +31,6 @@ public interface LEDSubsystemIO {
     public static enum GPMode {
         CORAL,
         ALGAE,
-        PROCESSOR,
         NOT_SET
     }
 

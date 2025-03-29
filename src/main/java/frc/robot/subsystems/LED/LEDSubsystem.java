@@ -31,7 +31,6 @@ public class LEDSubsystem extends SubsystemBase {
 
     Trigger m_haveCoral;
     Trigger m_isCoralMode;
-    Trigger m_isProcessorMode;
 
     // LoggedTunableNumbers for testing LED states
     private LoggedTunableNumber kMode, kState;
@@ -55,8 +54,7 @@ public class LEDSubsystem extends SubsystemBase {
         Climber climber,
         Vision vision,
         Trigger haveCoral,
-        Trigger isCoralMode,
-        Trigger isProcessorMode)
+        Trigger isCoralMode)
     {
 
         m_io = io;
@@ -67,7 +65,6 @@ public class LEDSubsystem extends SubsystemBase {
         m_Vision = vision;
         m_haveCoral = haveCoral;
         m_isCoralMode = isCoralMode;
-        m_isProcessorMode = isProcessorMode;
 
         // Tunable numbers for testing
         kMode = new LoggedTunableNumber("LED/Mode", 0);
@@ -99,9 +96,6 @@ public class LEDSubsystem extends SubsystemBase {
                 case 1:
                     newGPMode = GPMode.ALGAE;
                     break;
-                case 2:
-                    newGPMode = GPMode.PROCESSOR;
-                    break;
                 default:
                     newGPMode = GPMode.CORAL;
                     break;
@@ -119,8 +113,6 @@ public class LEDSubsystem extends SubsystemBase {
             // Determine Game Piece Mode
             if (m_isCoralMode.getAsBoolean()) {
                 newGPMode = GPMode.CORAL;
-            } else if (m_isProcessorMode.getAsBoolean()) {
-                newGPMode = GPMode.PROCESSOR;
             } else {
                 newGPMode = GPMode.ALGAE;
             }
