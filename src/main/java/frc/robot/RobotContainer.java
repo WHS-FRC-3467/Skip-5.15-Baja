@@ -496,7 +496,8 @@ public class RobotContainer {
     {
         // Calculates PathPlanner Reef Endpoints and Logs to AS
         SmartDashboard.putData("CalcPPEndpoints",
-            Commands.runOnce(() -> ppAuto.calculatePPEndpoints()).ignoringDisable(true));
+            Commands.runOnce(() -> ppAuto.calculatePPEndpoints(Units.inchesToMeters(3)))
+                .ignoringDisable(true));
 
         // Auto Intake Test
         SmartDashboard.putData("Auto Intake Command",
