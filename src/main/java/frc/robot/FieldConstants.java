@@ -35,10 +35,10 @@ public class FieldConstants {
     }
 
     public static class Barge {
-        public static final List<Pose2d> align = Arrays.asList(
-            new Pose2d(fieldLength / 2 + Units.inchesToMeters(40.5), fieldWidth / 2,
+        public static final List<Pose2d> bargeLine = Arrays.asList(
+            new Pose2d(fieldLength / 2 + Units.inchesToMeters(41), fieldWidth / 2,
                 Rotation2d.kZero),
-            new Pose2d(fieldLength / 2 - Units.inchesToMeters(40.5), fieldWidth / 2,
+            new Pose2d(fieldLength / 2 - Units.inchesToMeters(41), fieldWidth / 2,
                 Rotation2d.k180deg));
         public static final Translation2d farCage =
             new Translation2d(Units.inchesToMeters(345.428), Units.inchesToMeters(286.779));
@@ -225,6 +225,12 @@ public class FieldConstants {
             .get(List.of(FieldConstants.Reef.centerFaces).indexOf(getNearestReefFace(currentPose))
                 * 2 + (side == ReefSide.LEFT ? 1 : 0))
             .get(FieldConstants.ReefHeight.L1).toPose2d();
+    }
+
+    public static boolean isAlgaeHigh(Pose2d currentPose)
+    {
+        return List.of(FieldConstants.Reef.centerFaces).indexOf(getNearestReefFace(currentPose))
+            % 2 == 0;
     }
 
     public static Pose2d getNearestCoralStation(Pose2d currentPose)
