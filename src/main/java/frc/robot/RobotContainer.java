@@ -509,21 +509,6 @@ public class RobotContainer {
                 m_clawRoller.L4ShuffleCommand(),
                 Commands.waitSeconds(0.1)));
 
-        NamedCommands.registerCommand(
-            "L4Prep",
-            Commands.sequence(
-                Commands.waitUntil(m_clawRollerLaserCAN.triggered),
-                m_tongue.setStateCommand(Tongue.State.DOWN),
-                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.LEVEL_4,
-                    Units.degreesToRotations(10),
-                    0.8)));
-
-        // Go to the Home Position
-        NamedCommands.registerCommand(
-            "Home",
-            m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
-                Units.degreesToRotations(10), 0.8));
-
         // Intake Coral
         NamedCommands.registerCommand(
             "IntakeCoral",
@@ -546,6 +531,7 @@ public class RobotContainer {
                     m_tongue.setStateCommand(Tongue.State.DOWN)),
                 m_clawRollerLaserCAN.triggered.negate()));
 
+        // Prepare Necessary Subsystems Before Intaking
         NamedCommands.registerCommand(
             "IntakePrep",
             Commands.sequence(
@@ -554,7 +540,7 @@ public class RobotContainer {
                 m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
                     Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2)));
 
-
+        // Score Coral
         NamedCommands.registerCommand(
             "Score",
             Commands.sequence(
