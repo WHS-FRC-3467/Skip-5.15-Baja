@@ -232,6 +232,52 @@ public class RobotContainer {
             approachPose);
     }
 
+    private Command DescoreAlgae()
+    {
+        var approachCommand = new JoystickApproachCommand(
+            m_drive,
+            () -> -m_driver.getLeftY() * speedMultiplier,
+            () -> FieldConstants.getNearestReefFace(m_drive.getPose()));
+
+        return Commands.deadline(
+            Commands.sequence(
+                Commands
+                    .waitUntil(() -> approachCommand.withinTolerance(Units.inchesToMeters(0.5))),
+                Commands.either(
+                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_HIGH,
+                        Elevator.State.ALGAE_HIGH, Units.degreesToRotations(10), 0.1),
+                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_LOW,
+                        Elevator.State.ALGAE_LOW, Units.degreesToRotations(10), 0.1),
+                    () -> FieldConstants.isAlgaeHigh(m_drive.getPose())),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+                Commands.waitUntil(m_clawRoller.stalled),
+                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)),
+            approachCommand);
+    }
+
+    private Command BargeAlgae()
+    {
+        var strafeCommand = new JoystickStrafeCommand(
+            m_drive,
+            () -> -m_driver.getLeftX() * speedMultiplier,
+            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine));
+
+        return Commands.deadline(
+            Commands.sequence(
+                Commands.waitUntil(() -> strafeCommand.withinTolerance(Units.inchesToMeters(2.0))),
+                Commands.deadline(
+                    Commands.waitUntil(m_profiledElevator.launchHeightTrigger)
+                        .andThen(m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE)),
+                    m_superStruct.getTransitionCommand(Arm.State.BARGE,
+                        Elevator.State.BARGE, Units.degreesToRotations(10), 0.1)),
+                Commands.waitUntil(m_clawRoller.stalled.negate()),
+                // Commands.waitSeconds(0.5),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                m_superStruct.getTransitionCommand(Arm.State.STOW,
+                    Elevator.State.STOW, Units.degreesToRotations(10), 0.1)),
+            strafeCommand);
+    }
+
     private void registerPathPlannerLogging()
     {
         PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
@@ -505,51 +551,4 @@ public class RobotContainer {
     {
         return m_tongue.zeroSensorCommand();
     }
-
-    public Command DescoreAlgae()
-    {
-        var approachCommand = new JoystickApproachCommand(
-            m_drive,
-            () -> -m_driver.getLeftY() * speedMultiplier,
-            () -> FieldConstants.getNearestReefFace(m_drive.getPose()));
-
-        return Commands.deadline(
-            Commands.sequence(
-                Commands
-                    .waitUntil(() -> approachCommand.withinTolerance(Units.inchesToMeters(0.5))),
-                Commands.either(
-                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_HIGH,
-                        Elevator.State.ALGAE_HIGH, Units.degreesToRotations(10), 0.1),
-                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_LOW,
-                        Elevator.State.ALGAE_LOW, Units.degreesToRotations(10), 0.1),
-                    () -> FieldConstants.isAlgaeHigh(m_drive.getPose())),
-                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
-                Commands.waitUntil(m_clawRoller.stalled),
-                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)),
-            approachCommand);
-    }
-
-    public Command BargeAlgae()
-    {
-        var strafeCommand = new JoystickStrafeCommand(
-            m_drive,
-            () -> -m_driver.getLeftX() * speedMultiplier,
-            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine));
-
-        return Commands.deadline(
-            Commands.sequence(
-                Commands.waitUntil(() -> strafeCommand.withinTolerance(Units.inchesToMeters(2.0))),
-                Commands.deadline(
-                    Commands.waitUntil(m_profiledElevator.launchHeightTrigger)
-                        .andThen(m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE)),
-                    m_superStruct.getTransitionCommand(Arm.State.BARGE,
-                        Elevator.State.BARGE, Units.degreesToRotations(10), 0.1)),
-                Commands.waitUntil(m_clawRoller.stalled.negate()),
-                // Commands.waitSeconds(0.5),
-                m_clawRoller.setStateCommand(ClawRoller.State.OFF),
-                m_superStruct.getTransitionCommand(Arm.State.STOW,
-                    Elevator.State.STOW, Units.degreesToRotations(10), 0.1)),
-            strafeCommand);
-    }
-
 }
