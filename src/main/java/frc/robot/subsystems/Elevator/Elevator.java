@@ -141,6 +141,20 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         return io.atPosition(state.profileType, tolerance);
     }
 
+    public boolean elevatorHigh()
+    {
+        return io.getPosition() > 4.0;
+    }
+
+    public Trigger isElevatorHigh = new Trigger(() -> elevatorHigh());
+    public Trigger isElevatorMid = new Trigger(() -> elevatorMid());
+
+
+    public boolean elevatorMid()
+    {
+        return io.getPosition() > 2.0;
+    }
+
     public Command homedAlertCommand()
     {
         return new SequentialCommandGroup(

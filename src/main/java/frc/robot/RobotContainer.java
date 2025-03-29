@@ -486,6 +486,21 @@ public class RobotContainer {
                 () -> -m_driver.getLeftX() * 0.5,
                 () -> -m_driver.getRightX() * 0.75));
 
+        m_profiledElevator.getIsElevatorHigh().whileTrue(
+            DriveCommands.joystickDrive(
+                m_drive,
+                () -> -m_driver.getLeftY() * 0.4,
+                () -> -m_driver.getLeftX() * 0.4,
+                () -> -m_driver.getRightX() * 0.4));
+
+
+        m_profiledElevator.getIsElevatorMid().whileTrue(
+            DriveCommands.joystickDrive(
+                m_drive,
+                () -> -m_driver.getLeftY() * 0.7,
+                () -> -m_driver.getLeftX() * 0.7,
+                () -> -m_driver.getRightX() * 0.7));
+
         m_driver.povLeft().onTrue(
             Commands.sequence(
                 m_profiledElevator.setStateCommand(Elevator.State.STOW),
