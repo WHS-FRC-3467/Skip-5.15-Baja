@@ -35,17 +35,15 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
     @Getter
     public enum State implements TargetState {
         HOMING(new ProfileType.OPEN_VOLTAGE(() -> homingTuning.getAsDouble())),
-        STOW(new ProfileType.MM_POSITION(() -> 0.05, 0)),
+        STOW(new ProfileType.MM_POSITION(() -> 0.09, 0)),
         CORAL_INTAKE(new ProfileType.MM_POSITION(() -> 0.0, 0)),
         LEVEL_1(new ProfileType.MM_POSITION(() -> 1.0, 0)),
         LEVEL_2(new ProfileType.MM_POSITION(() -> 1.217, 0)),
         LEVEL_3(new ProfileType.MM_POSITION(() -> 2.7, 0)),
         LEVEL_4(new ProfileType.MM_POSITION(() -> 4.95, 0)),
         CLIMB(new ProfileType.MM_POSITION(() -> 0.0, 0)),
-        ALGAE_LOW(new ProfileType.MM_POSITION(() -> 0.5, 0)),
-        ALGAE_LOW_P(new ProfileType.MM_POSITION(() -> 1.903, 0)),
+        ALGAE_LOW(new ProfileType.MM_POSITION(() -> 0.65, 0)),
         ALGAE_HIGH(new ProfileType.MM_POSITION(() -> 2.1, 0)),
-        ALGAE_HIGH_P(new ProfileType.MM_POSITION(() -> 3.406, 0)),
         ALGAE_GROUND(new ProfileType.MM_POSITION(() -> 0.05, 0)),
         PROCESSOR_SCORE(
             new ProfileType.MM_POSITION(() -> 0.05, 0)),

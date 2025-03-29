@@ -103,6 +103,7 @@ public class RobotContainer {
                 m_profiledArm = new Arm(new ArmIOTalonFX(), false);
                 m_profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
                 m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
+                // m_profiledClimber = new Climber(new ClimberIO() {}, false);
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
@@ -265,13 +266,13 @@ public class RobotContainer {
         return Commands.deadline(
             Commands.sequence(
                 Commands.waitUntil(() -> strafeCommand.withinTolerance(Units.inchesToMeters(2.0))),
-                Commands.deadline(
-                    Commands.waitUntil(m_profiledElevator.launchHeightTrigger)
-                        .andThen(m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE)),
-                    m_superStruct.getTransitionCommand(Arm.State.BARGE,
-                        Elevator.State.BARGE, Units.degreesToRotations(10), 0.1)),
+                m_profiledArm.setStateCommand(Arm.State.STOW),
+                Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
+                m_profiledElevator.setStateCommand(Elevator.State.BARGE),
+                Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
                 Commands.waitUntil(m_clawRoller.stalled.negate()),
-                // Commands.waitSeconds(0.5),
+                Commands.waitSeconds(0.2),
                 m_clawRoller.setStateCommand(ClawRoller.State.OFF),
                 m_superStruct.getTransitionCommand(Arm.State.STOW,
                     Elevator.State.STOW, Units.degreesToRotations(10), 0.1)),
