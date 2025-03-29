@@ -298,13 +298,9 @@ public class RobotContainer {
         m_driver.rightBumper().and(isAlgaeMode)
             .whileTrue(DescoreAlgae());
 
-        // Driver Left Bumper and Algae mode: Approach Nearest Reef Face
+        // Driver Left Bumper and Algae mode: Auto
         m_driver.leftBumper().and(isAlgaeMode)
             .whileTrue(BargeAlgae());
-
-        SmartDashboard.putData("Barge Pose",
-            Commands.runOnce(() -> Logger.recordOutput("Barge Pose",
-                m_drive.getPose().nearest(FieldConstants.Barge.bargeLine))));
 
         // Driver A Button: Send Arm and Elevator to LEVEL_1
         m_driver
@@ -333,25 +329,12 @@ public class RobotContainer {
         // Driver X Button and Algae mode: Send Arm and Elevator to ALGAE_LOW position
         m_driver
             .x().and(isAlgaeMode)
-            .and(isProcessorMode.negate())
             .and(m_clawRoller.stalled.negate())
             .onTrue(
                 Commands.sequence(
-                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_LOW,
-                        Elevator.State.ALGAE_LOW),
+                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_GROUND,
+                        Elevator.State.ALGAE_GROUND),
                     m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
-                    Commands.waitUntil(m_clawRoller.stalled),
-                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
-
-        m_driver
-            .x().and(isAlgaeMode)
-            .and(isProcessorMode)
-            .and(m_clawRoller.stalled.negate())
-            .onTrue(
-                Commands.sequence(
-                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_LOW_P,
-                        Elevator.State.ALGAE_LOW_P),
-                    m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
                     Commands.waitUntil(m_clawRoller.stalled),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
@@ -361,30 +344,14 @@ public class RobotContainer {
             .onTrue(
                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_3, Elevator.State.LEVEL_3));
 
-        // Driver B Button and Algae mode: Send Arm and Elevator to ALGAE_HIGH position
+        // Driver B Button and Algae mode: Send Arm PROCESSOR SCORE
         m_driver
             .b().and(isAlgaeMode)
-            .and(isProcessorMode.negate())
-            .and(m_clawRoller.stalled.negate())
             .onTrue(
                 Commands.sequence(
-                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_HIGH,
-                        Elevator.State.ALGAE_HIGH),
-                    m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
-                    Commands.waitUntil(m_clawRoller.stalled),
-                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+                    m_superStruct.getTransitionCommand(Arm.State.PROCESSOR_SCORE,
+                        Elevator.State.STOW)));
 
-        m_driver
-            .b().and(isAlgaeMode)
-            .and(isProcessorMode)
-            .and(m_clawRoller.stalled.negate())
-            .onTrue(
-                Commands.sequence(
-                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_HIGH_P,
-                        Elevator.State.ALGAE_HIGH_P),
-                    m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
-                    Commands.waitUntil(m_clawRoller.stalled),
-                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
         // Driver Y Button: Send Arm and Elevator to LEVEL_4
         m_driver
