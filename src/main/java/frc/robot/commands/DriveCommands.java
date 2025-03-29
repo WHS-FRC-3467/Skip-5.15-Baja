@@ -319,14 +319,14 @@ public class DriveCommands {
 
                 Rotation2d alignmentDirection = approachSupplier.get().getRotation();
 
-                // s = cos(d - 0.5 π) (a - A) + sin(d - 0.5 π) (b - B)
+                // s = cos(d - 0.5 pi) (a - A) + sin(d - 0.5 pi) (b - B)
                 double s = alignmentDirection.minus(Rotation2d.fromRadians(Math.PI * 0.5)).getCos()
                     * (currentTranslation.getX() - approachTranslation.getX())
                     + alignmentDirection.minus(Rotation2d.fromRadians(Math.PI * 0.5)).getSin()
                         * (currentTranslation.getY() - approachTranslation.getY());
 
                 // Find lateral distance from goal
-                // (A + cos(d - 0.5 π) s, B + sin(d - 0.5 π) s)
+                // (A + cos(d - 0.5 pi) s, B + sin(d - 0.5 pi) s)
                 Translation2d goalTranslation = new Translation2d(approachTranslation.getX()
                     + alignmentDirection.minus(Rotation2d.fromRadians(Math.PI * 0.5)).getCos() * s,
                     approachTranslation.getY()

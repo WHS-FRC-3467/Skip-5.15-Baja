@@ -235,7 +235,7 @@ public class RobotContainer {
             approachPose);
     }
 
-    private Command DescoreAlgae()
+    private Command DescoreAlgae(DoubleSupplier drivetrainSpeed)
     {
         var approachCommand = new JoystickApproachCommand(
             m_drive,
@@ -258,7 +258,7 @@ public class RobotContainer {
             approachCommand);
     }
 
-    private Command BargeAlgae()
+    private Command BargeAlgae(DoubleSupplier driveTrainSpeed)
     {
         var strafeCommand = new JoystickStrafeCommand(
             m_drive,
@@ -314,11 +314,11 @@ public class RobotContainer {
 
         // Driver Right Bumper and Algae mode: Descore to horns on nearest reef face
         m_driver.rightBumper().and(isCoralMode.negate())
-            .whileTrue(DescoreAlgae());
+            .whileTrue(DescoreAlgae(speedMultiplier));
 
         // Driver Left Bumper and Algae mode: Auto Barge
         m_driver.leftBumper().and(isCoralMode.negate())
-            .whileTrue(BargeAlgae());
+            .whileTrue(BargeAlgae(speedMultiplier));
 
         // Driver A Button: Send Arm and Elevator to LEVEL_1
         m_driver
