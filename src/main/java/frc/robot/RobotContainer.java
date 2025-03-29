@@ -242,15 +242,15 @@ public class RobotContainer {
 
         return Commands.deadline(
             Commands.sequence(
-                Commands
-                    .waitUntil(() -> approachCommand.withinTolerance(Units.inchesToMeters(0.5))),
+                // Commands
+                // .waitUntil(() -> approachCommand.withinTolerance(Units.inchesToMeters(0.5))),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
                 Commands.either(
                     m_superStruct.getTransitionCommand(Arm.State.ALGAE_HIGH,
                         Elevator.State.ALGAE_HIGH, Units.degreesToRotations(10), 0.1),
                     m_superStruct.getTransitionCommand(Arm.State.ALGAE_LOW,
                         Elevator.State.ALGAE_LOW, Units.degreesToRotations(10), 0.1),
                     () -> FieldConstants.isAlgaeHigh(m_drive.getPose())),
-                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
                 Commands.waitUntil(m_clawRoller.stalled),
                 m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)),
             approachCommand);
@@ -385,12 +385,14 @@ public class RobotContainer {
                 (m_superStruct.getTransitionCommand(Arm.State.BARGE, Elevator.State.BARGE)));
 
         // Driver Right Trigger: Place Coral or Algae (Should be done once the robot is in position)
-        m_driver.rightTrigger().and(isCoralMode)
-            .whileTrue(
-                m_clawRoller.setStateCommand(ClawRoller.State.SCORE))
-            .onFalse(Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate())
-                .andThen(m_clawRoller.setStateCommand(ClawRoller.State.OFF))
-                .andThen(m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+        m_driver.rightTrigger().and(isCoralMode).onTrue(
+            Commands.sequence(
+                m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
+                Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+                Commands.waitSeconds(0.2),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
+                    Units.degreesToRotations(10), .2)));
 
         // Score Algae
         m_driver.rightTrigger().and(isCoralMode.negate())
