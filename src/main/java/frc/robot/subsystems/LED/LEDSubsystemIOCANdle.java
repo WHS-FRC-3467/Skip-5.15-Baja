@@ -155,11 +155,6 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
                         m_teleopBegun = true;
                     }
                     switch (newGPMode) {
-                        case PROCESSOR:
-                            m_LeftTip.setAnimation(a_LeftFlashGreen);
-                            m_RightTip.setAnimation(a_RightFlashGreen);
-                            m_tipColor = Color.kAqua.toHexString();
-                            break;
                         case ALGAE:
                             m_LeftTip.setColor(Color.kGreen);
                             m_RightTip.setColor(Color.kGreen);
