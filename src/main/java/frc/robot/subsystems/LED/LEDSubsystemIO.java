@@ -17,6 +17,7 @@ public interface LEDSubsystemIO {
         DISABLED_ROTATION_OK,
         DISABLED_BOTH_OK,
         AUTONOMOUS,
+        VISION_OUT,
         INTAKING,
         CLIMBING,
         CLIMBED,
