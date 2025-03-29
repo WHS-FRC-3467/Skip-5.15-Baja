@@ -500,7 +500,6 @@ public class RobotContainer {
                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_4, Elevator.State.LEVEL_4,
                     Units.degreesToRotations(10),
                     0.8),
-                m_clawRoller.L4ShuffleCommand(),
                 Commands.waitSeconds(0.1)));
 
         NamedCommands.registerCommand(
@@ -565,7 +564,6 @@ public class RobotContainer {
                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_3, Elevator.State.LEVEL_3,
                     Units.degreesToRotations(10),
                     0.8),
-                m_clawRoller.L4ShuffleCommand(),
                 Commands.waitSeconds(0.25)));
 
         // Go to the L2 Position
@@ -577,7 +575,6 @@ public class RobotContainer {
                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_2, Elevator.State.LEVEL_2,
                     Units.degreesToRotations(10),
                     0.8),
-                m_clawRoller.L4ShuffleCommand(),
                 Commands.waitSeconds(0.25)));
 
         NamedCommands.registerCommand(    

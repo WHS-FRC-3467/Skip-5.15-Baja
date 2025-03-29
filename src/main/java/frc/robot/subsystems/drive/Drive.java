@@ -415,4 +415,28 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                     TunerConstants.BackRight.LocationY)
         };
     }
+
+    public boolean isAtDriveSpeed(double speed)
+    {
+        speed = Math.abs(speed); // Meters per second
+        double tolerance = 0.05;
+        for (Module module : modules) {
+            if (Math.abs(module.getVelocityMetersPerSec() - speed) > tolerance) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isAtSteerSpeed(double speed) 
+    {
+        // speed is radians per second
+        double tolerance = 0.05;
+        for (Module module : modules) {
+            if (Math.abs(module.getTurnVelocityRadPerSec() - speed) > tolerance) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

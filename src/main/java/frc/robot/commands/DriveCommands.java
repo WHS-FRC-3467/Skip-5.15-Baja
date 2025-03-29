@@ -528,16 +528,20 @@ public class DriveCommands {
     public static Command driveTest(Drive drive, double speed) {
         return Commands.sequence(
             Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(speed, speed, 0))),
-            Commands.waitSeconds(3),
+            Commands.waitUntil(() -> drive.isAtDriveSpeed(Math.hypot(speed, speed))),
             Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(-speed, -speed, 0))),
-            Commands.waitSeconds(3),
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(-speed, speed, 0))));
+            Commands.waitUntil(() -> drive.isAtDriveSpeed(Math.hypot(-speed, -speed))),
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(-speed, speed, 0))),
+            Commands.waitUntil(() -> drive.isAtDriveSpeed(Math.hypot(-speed, speed))),
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(0, 0, 0))));
     }
 
     public static Command steerTest(Drive drive, double speed) {
         return Commands.sequence(
             Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(0, 0, speed))),
-            Commands.waitSeconds(3),
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(0, 0, -speed))));
+            Commands.waitUntil(() -> drive.isAtSteerSpeed(speed)),
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(0, 0, -speed))),
+            Commands.waitUntil(() -> drive.isAtSteerSpeed(-speed)),
+            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(0, 0, 0))));
     }
 }
