@@ -290,14 +290,6 @@ public class RobotContainer {
         return DriveCommands.steerTest(m_drive, speed);
     }
     
-    public Command setCoralAlgaeModeCommand()
-    {
-        return Commands.runOnce(
-            () -> {
-                coralModeEnabled = !coralModeEnabled;
-            });
-    }
-  
     private void registerPathPlannerLogging()
     {
         PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
@@ -569,7 +561,7 @@ public class RobotContainer {
             "L3",
             Commands.sequence(
                 Commands.waitUntil(m_clawRollerLaserCAN.triggered),
-                m_tounge.setStateCommand(Tounge.State.DOWN),
+                m_tongue.setStateCommand(Tongue.State.DOWN),
                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_3, Elevator.State.LEVEL_3,
                     Units.degreesToRotations(10),
                     0.8),
@@ -581,7 +573,7 @@ public class RobotContainer {
             "L2",
             Commands.sequence(
                 Commands.waitUntil(m_clawRollerLaserCAN.triggered),
-                m_tounge.setStateCommand(Tounge.State.DOWN),
+                m_tongue.setStateCommand(Tongue.State.DOWN),
                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_2, Elevator.State.LEVEL_2,
                     Units.degreesToRotations(10),
                     0.8),
@@ -613,16 +605,6 @@ public class RobotContainer {
                     Commands.waitUntil(m_clawRoller.stalled),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
-        NamedCommands.registerCommand(
-            "AlgaeLowProcessor",
-                Commands.sequence(
-                    Commands.waitUntil(m_clawRoller.stalled.negate()),
-                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_LOW_P,
-                        Elevator.State.ALGAE_LOW_P),
-                    m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
-                    Commands.waitUntil(m_clawRoller.stalled),
-                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
-
         // Send Arm and Elevator to ALGAE_HIGH position
         NamedCommands.registerCommand(
             "AlgaeHigh",
@@ -631,16 +613,6 @@ public class RobotContainer {
                     m_superStruct.getTransitionCommand(Arm.State.ALGAE_HIGH,
                         Elevator.State.ALGAE_HIGH),
                     m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
-                    Commands.waitUntil(m_clawRoller.stalled),
-                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
-
-        NamedCommands.registerCommand(
-            "AlgaeHighProcessor",
-                Commands.sequence(
-                    Commands.waitUntil(m_clawRoller.stalled.negate()),
-                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_HIGH_P,
-                        Elevator.State.ALGAE_HIGH_P),
-                    m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
                     Commands.waitUntil(m_clawRoller.stalled),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 

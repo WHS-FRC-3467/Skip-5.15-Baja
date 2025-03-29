@@ -45,6 +45,18 @@
           "data": {
             "name": "AlgaeScore"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Processor"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlgaeScore"
+          }
         }
       ]
     }
