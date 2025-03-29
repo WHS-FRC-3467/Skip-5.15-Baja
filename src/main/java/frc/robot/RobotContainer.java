@@ -113,13 +113,13 @@ public class RobotContainer {
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
 
+                isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
+
                 m_vision =
                     new Vision(
                         m_drive,
                         new VisionIOPhotonVision(camera0Name, robotToCamera0),
                         new VisionIOPhotonVision(camera1Name, robotToCamera1));
-
-                isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
 
                 // Instantiate LED Subsystem on BAJA only
                 if (Constants.getRobot() == RobotType.BAJA) {
@@ -150,15 +150,13 @@ public class RobotContainer {
                 m_tongue = new Tongue(new TongueIOSim(), true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOSim());
 
+                isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
+
                 // m_vision =
                 // new Vision(
                 // m_drive,
                 // new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, m_drive::getPose),
                 // new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, m_drive::getPose));
-                m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
-
-                isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
-
                 m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
                 m_LED = new LEDSubsystem(new LEDSubsystemIOWPILib(),
                     m_clawRoller, m_profiledArm, m_profiledElevator, m_profiledClimber,
@@ -212,8 +210,6 @@ public class RobotContainer {
         configureControllerBindings();
 
         registerPathPlannerLogging();
-
-        configureElasticButtons();
 
         // Detect if controllers are missing / Stop multiple warnings
         if (Robot.isReal()) {
