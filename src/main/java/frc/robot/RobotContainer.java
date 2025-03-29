@@ -270,7 +270,7 @@ public class RobotContainer {
                 Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
                 m_profiledElevator.setStateCommand(Elevator.State.BARGE),
                 Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
-                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+                m_clawRoller.setStateCommand(ClawRoller.State.BARGE_SCORE),
                 Commands.waitUntil(m_clawRoller.stalled.negate()),
                 Commands.waitSeconds(0.2),
                 m_clawRoller.setStateCommand(ClawRoller.State.OFF),
@@ -385,20 +385,21 @@ public class RobotContainer {
                 (m_superStruct.getTransitionCommand(Arm.State.BARGE, Elevator.State.BARGE)));
 
         // Driver Right Trigger: Place Coral or Algae (Should be done once the robot is in position)
-        m_driver.rightTrigger().and(isCoralMode).onTrue(
-            Commands.sequence(
-                m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
-                Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
-                Commands.waitSeconds(0.2),
-                m_clawRoller.setStateCommand(ClawRoller.State.OFF),
-                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
-                    Units.degreesToRotations(10), .2)));
+        m_driver.rightTrigger().onTrue(
+            Commands.either(
+                Commands.sequence(
+                    m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
+                    Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+                    // Commands.waitSeconds(0.2),
+                    m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
+                        Units.degreesToRotations(10), .2)),
 
-        // Score Algae
-        m_driver.rightTrigger().and(isCoralMode.negate())
-            .onTrue(Commands.either(m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
-                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
-                () -> m_clawRoller.getState() == ClawRoller.State.ALGAE_REVERSE));
+                Commands.either(m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+                    m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+                    () -> m_clawRoller.getState() == ClawRoller.State.ALGAE_REVERSE),
+
+                isCoralMode));
 
         m_driver.leftTrigger()
             .whileTrue(
