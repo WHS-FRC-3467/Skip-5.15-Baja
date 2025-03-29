@@ -186,6 +186,7 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
         // - DISABLED_BOTH_OK -> Both sides Green
         // - AUTONOMOUS -> Flames
         // State:
+        // - VISION_OUT -> Orange Flash
         // - INTAKING -> Red Flash Slow
         // - FEEDING -> Blue
         // - CLIMBING -> Red Flash Fast

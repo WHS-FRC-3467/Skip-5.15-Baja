@@ -1,6 +1,7 @@
 package frc.robot.subsystems.Claw.ClawRollerLaserCAN;
 
 import static edu.wpi.first.units.Units.Meter;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.units.measure.Distance;
@@ -44,5 +45,6 @@ public class ClawRollerLaserCAN extends GenericLaserCANSubsystem<ClawRollerLaser
     public void periodic() {
         super.periodic();
         SmartDashboard.putBoolean("Intake Fallback Active", !validMeasurement.getAsBoolean());
+        Logger.recordOutput("ClawRollerLaserCAN/Fallback Active", validMeasurement.getAsBoolean());
     }
 }

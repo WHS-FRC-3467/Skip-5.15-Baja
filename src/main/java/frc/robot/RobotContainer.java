@@ -82,6 +82,8 @@ public class RobotContainer {
 
     // Trigger for algae/coral mode switching
     private Trigger isCoralMode;
+    public Trigger hasVision;
+    public Trigger hasLaserCAN;
 
     private double speedMultiplier = 0.90;
 
@@ -186,6 +188,9 @@ public class RobotContainer {
                 break;
         }
 
+        // Fallback Triggers
+        hasVision = new Trigger(() -> m_vision.anyCameraConnected);
+        hasLaserCAN = new Trigger(m_clawRollerLaserCAN.validMeasurement);
         // Superstructure coordinates Arm and Elevator motions
         m_superStruct = new Superstructure(m_profiledArm, m_profiledElevator);
 
@@ -252,7 +257,7 @@ public class RobotContainer {
                     () -> FieldConstants.isAlgaeHigh(m_drive.getPose())),
                 Commands.waitUntil(m_clawRoller.stalled),
                 m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)),
-            approachCommand);
+            (hasVision.getAsBoolean()) ? approachCommand : Commands.none());
     }
 
     private Command BargeAlgae()
@@ -299,12 +304,12 @@ public class RobotContainer {
         m_drive.setDefaultCommand(joystickDrive());
 
         // Driver Right Bumper: Approach Nearest Right-Side Reef Branch
-        m_driver.rightBumper().and(isCoralMode).and(() -> m_vision.anyCameraConnected)
+        m_driver.rightBumper().and(isCoralMode).and(hasVision)
             .whileTrue(
                 joystickApproach(
                     () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.RIGHT)));
 
-        m_driver.leftBumper().and(isCoralMode).and(() -> m_vision.anyCameraConnected)
+        m_driver.leftBumper().and(isCoralMode).and(hasVision)
             .whileTrue(
                 joystickApproach(
                     () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.LEFT)));
@@ -314,7 +319,7 @@ public class RobotContainer {
             .whileTrue(DescoreAlgae());
 
         // Driver Left Bumper and Algae mode: Auto Barge
-        m_driver.leftBumper().and(isCoralMode.negate()).and(() -> m_vision.anyCameraConnected)
+        m_driver.leftBumper().and(isCoralMode.negate()).and(hasVision)
             .whileTrue(BargeAlgae());
 
         // Driver A Button: Send Arm and Elevator to LEVEL_1
@@ -401,7 +406,7 @@ public class RobotContainer {
                             m_clawRoller.setStateCommand(ClawRoller.State.OFF),
                             m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
                             Units.degreesToRotations(10), .2)),
-                    m_clawRollerLaserCAN.validMeasurement)));
+                    hasLaserCAN)));
 
         // Score Algae
         m_driver.rightTrigger().and(isCoralMode.negate())
@@ -425,7 +430,7 @@ public class RobotContainer {
                             Commands.waitUntil(
                                 m_tongue.coralContactTrigger
                                         .and(m_clawRoller.stopped)), 
-                            m_clawRollerLaserCAN.validMeasurement), // If lasercan is not valid, don't check it while intaking
+                            hasLaserCAN), // If lasercan is not valid, don't check it while intaking
                         m_clawRoller.shuffleCommand(),
                         m_clawRoller.setStateCommand(ClawRoller.State.OFF)))
             .onFalse(
