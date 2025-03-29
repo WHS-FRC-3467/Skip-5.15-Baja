@@ -185,8 +185,6 @@ public class RobotContainer {
         // Pathplanner commands
         registerNamedCommands();
 
-
-
         // Add all PathPlanner autos to dashboard
         m_autoChooser =
             new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -200,6 +198,8 @@ public class RobotContainer {
         configureControllerBindings();
 
         registerPathPlannerLogging();
+
+        configureElasticButtons();
 
         // Detect if controllers are missing / Stop multiple warnings
         if (Robot.isReal()) {
@@ -263,13 +263,6 @@ public class RobotContainer {
             // Do whatever you want with the pose here
             Logger.recordOutput("Pathplanner Auto/Target Pose", pose);
         });
-
-        // Logging callback for the active path, this is sent as a list of poses
-        // PathPlannerLogging.setLogActivePathCallback((poses) -> {
-        // Pose2d[] temp = poses.toArray().;
-        // // Do whatever you want with the poses here
-        // Logger.recordOutput("Pathplanner Auto/Active Path", poses.toArray());
-        // });
     }
 
     /** Button and Command mappings */
@@ -429,22 +422,6 @@ public class RobotContainer {
                     m_tongue.lowerTongueCommand(),
                     m_driver.rumbleForTime(1, 1)));
 
-        SmartDashboard.putData("Auto Intake Command",
-            Commands.either(
-                Commands.sequence(
-                    m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
-                    m_tongue.setStateCommand(Tongue.State.RAISED),
-                    m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
-                        Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
-                    Commands.waitUntil(
-                        m_clawRollerLaserCAN.triggered
-                            .and(m_clawRoller.stopped)),
-                    m_clawRoller.shuffleCommand(),
-                    m_tongue.lowerTongueCommand()),
-                m_clawRoller.setStateCommand(ClawRoller.State.OFF)
-                    .andThen(m_tongue.setStateCommand(Tongue.State.DOWN)),
-                m_clawRollerLaserCAN.triggered.negate()));
-
         // On press, start climb request and index sequence
         m_driver.back()
             .onTrue(
@@ -513,16 +490,30 @@ public class RobotContainer {
                 .andThen(m_clawRoller.setStateCommand(ClawRoller.State.OFF))
                 .andThen(m_tongue.lowerTongueCommand())
                 .andThen(m_driver.rumbleForTime(0.25, 1)));
+    }
 
-
-
-        // MJW Test:
+    private void configureElasticButtons()
+    {
+        // Calculates PathPlanner Reef Endpoints and Logs to AS
         SmartDashboard.putData("CalcPPEndpoints",
-            Commands.runOnce(() -> ppAuto.calculateEndPose()));
+            Commands.runOnce(() -> ppAuto.calculatePPEndpoints()).ignoringDisable(true));
 
-        SmartDashboard.putData("Print",
-            Commands.runOnce(() -> System.out.println("AAAAAAAAAAAAAAAA")));
-
+        // Auto Intake Test
+        SmartDashboard.putData("Auto Intake Command",
+            Commands.either(
+                Commands.sequence(
+                    m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                    m_tongue.setStateCommand(Tongue.State.RAISED),
+                    m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                        Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
+                    Commands.waitUntil(
+                        m_clawRollerLaserCAN.triggered
+                            .and(m_clawRoller.stopped)),
+                    m_clawRoller.shuffleCommand(),
+                    m_tongue.lowerTongueCommand()),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF)
+                    .andThen(m_tongue.setStateCommand(Tongue.State.DOWN)),
+                m_clawRollerLaserCAN.triggered.negate()));
     }
 
     /**
