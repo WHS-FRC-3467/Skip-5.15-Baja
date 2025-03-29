@@ -84,7 +84,7 @@ public class RobotContainer {
     // Trigger for algae/coral mode switching
     private Trigger isCoralMode;
 
-    private double speedMultiplier = 0.90;
+    private double speedMultiplier = 1.0;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
@@ -420,22 +420,47 @@ public class RobotContainer {
                     m_tongue.lowerTongueCommand(),
                     m_driver.rumbleForTime(1, 1)));
 
-        m_driver.back().onTrue(Commands.runOnce(() -> {
-            m_profiledClimber.climbRequested = true;
-            m_profiledClimber.climbStep += 1;
-        }));
+        // On press, start climb request and index sequence
+        m_driver.back()
+            .onTrue(
+                Commands.sequence(
+                    m_profiledClimber.setClimbRequestCommand(true),
+                    m_profiledClimber.indexClimbState()));
 
-        m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep1()).onTrue(
-            m_profiledArm.setStateCommand(Arm.State.CLIMB)
-                .andThen(m_profiledClimber.setStateCommand(Climber.State.PREP)));
+        // Deploy climber and move arm out for clearance
+        m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep1())
+            .onTrue(
+                Commands.sequence(
+                    m_profiledClimber.setStateCommand(Climber.State.PREP),
+                    m_superStruct.getTransitionCommand(Arm.State.CLIMB,
+                        Elevator.State.STOW, Units.degreesToRotations(10), .2)));
 
-        // Climb step 2: Move climber to climb
-        m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep2()).onTrue(
-            m_profiledClimber.setStateCommand(Climber.State.CLIMB));
+        // Retract climber
+        m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep2())
+            .onTrue(
+                m_profiledClimber.setStateCommand(Climber.State.CLIMB));
 
-        m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep3()).onTrue(
-            m_profiledClimber.setStateCommand(Climber.State.ClIMB_MORE));
+        // Manually climb more
+        m_driver.back().and(m_profiledClimber.getClimbRequest())
+            .and(m_profiledClimber.getClimbStep3())
+            .whileTrue(
+                m_profiledClimber.setStateCommand(Climber.State.MANUAL_CLIMB))
+            .onFalse(m_profiledClimber.setStateCommand(Climber.State.HOLD));
 
+        // Driver POV Right: Reset Climbing Sequence if needed
+        m_driver.povRight()
+            .onTrue(
+                Commands.sequence(
+                    m_profiledClimber.resetClimb(),
+                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+
+        // Slow drivetrain to 50% while climbing
+        m_profiledClimber.getClimbRequest().whileTrue(
+            DriveCommands.joystickDrive(
+                m_drive,
+                () -> -m_driver.getLeftY() * 0.75,
+                () -> -m_driver.getLeftX() * 0.75,
+                () -> -m_driver.getRightX() * 0.75));
 
         m_driver.povLeft().onTrue(
             Commands.sequence(
@@ -444,25 +469,6 @@ public class RobotContainer {
                 m_clawRoller.setStateCommand(State.SCORE)))
             .onFalse(m_clawRoller.setStateCommand(State.OFF)
                 .andThen(m_tongue.setStateCommand(Tongue.State.STOW)));
-
-        // Driver POV Right: Reset Climbing Sequence if needed
-        m_driver
-            .povRight()
-            .onTrue(
-                Commands.runOnce(
-                    () -> {
-                        m_profiledClimber.climbRequested = false;
-                        m_profiledClimber.climbStep = 0;
-                    }).andThen(m_profiledClimber.setStateCommand(Climber.State.HOME)).andThen(
-                        m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
-
-        // Slow drivetrain to 50% while climbing
-        m_profiledClimber.getClimbRequest().whileTrue(
-            DriveCommands.joystickDrive(
-                m_drive,
-                () -> -m_driver.getLeftY() * 0.5,
-                () -> -m_driver.getLeftX() * 0.5,
-                () -> -m_driver.getRightX() * 0.75));
 
         // Driver POV Down: Zero the Elevator (HOMING)
         m_driver.povDown().onTrue(m_profiledArm.setStateCommand(Arm.State.STOW)
