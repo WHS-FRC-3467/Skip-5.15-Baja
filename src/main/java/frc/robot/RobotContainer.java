@@ -84,7 +84,7 @@ public class RobotContainer {
     // Trigger for algae/coral mode switching
     private Trigger isCoralMode;
 
-    private double speedMultiplier = 0.90;
+    private double speedMultiplier = 1.0;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
@@ -458,8 +458,8 @@ public class RobotContainer {
         m_profiledClimber.getClimbRequest().whileTrue(
             DriveCommands.joystickDrive(
                 m_drive,
-                () -> -m_driver.getLeftY() * 0.5,
-                () -> -m_driver.getLeftX() * 0.5,
+                () -> -m_driver.getLeftY() * 0.75,
+                () -> -m_driver.getLeftX() * 0.75,
                 () -> -m_driver.getRightX() * 0.75));
 
         m_driver.povLeft().onTrue(
