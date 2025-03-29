@@ -7,44 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Cage-E"
+            "pathName": "Strafe Cage-E"
           }
         },
         {
           "type": "sequential",
           "data": {
             "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "Score"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "E-SourceTop"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "SourceTop-D"
-          }
-        },
-        {
-          "type": "sequential",
-          "data": {
-            "commands": [
-              {
-                "type": "named",
-                "data": {
-                  "name": "DriveToRightBranch"
-                }
-              },
               {
                 "type": "named",
                 "data": {
@@ -79,12 +48,6 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "DriveToLeftBranch"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
                   "name": "L4"
                 }
               },
@@ -104,15 +67,34 @@
           }
         },
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": "IntakeCoral"
+            "pathName": "TopSource-B"
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Score"
+                }
+              }
+            ]
           }
         }
       ]
     }
   },
-  "resetOdom": false,
+  "resetOdom": true,
   "folder": null,
   "choreoAuto": false
 }

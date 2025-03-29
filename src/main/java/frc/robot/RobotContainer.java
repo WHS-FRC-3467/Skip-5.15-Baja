@@ -47,6 +47,7 @@ import frc.robot.subsystems.Tongue.TongueIOTalonFX;
 import frc.robot.subsystems.Vision.*;
 import frc.robot.subsystems.drive.*;
 import frc.robot.util.WindupXboxController;
+import frc.robot.util.PPCalcEndpoint.PPCalcEndpoint;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -63,6 +64,9 @@ public class RobotContainer {
 
     // Autonomous Selector
     private final LoggedDashboardChooser<Command> m_autoChooser;
+
+    // Utilities
+    public final PPCalcEndpoint ppAuto;
 
     // Subsystems
     public final Drive m_drive;
@@ -89,6 +93,7 @@ public class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
     {
+        ppAuto = new PPCalcEndpoint();
         switch (Constants.currentMode) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
@@ -142,11 +147,7 @@ public class RobotContainer {
                 m_tongue = new Tongue(new TongueIOSim(), true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOSim());
 
-                m_vision =
-                    new Vision(
-                        m_drive,
-                        new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, m_drive::getPose),
-                        new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, m_drive::getPose));
+                m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
 
                 m_LED = new LEDSubsystem(new LEDSubsystemIOWPILib(),
                     m_clawRoller, m_profiledArm, m_profiledElevator, m_profiledClimber,
@@ -428,22 +429,41 @@ public class RobotContainer {
                     m_tongue.lowerTongueCommand(),
                     m_driver.rumbleForTime(1, 1)));
 
-        m_driver.back().onTrue(Commands.runOnce(() -> {
-            m_profiledClimber.climbRequested = true;
-            m_profiledClimber.climbStep += 1;
-        }));
+        SmartDashboard.putData("Auto Intake Command",
+            Commands.either(
+                Commands.sequence(
+                    m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                    m_tongue.setStateCommand(Tongue.State.RAISED),
+                    m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                        Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
+                    Commands.waitUntil(
+                        m_clawRollerLaserCAN.triggered
+                            .and(m_clawRoller.stopped)),
+                    m_clawRoller.shuffleCommand(),
+                    m_tongue.lowerTongueCommand()),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF)
+                    .andThen(m_tongue.setStateCommand(Tongue.State.DOWN)),
+                m_clawRollerLaserCAN.triggered.negate()));
 
-        m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep1()).onTrue(
-            m_profiledArm.setStateCommand(Arm.State.CLIMB)
-                .andThen(m_profiledClimber.setStateCommand(Climber.State.PREP)));
+        // On press, start climb request and index sequence
+        m_driver.back()
+            .onTrue(
+                Commands.sequence(
+                    m_profiledClimber.setClimbRequestCommand(true),
+                    m_profiledClimber.indexClimbState()));
 
-        // Climb step 2: Move climber to climb
-        m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep2()).onTrue(
-            m_profiledClimber.setStateCommand(Climber.State.CLIMB));
+        // Deploy climber and move arm out for clearance
+        m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep1())
+            .onTrue(
+                Commands.sequence(
+                    m_profiledClimber.setStateCommand(Climber.State.PREP),
+                    m_superStruct.getTransitionCommand(Arm.State.CLIMB,
+                        Elevator.State.STOW, Units.degreesToRotations(10), .2)));
 
-        m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep3()).onTrue(
-            m_profiledClimber.setStateCommand(Climber.State.ClIMB_MORE));
-
+        // Retract climber
+        m_profiledClimber.getClimbRequest().and(m_profiledClimber.getClimbStep2())
+            .onTrue(
+                m_profiledClimber.setStateCommand(Climber.State.CLIMB));
 
         m_driver.povLeft().onTrue(
             Commands.sequence(
@@ -454,15 +474,11 @@ public class RobotContainer {
                 .andThen(m_tongue.setStateCommand(Tongue.State.STOW)));
 
         // Driver POV Right: Reset Climbing Sequence if needed
-        m_driver
-            .povRight()
+        m_driver.povRight()
             .onTrue(
-                Commands.runOnce(
-                    () -> {
-                        m_profiledClimber.climbRequested = false;
-                        m_profiledClimber.climbStep = 0;
-                    }).andThen(m_profiledClimber.setStateCommand(Climber.State.HOME)).andThen(
-                        m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+                Commands.sequence(
+                    m_profiledClimber.resetClimb(),
+                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
         // Slow drivetrain to 50% while climbing
         m_profiledClimber.getClimbRequest().whileTrue(
@@ -471,6 +487,14 @@ public class RobotContainer {
                 () -> -m_driver.getLeftY() * 0.5,
                 () -> -m_driver.getLeftX() * 0.5,
                 () -> -m_driver.getRightX() * 0.75));
+
+        m_driver.povLeft().onTrue(
+            Commands.sequence(
+                m_profiledElevator.setStateCommand(Elevator.State.STOW),
+                m_tongue.setStateCommand(Tongue.State.DOWN),
+                m_clawRoller.setStateCommand(State.SCORE)))
+            .onFalse(m_clawRoller.setStateCommand(State.OFF)
+                .andThen(m_tongue.setStateCommand(Tongue.State.STOW)));
 
         // Driver POV Down: Zero the Elevator (HOMING)
         m_driver.povDown().onTrue(m_profiledArm.setStateCommand(Arm.State.STOW)
@@ -489,6 +513,15 @@ public class RobotContainer {
                 .andThen(m_clawRoller.setStateCommand(ClawRoller.State.OFF))
                 .andThen(m_tongue.lowerTongueCommand())
                 .andThen(m_driver.rumbleForTime(0.25, 1)));
+
+
+
+        // MJW Test:
+        SmartDashboard.putData("CalcPPEndpoints",
+            Commands.runOnce(() -> ppAuto.calculateEndPose()));
+
+        SmartDashboard.putData("Print",
+            Commands.runOnce(() -> System.out.println("AAAAAAAAAAAAAAAA")));
 
     }
 

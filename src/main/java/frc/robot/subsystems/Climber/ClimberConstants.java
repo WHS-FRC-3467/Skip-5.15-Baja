@@ -24,8 +24,6 @@ public final class ClimberConstants {
         kSubSysConstants.kName = "Climber";
 
         kSubSysConstants.kLeaderMotor = Ports.CLIMBER;
-        // kSubSysConstants.kFollowMotor = Ports.CLIMBER_FOLLOWER;
-        // kSubSysConstants.kFollowerOpposesMain = true;
 
         // Using TalonFX internal encoder
         kSubSysConstants.kCANcoder = null;
@@ -33,20 +31,6 @@ public final class ClimberConstants {
             FeedbackSensorSourceValue.RotorSensor;
         kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio = 1.0;
         kSubSysConstants.kMotorConfig.Feedback.RotorToSensorRatio = 1.0;
-
-        // Using a remote CANcoder
-        /*
-         * kSubSysConstants.kCANcoder = Ports.CLIMBER_CANCODER;
-         * kSubSysConstants.kMotorConfig.Feedback.FeedbackSensorSource =
-         * FeedbackSensorSourceValue.FusedCANcoder;
-         * kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio = 7.04;
-         * kSubSysConstants.kMotorConfig.Feedback.RotorToSensorRatio = 54.4/7.04;
-         * kSubSysConstants.kEncoderConfig.MagnetSensor.MagnetOffset = 0.3467;
-         * kSubSysConstants.kEncoderConfig.MagnetSensor.SensorDirection =
-         * SensorDirectionValue.Clockwise_Positive;
-         * kSubSysConstants.kEncoderConfig.MagnetSensor.AbsoluteSensorRange =
-         * AbsoluteSensorRangeValue.Unsigned_0To1;
-         */
 
         kSubSysConstants.kMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         kSubSysConstants.kMotorConfig.MotorOutput.Inverted =
@@ -88,16 +72,16 @@ public final class ClimberConstants {
         kSubSysConstants.SimType = simType.ARM;
 
         // Motor simulation
-        kSubSysConstants.kMotorSimConfig.simMotorModelSupplier = () -> DCMotor.getKrakenX60Foc(2);
+        kSubSysConstants.kMotorSimConfig.simMotorModelSupplier = () -> DCMotor.getKrakenX60Foc(1);
 
         // Climber Simulation
-        kSubSysConstants.kArmSimConfig.kArmMass = 8.0; // Kilograms
+        kSubSysConstants.kArmSimConfig.kArmMass = Units.lbsToKilograms(4); // Kilograms
         kSubSysConstants.kArmSimConfig.kArmLength = Units.inchesToMeters(14);
         kSubSysConstants.kArmSimConfig.kDefaultArmSetpointDegrees = 90.0;
-        kSubSysConstants.kArmSimConfig.kMinAngleDegrees = -10.0;
-        kSubSysConstants.kArmSimConfig.kMaxAngleDegrees = 135.0;
+        kSubSysConstants.kArmSimConfig.kMinAngleDegrees = 0;
+        kSubSysConstants.kArmSimConfig.kMaxAngleDegrees = 360;
         kSubSysConstants.kArmSimConfig.kArmReduction =
-            30; // RotorToSensorRatio * SensorToMechanismRatio
-        kSubSysConstants.kArmSimConfig.kSensorReduction = 5; // SensorToMechanismRatio
+            1; // RotorToSensorRatio * SensorToMechanismRatio
+        kSubSysConstants.kArmSimConfig.kSensorReduction = 1; // SensorToMechanismRatio
     }
 }
