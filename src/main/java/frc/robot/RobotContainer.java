@@ -382,7 +382,7 @@ public class RobotContainer {
                 m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
                 () -> m_clawRoller.getState() == ClawRoller.State.ALGAE_REVERSE));
 
-        m_driver.leftTrigger()
+        m_driver.leftTrigger().and(isCoralMode)
             .whileTrue(
                 Commands.sequence(
                     m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
@@ -397,7 +397,6 @@ public class RobotContainer {
                     m_clawRoller.setStateCommand(ClawRoller.State.OFF)))
             .onFalse(
                 Commands.sequence(
-                    Commands.runOnce(() -> coralModeEnabled = m_clawRollerLaserCAN.isTriggered()),
                     m_clawRoller.setStateCommand(ClawRoller.State.OFF),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW),
                     m_tongue.lowerTongueCommand(),
