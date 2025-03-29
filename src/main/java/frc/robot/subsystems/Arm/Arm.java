@@ -29,7 +29,7 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
         ALGAE_HIGH_P(new ProfileType.MM_POSITION(() -> .2446, 0)),
         ALGAE_GROUND(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(70.0), 0)),
         PROCESSOR_SCORE(
-            new ProfileType.MM_POSITION(() -> Units.degreesToRotations(120.0), 0)),
+            new ProfileType.MM_POSITION(() -> 0.2, 0)),
         BARGE(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(130.0), 0)),
         COAST(new ProfileType.DISABLED_COAST()),
         BRAKE(new ProfileType.DISABLED_BRAKE());
@@ -51,7 +51,7 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
     /** Constructor */
     public Command setStateCommand(State state)
     {
-        return this.runOnce(() -> this.state = state);
+        return this.runOnce(() -> this.state = state).withName("Arm Set State: " + state.name());
     }
 
     public Command setCoastStateCommand()
