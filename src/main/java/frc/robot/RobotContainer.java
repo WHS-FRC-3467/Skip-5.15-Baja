@@ -14,10 +14,8 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.RobotType;
 import frc.robot.FieldConstants.ReefSide;
@@ -389,7 +387,7 @@ public class RobotContainer {
         m_driver.rightTrigger().and(isCoralMode).onTrue(
             Commands.sequence(
                 m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
-                new ConditionalCommand(
+                Commands.either(
                     Commands.sequence(
                         Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
                         Commands.waitSeconds(0.2),
@@ -419,7 +417,7 @@ public class RobotContainer {
                         m_tongue.setStateCommand(Tongue.State.RAISED),
                         m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
                         Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
-                        new ConditionalCommand(
+                        Commands.either(
                             Commands.waitUntil(
                                 m_clawRollerLaserCAN.triggered
                                 .and(m_tongue.coralContactTrigger)
