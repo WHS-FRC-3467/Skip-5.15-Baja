@@ -84,7 +84,7 @@ public class RobotContainer {
     private Trigger isProcessorMode = new Trigger(() -> isProcessorModeEnabled);
 
 
-    private double speedMultiplier = 0.90;
+    public static double speedMultiplier = 0.90;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
@@ -226,6 +226,8 @@ public class RobotContainer {
             approachPose);
     }
 
+
+
     private Command joystickStrafe(Supplier<Pose2d> approachPose)
     {
         return DriveCommands.joystickStrafe(
@@ -234,11 +236,29 @@ public class RobotContainer {
             approachPose);
     }
 
+
     public Command setCoralAlgaeModeCommand()
     {
         return Commands.runOnce(
             () -> {
                 coralModeEnabled = !coralModeEnabled;
+            });
+    }
+
+
+    public Command elevatorHighSpeed()
+    {
+        return Commands.run(
+            () -> {
+                speedMultiplier *= 0.75;
+            });
+    }
+
+    public Command elevatorMidSpeed()
+    {
+        return Commands.run(
+            () -> {
+                speedMultiplier *= 0.85;
             });
     }
 
@@ -304,6 +324,7 @@ public class RobotContainer {
             .a().and(isCoralMode)
             .onTrue(
                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_1, Elevator.State.LEVEL_1));
+
 
         // Driver A Button and Algae mode: Send Arm and Elevator to Ground Intake
         m_driver
@@ -464,6 +485,12 @@ public class RobotContainer {
             .onTrue(
                 m_profiledClimber.setStateCommand(Climber.State.CLIMB));
 
+        m_profiledElevator.getIsElevatorHigh().whileTrue(
+            elevatorHighSpeed());
+
+        m_profiledElevator.getIsElevatorMid().whileTrue(
+            elevatorMidSpeed());
+
         // Manually climb more
         m_driver.back().and(m_profiledClimber.getClimbRequest())
             .and(m_profiledClimber.getClimbStep3())
@@ -486,20 +513,9 @@ public class RobotContainer {
                 () -> -m_driver.getLeftX() * 0.5,
                 () -> -m_driver.getRightX() * 0.75));
 
+
         m_profiledElevator.getIsElevatorHigh().whileTrue(
-            DriveCommands.joystickDrive(
-                m_drive,
-                () -> -m_driver.getLeftY() * 0.4,
-                () -> -m_driver.getLeftX() * 0.4,
-                () -> -m_driver.getRightX() * 0.4));
-
-
-        m_profiledElevator.getIsElevatorMid().whileTrue(
-            DriveCommands.joystickDrive(
-                m_drive,
-                () -> -m_driver.getLeftY() * 0.7,
-                () -> -m_driver.getLeftX() * 0.7,
-                () -> -m_driver.getRightX() * 0.7));
+            elevatorHighSpeed());
 
         m_driver.povLeft().onTrue(
             Commands.sequence(
@@ -609,6 +625,7 @@ public class RobotContainer {
     {
         return m_autoChooser.get();
     }
+
 
     public Command zeroTounge()
     {
