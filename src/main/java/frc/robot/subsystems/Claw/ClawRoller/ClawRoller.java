@@ -48,7 +48,7 @@ public class ClawRoller
 
     public Command setStateCommand(State state)
     {
-        return runOnce(() -> this.state = state);
+        return runOnce(() -> this.state = state).withName("ClawRoller Set State: " + state.name());
     }
 
     public boolean atPosition(double tolerance)

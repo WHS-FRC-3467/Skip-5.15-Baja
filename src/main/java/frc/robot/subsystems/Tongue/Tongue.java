@@ -1,4 +1,4 @@
-package frc.robot.subsystems.Tounge;
+package frc.robot.subsystems.Tongue;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
@@ -17,13 +17,13 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class Tounge extends GenericMotionProfiledSubsystem<Tounge.State> {
+public class Tongue extends GenericMotionProfiledSubsystem<Tongue.State> {
 
     static LoggedTunableNumber positionTuning =
-        new LoggedTunableNumber("Tounge/PositionTuningSP", 10.0);
+        new LoggedTunableNumber("Tongue/PositionTuningSP", 10.0);
 
     static LoggedTunableNumber homingTuning =
-        new LoggedTunableNumber("Tounge/HomingVoltageSP", -1);
+        new LoggedTunableNumber("Tongue/HomingVoltageSP", -1);
 
     @RequiredArgsConstructor
     @Getter
@@ -40,15 +40,15 @@ public class Tounge extends GenericMotionProfiledSubsystem<Tounge.State> {
     @Setter
     private State state = State.STOW;
 
-    public Tounge(ToungeIO io, boolean isSim)
+    public Tongue(TongueIO io, boolean isSim)
     {
-        super(State.STOW.profileType, ToungeConstants.kSubSysConstants, io, isSim);
-        SmartDashboard.putData("Tounge homing command", homeCommand());
+        super(State.STOW.profileType, TongueConstants.kSubSysConstants, io, isSim);
+        SmartDashboard.putData("Tongue homing command", homeCommand());
     }
 
     public Command setStateCommand(State state)
     {
-        return this.runOnce(() -> this.state = state);
+        return this.runOnce(() -> this.state = state).withName("Tongue Set State: " + state.name());
     }
 
     public boolean atPosition(double tolerance)
@@ -58,7 +58,7 @@ public class Tounge extends GenericMotionProfiledSubsystem<Tounge.State> {
 
     public Command zeroSensorCommand()
     {
-        return new InstantCommand(() -> io.zeroSensors());
+        return new InstantCommand(() -> io.zeroSensors()).withName("Zero Tongue");
     }
 
     private Debouncer homedDebouncer = new Debouncer(0.1, DebounceType.kRising);
@@ -66,9 +66,6 @@ public class Tounge extends GenericMotionProfiledSubsystem<Tounge.State> {
     public Trigger homedTrigger = new Trigger(
         () -> homedDebouncer.calculate(
             (this.state == State.HOMING && Math.abs(io.getSupplyCurrent()) > 2)));
-
-    // public Trigger coralContactTrigger = new Trigger(
-    // () -> atPosition(Units.degreesToRotations(5)) && Math.abs(io.getSupplyCurrent()) > 3);
 
     public Trigger coralContactTrigger = new Trigger(
         () -> MathUtil.isNear(.29, io.getPosition(), 0.1));
@@ -80,17 +77,19 @@ public class Tounge extends GenericMotionProfiledSubsystem<Tounge.State> {
     {
         return this.setStateCommand(State.HOMING)
             .andThen(Commands.waitUntil(homedTrigger).andThen(this.zeroSensorCommand())
-                .andThen(this.setStateCommand(State.STOW)));
+                .andThen(this.setStateCommand(State.STOW)))
+            .withName("Home Tongue Command");
     }
 
-    public Command lowerToungeCommand()
+    public Command lowerTongueCommand()
     {
         return Commands.sequence(
             this.setStateCommand(State.DOWN),
             Commands.race(
                 Commands.waitUntil(this.hasLoweredTrigger),
                 Commands.waitSeconds(0.5)),
-            this.setStateCommand(State.STOW));
+            this.setStateCommand(State.STOW))
+            .withName("Lower Tongue Command");
     }
 
 }

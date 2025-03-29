@@ -156,8 +156,8 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
                     }
                     switch (newGPMode) {
                         case PROCESSOR:
-                            m_LeftTip.setAnimation(a_FastFlashGreen);
-                            m_RightTip.setAnimation(a_FastFlashGreen);
+                            m_LeftTip.setAnimation(a_LeftFlashGreen);
+                            m_RightTip.setAnimation(a_RightFlashGreen);
                             m_tipColor = Color.kAqua.toHexString();
                             break;
                         case ALGAE:
@@ -405,11 +405,16 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
         new FireAnimation(1.0, 0.75, m_FullLeft.segmentSize, 1.0, 0.1, false,
             m_FullLeft.startIndex);
 
-    // Robot State Animations
+    // GamePieceMode Animations
     // Processor
-    Animation a_FastFlashGreen =
+    Animation a_LeftFlashGreen =
         new StrobeAnimation(getR(Color.kGreen), getG(Color.kGreen), getB(Color.kGreen),
-            0, 0.8, m_State.segmentSize, m_State.startIndex);
+            0, 0.8, m_LeftTip.segmentSize, m_LeftTip.startIndex);
+    Animation a_RightFlashGreen =
+        new StrobeAnimation(getR(Color.kGreen), getG(Color.kGreen), getB(Color.kGreen),
+            0, 0.8, m_RightTip.segmentSize, m_RightTip.startIndex);
+
+    // Robot State Animations
     // Intaking
     Animation a_FastFlashRed =
         new StrobeAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed),
