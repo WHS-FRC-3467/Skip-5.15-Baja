@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.945,
-        "y": 2.806
+        "x": 3.96,
+        "y": 2.77
       },
       "prevControl": null,
       "nextControl": {
-        "x": 4.231603989352733,
-        "y": 2.9246113492465615
+        "x": 4.246603989352733,
+        "y": 2.8886113492465615
       },
       "isLocked": false,
       "linkedName": "ReefD"
     },
     {
       "anchor": {
-        "x": 1.443,
-        "y": 0.8659999999999991
+        "x": 1.5776969178082192,
+        "y": 0.7569135273972597
       },
       "prevControl": {
-        "x": 1.2230459545192598,
-        "y": 0.7060206358909238
+        "x": 1.357742872327479,
+        "y": 0.5969341632881844
       },
       "nextControl": null,
       "isLocked": false,
@@ -61,7 +61,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 53.47114463301483
+    "rotation": 54.0
   },
   "reversed": false,
   "folder": "Normal",

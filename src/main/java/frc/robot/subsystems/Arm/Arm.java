@@ -51,7 +51,7 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
     /** Constructor */
     public Command setStateCommand(State state)
     {
-        return this.runOnce(() -> this.state = state);
+        return this.runOnce(() -> this.state = state).withName("Arm Set State: " + state.name());
     }
 
     public Command setCoastStateCommand()
