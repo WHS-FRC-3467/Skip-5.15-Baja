@@ -24,7 +24,9 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import lombok.Getter;
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -36,6 +38,9 @@ public class Vision extends SubsystemBase {
     private final Alert[] disconnectedAlerts;
     public boolean visionHasTarget = false;
     private boolean seesThisTarget = false;
+    private boolean[] cameraConnected = new boolean[]{true, true};
+    @Getter
+    public boolean anyCameraConnected = true;
 
     public Vision(VisionConsumer consumer, VisionIO... io)
     {
@@ -86,6 +91,7 @@ public class Vision extends SubsystemBase {
         for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
             // Update disconnected alert
             disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
+            cameraConnected[cameraIndex] = inputs[cameraIndex].connected;
 
             // Initialize logging values
             List<Pose3d> tagPoses = new LinkedList<>();
@@ -176,6 +182,9 @@ public class Vision extends SubsystemBase {
             allRobotPosesAccepted.addAll(robotPosesAccepted);
             allRobotPosesRejected.addAll(robotPosesRejected);
         }
+
+        anyCameraConnected = (cameraConnected[0] || cameraConnected[1]);
+        SmartDashboard.putBoolean("Vision Fallback Active", !anyCameraConnected);
 
         // Log summary data
         Logger.recordOutput(

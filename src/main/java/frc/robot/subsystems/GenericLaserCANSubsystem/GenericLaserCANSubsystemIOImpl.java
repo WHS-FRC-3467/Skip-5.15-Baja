@@ -28,6 +28,8 @@ public class GenericLaserCANSubsystemIOImpl implements GenericLaserCANSubsystemI
     private final Alert sensorAlert =
         new Alert("Failed to get LaserCAN measurement", Alert.AlertType.kWarning);
 
+    private boolean validStatus = true;
+
     /*
      * Constructor
      */
@@ -64,11 +66,13 @@ public class GenericLaserCANSubsystemIOImpl implements GenericLaserCANSubsystemI
             if (measurement.status == LaserCan.LASERCAN_STATUS_VALID_MEASUREMENT) {
                 sensorAlert.set(false);
                 currentDistance = Millimeters.of(measurement.distance_mm);
+                validStatus = true;
             } else {
                 sensorAlert.setText("Failed to get LaserCAN ID: " + name
                     + ", no valid measurement");
                 sensorAlert.set(true);
                 currentDistance = Millimeters.of(Double.POSITIVE_INFINITY);
+                validStatus = false;
             }
         } else {
             sensorAlert.setText("Failed to get LaserCAN ID: " + name
@@ -81,6 +85,12 @@ public class GenericLaserCANSubsystemIOImpl implements GenericLaserCANSubsystemI
         return currentDistance;
     }
 
+    @Override
+    public boolean getValidStatus()
+    {
+        return validStatus;
+    }
+    
     @Override
     public void updateInputs(LaserCANIOInputs inputs)
     {

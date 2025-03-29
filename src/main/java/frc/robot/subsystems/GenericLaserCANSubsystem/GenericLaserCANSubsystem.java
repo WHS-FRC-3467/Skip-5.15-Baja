@@ -1,6 +1,7 @@
 package frc.robot.subsystems.GenericLaserCANSubsystem;
 
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import lombok.Getter;
@@ -17,7 +18,7 @@ public abstract class GenericLaserCANSubsystem<G extends GenericLaserCANSubsyste
     public abstract G getState();
 
     private final String name;
-    private final GenericLaserCANSubsystemIO io;
+    protected final GenericLaserCANSubsystemIO io;
     protected final LaserCANIOInputsAutoLogged inputs = new LaserCANIOInputsAutoLogged();
 
     @Getter
