@@ -30,14 +30,14 @@
   ],
   "rotationTargets": [
     {
-      "waypointRelativePos": 0.45,
+      "waypointRelativePos": 0.85,
       "rotationDegrees": 119.99999999999999
     }
   ],
   "constraintZones": [
     {
       "name": "Slowdown",
-      "minWaypointRelativePos": 0.7547619047619049,
+      "minWaypointRelativePos": 0.85,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 1.0,
