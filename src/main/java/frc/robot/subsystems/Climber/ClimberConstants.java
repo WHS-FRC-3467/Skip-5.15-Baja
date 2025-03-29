@@ -34,7 +34,7 @@ public final class ClimberConstants {
 
         kSubSysConstants.kMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         kSubSysConstants.kMotorConfig.MotorOutput.Inverted =
-            InvertedValue.CounterClockwise_Positive;
+            InvertedValue.Clockwise_Positive;
         kSubSysConstants.kMotorConfig.Voltage.PeakForwardVoltage = 12.0;
         kSubSysConstants.kMotorConfig.Voltage.PeakReverseVoltage = -12.0;
 
@@ -50,7 +50,7 @@ public final class ClimberConstants {
         kSubSysConstants.kMotorConfig.Slot0.kS = 0;
         kSubSysConstants.kMotorConfig.Slot0.kV = 0;
         kSubSysConstants.kMotorConfig.Slot0.kA = 0;
-        kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 40;
+        kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 20;
         kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicAcceleration = 50;
         kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicJerk = 0;
 
