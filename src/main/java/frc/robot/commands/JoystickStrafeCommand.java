@@ -20,6 +20,7 @@ public class JoystickStrafeCommand extends Command {
     Drive drive;
     DoubleSupplier xSupplier;
     Supplier<Pose2d> targetSupplier;
+    DoubleSupplier speedMultiplier;
 
     Pose2d targetPose2d;
     Pose2d currentPose2d;
@@ -51,11 +52,13 @@ public class JoystickStrafeCommand extends Command {
     public JoystickStrafeCommand(
         Drive drive,
         DoubleSupplier xSupplier,
-        Supplier<Pose2d> targetSupplier)
+        Supplier<Pose2d> targetSupplier,
+        DoubleSupplier speedMultiplier)
     {
         this.drive = drive;
         this.xSupplier = xSupplier;
         this.targetSupplier = targetSupplier;
+        this.speedMultiplier = speedMultiplier;
 
         angleController.enableContinuousInput(-Math.PI, Math.PI);
         alignController.setGoal(0);
@@ -86,7 +89,7 @@ public class JoystickStrafeCommand extends Command {
 
         // Calculate total linear velocity
         Translation2d linearVelocity =
-            getLinearVelocityFromJoysticks(0, -xSupplier.getAsDouble())
+            getLinearVelocityFromJoysticks(0, -xSupplier.getAsDouble() * speedMultiplier.getAsDouble())
                 .plus(offsetVector)
                 .rotateBy(targetRotation2d);
 

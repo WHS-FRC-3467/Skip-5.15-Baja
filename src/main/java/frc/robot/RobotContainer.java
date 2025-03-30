@@ -218,29 +218,32 @@ public class RobotContainer {
 
     }
 
-    private Command joystickDrive(DoubleSupplier drivetrainSpeed)
+    private Command joystickDrive()
     {
         return DriveCommands.joystickDrive(
             m_drive,
-            () -> -m_driver.getLeftY() * drivetrainSpeed.getAsDouble(),
-            () -> -m_driver.getLeftX() * drivetrainSpeed.getAsDouble(),
-            () -> -m_driver.getRightX() * drivetrainSpeed.getAsDouble());
+            () -> -m_driver.getLeftY(),
+            () -> -m_driver.getLeftX(),
+            () -> -m_driver.getRightX(),
+            () -> speedMultiplier.getAsDouble());
     }
 
-    private Command joystickApproach(Supplier<Pose2d> approachPose, DoubleSupplier drivetrainSpeed)
+    private Command joystickApproach(Supplier<Pose2d> approachPose)
     {
         return new JoystickApproachCommand(
             m_drive,
-            () -> -m_driver.getLeftY() * drivetrainSpeed.getAsDouble(),
-            approachPose);
+            () -> -m_driver.getLeftY(),
+            approachPose,
+            () -> speedMultiplier.getAsDouble());
     }
 
-    private Command DescoreAlgae(DoubleSupplier drivetrainSpeed)
+    private Command DescoreAlgae()
     {
         var approachCommand = new JoystickApproachCommand(
             m_drive,
-            () -> -m_driver.getLeftY() * drivetrainSpeed.getAsDouble(),
-            () -> FieldConstants.getNearestReefFace(m_drive.getPose()));
+            () -> -m_driver.getLeftY(),
+            () -> FieldConstants.getNearestReefFace(m_drive.getPose()),
+            () -> speedMultiplier.getAsDouble());
 
         return Commands.deadline(
             Commands.sequence(
@@ -258,12 +261,13 @@ public class RobotContainer {
             approachCommand);
     }
 
-    private Command BargeAlgae(DoubleSupplier driveTrainSpeed)
+    private Command BargeAlgae()
     {
         var strafeCommand = new JoystickStrafeCommand(
             m_drive,
-            () -> -m_driver.getLeftX() * driveTrainSpeed.getAsDouble(),
-            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine));
+            () -> -m_driver.getLeftX(),
+            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine),
+            () -> speedMultiplier.getAsDouble());
 
         return Commands.deadline(
             Commands.sequence(
@@ -299,26 +303,26 @@ public class RobotContainer {
     private void configureControllerBindings()
     {
         // Default command, normal field-relative drive
-        m_drive.setDefaultCommand(joystickDrive(speedMultiplier));
+        m_drive.setDefaultCommand(joystickDrive());
 
         // Driver Right Bumper: Approach Nearest Right-Side Reef Branch
         m_driver.rightBumper().and(isCoralMode)
             .whileTrue(
                 joystickApproach(
-                    () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.RIGHT), speedMultiplier));
+                    () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.RIGHT)));
 
         m_driver.leftBumper().and(isCoralMode)
             .whileTrue(
                 joystickApproach(
-                    () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.LEFT), speedMultiplier));
+                    () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.LEFT)));
 
         // Driver Right Bumper and Algae mode: Descore to horns on nearest reef face
         m_driver.rightBumper().and(isCoralMode.negate())
-            .whileTrue(DescoreAlgae(speedMultiplier));
+            .whileTrue(DescoreAlgae());
 
         // Driver Left Bumper and Algae mode: Auto Barge
         m_driver.leftBumper().and(isCoralMode.negate())
-            .whileTrue(BargeAlgae(speedMultiplier));
+            .whileTrue(BargeAlgae());
 
         // Driver A Button: Send Arm and Elevator to LEVEL_1
         m_driver
@@ -456,13 +460,14 @@ public class RobotContainer {
                     m_profiledClimber.resetClimb(),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
-        // Slow drivetrain to 50% while climbing
+        // Slow drivetrain to 75% while climbing
         m_profiledClimber.getClimbRequest().whileTrue(
             DriveCommands.joystickDrive(
                 m_drive,
-                () -> -m_driver.getLeftY() * 0.75,
-                () -> -m_driver.getLeftX() * 0.75,
-                () -> -m_driver.getRightX() * 0.75));
+                () -> -m_driver.getLeftY(),
+                () -> -m_driver.getLeftX(),
+                () -> -m_driver.getRightX(),
+                () -> 0.75));
 
         m_driver.povLeft().onTrue(
             Commands.sequence(

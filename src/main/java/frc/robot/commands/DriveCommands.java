@@ -89,18 +89,19 @@ public class DriveCommands {
         Drive drive,
         DoubleSupplier xSupplier,
         DoubleSupplier ySupplier,
-        DoubleSupplier omegaSupplier)
+        DoubleSupplier omegaSupplier,
+        DoubleSupplier speedMultiplier)
     {
         return Commands.run(
             () -> {
                 currentDriveMode = DriveMode.dmJoystick;
                 // Get linear velocity
                 Translation2d linearVelocity =
-                    getLinearVelocityFromJoysticks(xSupplier.getAsDouble(),
-                        ySupplier.getAsDouble());
+                    getLinearVelocityFromJoysticks(xSupplier.getAsDouble() * speedMultiplier.getAsDouble(),
+                        ySupplier.getAsDouble() * speedMultiplier.getAsDouble());
 
                 // Apply rotation deadband
-                double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+                double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND) * speedMultiplier.getAsDouble();
 
                 // Square rotation value for more precise control
                 omega = Math.copySign(omega * omega, omega);
@@ -133,7 +134,8 @@ public class DriveCommands {
         Drive drive,
         DoubleSupplier xSupplier,
         DoubleSupplier ySupplier,
-        Supplier<Rotation2d> rotationSupplier)
+        Supplier<Rotation2d> rotationSupplier,
+        DoubleSupplier speedMultiplier)
     {
 
         // Create PID controller
@@ -151,8 +153,8 @@ public class DriveCommands {
                 currentDriveMode = DriveMode.dmAngle;
                 // Get linear velocity
                 Translation2d linearVelocity =
-                    getLinearVelocityFromJoysticks(xSupplier.getAsDouble(),
-                        ySupplier.getAsDouble());
+                    getLinearVelocityFromJoysticks(xSupplier.getAsDouble() * speedMultiplier.getAsDouble(),
+                        ySupplier.getAsDouble() * speedMultiplier.getAsDouble());
 
                 // Calculate angular speed
                 double omega =
@@ -191,7 +193,8 @@ public class DriveCommands {
     public static Command joystickApproach(
         Drive drive,
         DoubleSupplier ySupplier,
-        Supplier<Pose2d> approachSupplier)
+        Supplier<Pose2d> approachSupplier,
+        DoubleSupplier speedMultiplier)
     {
 
         // Create PID controller
@@ -245,7 +248,7 @@ public class DriveCommands {
                 // Calculate total linear velocity
                 Translation2d linearVelocity =
                     getLinearVelocityFromJoysticks(0,
-                        ySupplier.getAsDouble()).rotateBy(
+                        ySupplier.getAsDouble() * speedMultiplier.getAsDouble()).rotateBy(
                             approachSupplier.get().getRotation()).rotateBy(Rotation2d.kCCW_90deg)
                             .plus(offsetVector);
 
@@ -285,7 +288,8 @@ public class DriveCommands {
     public static Command joystickStrafe(
         Drive drive,
         DoubleSupplier xSupplier,
-        Supplier<Pose2d> approachSupplier)
+        Supplier<Pose2d> approachSupplier,
+        DoubleSupplier speedMultiplier)
     {
 
         // Create PID controller
