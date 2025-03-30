@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.Elastic;
+import static edu.wpi.first.units.Units.Rotation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +45,8 @@ public class Robot extends LoggedRobot {
     public static final double fieldLength = Units.inchesToMeters(690.876);
     public static final double fieldWidth = Units.inchesToMeters(317);
     private Command m_lastAutonomousCommand;
+    private boolean m_shouldMirror;
+    private boolean m_lastShouldMirror;
     private List<Pose2d> m_pathsToShow = new ArrayList<Pose2d>();
     public static final Translation2d fieldCenter =
         new Translation2d(fieldLength / 2, fieldWidth / 2);
@@ -160,48 +163,61 @@ public class Robot extends LoggedRobot {
     {
         var m_alliance = DriverStation.getAlliance().isPresent()
             && DriverStation.getAlliance().get() == Alliance.Red;
+
         // Get currently selected command
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        m_shouldMirror = m_robotContainer.shouldMirrorPath();
         // Check if is the same as the last one
-        if (m_autonomousCommand != m_lastAutonomousCommand && m_autonomousCommand != null) {
+        if ((m_autonomousCommand != m_lastAutonomousCommand || m_shouldMirror != m_lastShouldMirror)
+            && m_autonomousCommand != null) {
             // Check if its contained in the list of our autos
             if (AutoBuilder.getAllAutoNames().contains(m_autonomousCommand.getName())) {
                 // Clear the current path
                 m_pathsToShow.clear();
                 // Grabs all paths from the auto
                 try {
-                    for (PathPlannerPath path : PathPlannerAuto
-                        .getPathGroupFromAutoFile(m_autonomousCommand.getName())) {
-                        // Adds all poses to master list
-                        m_pathsToShow.addAll(path.getPathPoses());
+                    List<PathPlannerPath> pathGroup =
+                        PathPlannerAuto.getPathGroupFromAutoFile(m_autonomousCommand.getName());
+
+                    var firstPath = pathGroup.get(0);
+                    if (m_alliance) {
+                        firstPath = firstPath.flipPath();
+                    }
+                    if (m_shouldMirror) {
+                        firstPath = firstPath.mirrorPath();
+                    }
+                    var firstPose = new Pose2d(firstPath.getPathPoses().get(0).getTranslation(),
+                        firstPath.getIdealStartingState().rotation());
+                    Logger.recordOutput("Alignment/StartPose", firstPose);
+                    SmartDashboard.putBoolean("Alignment/Translation",
+                        firstPose.getTranslation().getDistance(
+                            m_robotContainer.m_drive.getPose().getTranslation()) <= Units
+                                .inchesToMeters(4));
+                    SmartDashboard.putBoolean("Alignment/Rotation",
+                        firstPose.getRotation()
+                            .minus(m_robotContainer.m_drive.getPose().getRotation())
+                            .getDegrees() < 5);
+
+                    for (PathPlannerPath path : pathGroup) {
+                        // Adds all trajectories to master list
+                        var finalPath = path;
+                        if (m_alliance) {
+                            finalPath = path.flipPath();
+                        }
+                        if (m_shouldMirror) {
+                            finalPath = path.mirrorPath();
+                        }
+                        m_pathsToShow.addAll(finalPath.getPathPoses());
                     }
                 } catch (IOException | ParseException e) {
                     e.printStackTrace();
-                }
-                // Check to see which alliance we are on Red Alliance
-                if (m_alliance) {
-                    for (int i = 0; i < m_pathsToShow.size(); i++) {
-                        m_pathsToShow.set(i,
-                            m_pathsToShow.get(i).rotateAround(fieldCenter, Rotation2d.k180deg));
-                    }
                 }
                 // Displays all poses on Field2d widget
                 m_autoTraj.getObject("traj").setPoses(m_pathsToShow);
             }
         }
         m_lastAutonomousCommand = m_autonomousCommand;
-
-        if (!m_pathsToShow.isEmpty()) {
-            var firstPose = m_pathsToShow.get(0);
-            Logger.recordOutput("Alignment/StartPose", firstPose);
-            SmartDashboard.putBoolean("Alignment/Translation",
-                firstPose.getTranslation().getDistance(
-                    m_robotContainer.m_drive.getPose().getTranslation()) <= Units
-                        .inchesToMeters(4));
-            SmartDashboard.putBoolean("Alignment/Rotation",
-                firstPose.getRotation().minus(m_robotContainer.m_drive.getPose().getRotation())
-                    .getDegrees() < 5);
-        }
+        m_lastShouldMirror = m_shouldMirror;
     }
 
 

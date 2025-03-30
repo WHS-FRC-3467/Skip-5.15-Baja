@@ -8,6 +8,7 @@ import static frc.robot.subsystems.Vision.VisionConstants.*;
 import java.util.function.Supplier;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.events.EventTrigger;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -68,6 +69,7 @@ public class RobotContainer {
 
     // Autonomous Selector
     private final LoggedDashboardChooser<Command> m_autoChooser;
+    private final LoggedDashboardChooser<Boolean> m_flipChooser;
 
     // Utilities
     public final PPCalcEndpoint ppAuto;
@@ -93,6 +95,12 @@ public class RobotContainer {
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
     {
+        m_flipChooser =
+            new LoggedDashboardChooser<>("Should Flip?");
+
+        m_flipChooser.addOption("True", true);
+        m_flipChooser.addDefaultOption("False", false);
+
         ppAuto = new PPCalcEndpoint();
         switch (Constants.currentMode) {
             case REAL:
@@ -103,12 +111,13 @@ public class RobotContainer {
                         new ModuleIOTalonFX(TunerConstants.FrontLeft),
                         new ModuleIOTalonFX(TunerConstants.FrontRight),
                         new ModuleIOTalonFX(TunerConstants.BackLeft),
-                        new ModuleIOTalonFX(TunerConstants.BackRight));
+                        new ModuleIOTalonFX(TunerConstants.BackRight),
+                        this::shouldMirrorPath);
 
                 m_profiledArm = new Arm(new ArmIOTalonFX(), false);
                 m_profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
-                m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
-                // m_profiledClimber = new Climber(new ClimberIO() {}, false);
+                // m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
+                m_profiledClimber = new Climber(new ClimberIO() {}, false);
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
@@ -140,7 +149,8 @@ public class RobotContainer {
                         new ModuleIOSim(TunerConstants.FrontLeft),
                         new ModuleIOSim(TunerConstants.FrontRight),
                         new ModuleIOSim(TunerConstants.BackLeft),
-                        new ModuleIOSim(TunerConstants.BackRight));
+                        new ModuleIOSim(TunerConstants.BackRight),
+                        this::shouldMirrorPath);
 
 
                 m_profiledArm = new Arm(new ArmIOSim(), true);
@@ -172,7 +182,8 @@ public class RobotContainer {
                         new ModuleIO() {},
                         new ModuleIO() {},
                         new ModuleIO() {},
-                        new ModuleIO() {});
+                        new ModuleIO() {},
+                        this::shouldMirrorPath);
 
                 m_profiledArm = new Arm(new ArmIO() {}, true);
                 m_profiledElevator = new Elevator(new ElevatorIOSim(), true);
@@ -208,8 +219,6 @@ public class RobotContainer {
 
         // Configure the controller button and joystick bindings
         configureControllerBindings();
-
-        registerPathPlannerLogging();
 
         // Detect if controllers are missing / Stop multiple warnings
         if (Robot.isReal()) {
@@ -410,7 +419,7 @@ public class RobotContainer {
                     m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
                     m_tongue.setStateCommand(Tongue.State.RAISED),
                     m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
-                        Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
+                        Elevator.State.CORAL_INTAKE, Units.degreesToRotations(3), .2),
                     Commands.waitUntil(
                         m_clawRollerLaserCAN.triggered
                             .and(m_tongue.coralContactTrigger)
@@ -478,6 +487,24 @@ public class RobotContainer {
         // Driver POV Down: Zero the Elevator (HOMING)
         m_driver.povDown().onTrue(m_profiledArm.setStateCommand(Arm.State.STOW)
             .andThen(m_profiledElevator.getHomeCommand()));
+
+        SmartDashboard.putData("ReefPositions",
+            Commands.runOnce(() -> ppAuto.calculatePPEndpoints(Units.inchesToMeters(3)))
+                .ignoringDisable(true));
+
+        SmartDashboard.putData("AutoIntakeCommand",
+            Commands.sequence(
+                m_tongue.setStateCommand(Tongue.State.RAISED),
+                m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                    Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
+                Commands.repeatingSequence(
+                    m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                    Commands.waitUntil(m_clawRoller.stalled.debounce(0.2)),
+                    m_clawRoller.shuffleCommand())
+                    .until(m_clawRollerLaserCAN.triggered
+                        .and(m_clawRoller.stopped)),
+                m_clawRoller.shuffleCommand(),
+                m_tongue.lowerTongueCommand()));
     }
 
     /**
@@ -486,6 +513,17 @@ public class RobotContainer {
     private void registerNamedCommands()
     {
         // Go to the L4 Position
+        NamedCommands.registerCommand(
+            "L4Path",
+            Commands.sequence(
+                Commands.waitUntil(new EventTrigger("L4")),
+                m_tongue.setStateCommand(Tongue.State.DOWN),
+                m_superStruct.getTransitionCommand(Arm.State.LEVEL_4, Elevator.State.LEVEL_4,
+                    Units.degreesToRotations(10),
+                    0.8),
+                m_clawRoller.L4ShuffleCommand(),
+                Commands.waitSeconds(0.1)));
+
         NamedCommands.registerCommand(
             "L4",
             Commands.sequence(
@@ -507,7 +545,7 @@ public class RobotContainer {
                         Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
                     Commands.repeatingSequence(
                         m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
-                        Commands.waitUntil(m_clawRoller.stalled.debounce(0.2)),
+                        Commands.waitUntil(m_clawRoller.stalled.debounce(0.1)),
                         m_clawRoller.shuffleCommand())
                         .until(m_clawRollerLaserCAN.triggered
                             .and(m_clawRoller.stopped)),
@@ -550,5 +588,10 @@ public class RobotContainer {
     public Command zeroTongue()
     {
         return m_tongue.zeroSensorCommand();
+    }
+
+    public Boolean shouldMirrorPath()
+    {
+        return m_flipChooser.get();
     }
 }

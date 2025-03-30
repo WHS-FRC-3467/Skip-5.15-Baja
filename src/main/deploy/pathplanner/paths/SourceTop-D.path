@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.5776969178082192,
-        "y": 0.7569135273972597
+        "x": 1.5697500000000002,
+        "y": 0.75875
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7999527417917398,
-        "y": 0.9494539525711163
+        "x": 1.8370361416714245,
+        "y": 1.070406384343464
       },
       "isLocked": false,
       "linkedName": "SourceTop"
@@ -20,24 +20,19 @@
         "y": 2.77
       },
       "prevControl": {
-        "x": 3.7696136994371128,
-        "y": 2.607972050071668
+        "x": 3.9479481721234877,
+        "y": 2.5202906620792187
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "ReefD"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.85,
-      "rotationDegrees": 59.99999999999999
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [
     {
-      "name": "Slowdown",
-      "minWaypointRelativePos": 0.85,
+      "name": "Slow Down",
+      "minWaypointRelativePos": 0.75,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 1.0,
@@ -56,29 +51,31 @@
       "waypointRelativePos": 0.0,
       "endWaypointRelativePos": null,
       "command": {
-        "type": "named",
+        "type": "sequential",
         "data": {
-          "name": "IntakeCoral"
-        }
-      }
-    },
-    {
-      "name": "L4",
-      "waypointRelativePos": 0.75,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "L4"
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "IntakeCoral"
+              }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "L4Path"
+              }
+            }
+          ]
         }
       }
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 3.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0,
+    "maxAngularAcceleration": 400.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },

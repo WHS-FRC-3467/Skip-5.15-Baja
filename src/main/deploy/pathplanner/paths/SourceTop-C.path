@@ -3,41 +3,36 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.5776969178082192,
-        "y": 0.7569135273972597
+        "x": 1.5697500000000002,
+        "y": 0.75875
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9340300121244907,
-        "y": 1.1257524883010526
+        "x": 2.513698769252749,
+        "y": 1.7056840221573761
       },
       "isLocked": false,
       "linkedName": "SourceTop"
     },
     {
       "anchor": {
-        "x": 3.66,
-        "y": 2.93
+        "x": 3.7,
+        "y": 2.94
       },
       "prevControl": {
-        "x": 3.4453634482901214,
-        "y": 2.7348942596835792
+        "x": 3.5204427029578644,
+        "y": 2.7660483484443956
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "ReefC"
     }
   ],
-  "rotationTargets": [
-    {
-      "waypointRelativePos": 0.85,
-      "rotationDegrees": 59.99999999999999
-    }
-  ],
+  "rotationTargets": [],
   "constraintZones": [
     {
-      "name": "Slowdown",
-      "minWaypointRelativePos": 0.8528037383177571,
+      "name": "Slow Down",
+      "minWaypointRelativePos": 0.75,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
         "maxVelocity": 1.0,
@@ -64,23 +59,23 @@
               "data": {
                 "name": "IntakeCoral"
               }
+            },
+            {
+              "type": "named",
+              "data": {
+                "name": "L4Path"
+              }
             }
           ]
         }
       }
-    },
-    {
-      "name": "L4",
-      "waypointRelativePos": 0.75,
-      "endWaypointRelativePos": null,
-      "command": null
     }
   ],
   "globalConstraints": {
-    "maxVelocity": 3.0,
-    "maxAcceleration": 3.0,
+    "maxVelocity": 3.5,
+    "maxAcceleration": 2.5,
     "maxAngularVelocity": 540.0,
-    "maxAngularAcceleration": 720.0,
+    "maxAngularAcceleration": 400.0,
     "nominalVoltage": 12.0,
     "unlimited": false
   },

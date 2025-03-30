@@ -22,6 +22,7 @@ import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
@@ -57,6 +58,7 @@ import frc.robot.subsystems.Vision.Vision;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
@@ -80,7 +82,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                     TunerConstants.BackRight.LocationY)));
     // PathPlanner config constants
     private static final double ROBOT_MASS_KG = 64.728;
-    private static final double ROBOT_MOI = 8.835;
+    private static final double ROBOT_MOI = 5.835;
     private static final double WHEEL_COF = 1.13; // https://www.chiefdelphi.com/t/vexpro-new-products-2023-2024/446005/91?
     private static final RobotConfig PP_CONFIG =
         new RobotConfig(
@@ -119,15 +121,13 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions,
             new Pose2d());
 
-    private final LoggedDashboardChooser<Boolean> mirrorAutoChooser =
-        new LoggedDashboardChooser<Boolean>("Left Side?");
-
     public Drive(
         GyroIO gyroIO,
         ModuleIO flModuleIO,
         ModuleIO frModuleIO,
         ModuleIO blModuleIO,
-        ModuleIO brModuleIO)
+        ModuleIO brModuleIO,
+        BooleanSupplier mirrorAuto)
     {
         SmartDashboard.putData("Robot Pose Field Map", fieldMap);
         this.gyroIO = gyroIO;
@@ -143,22 +143,17 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         // Start odometry thread
         PhoenixOdometryThread.getInstance().start();
 
-        mirrorAutoChooser.addDefaultOption("False", false);
-        mirrorAutoChooser.addOption("True", true);
-
-        AutoBuilder.configureCustom(
-            (path) -> new MirrorableFollowPathCommand(
-                path,
-                this::getPose,
-                this::getChassisSpeeds,
-                this::runVelocity,
-                new PPHolonomicDriveController(
-                    new PIDConstants(3, 0.0, 0), new PIDConstants(5.5, 0.0, 0.0)),
-                PP_CONFIG,
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                () -> mirrorAutoChooser.get(),
-                this),
-            this::getPose, this::setPose, true);
+        AutoBuilder.configure(
+            this::getPose,
+            this::setPose,
+            this::getChassisSpeeds,
+            this::runVelocity,
+            new PPHolonomicDriveController(
+                new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+            PP_CONFIG,
+            () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+            this);
+        // Pathfinding.setPathfinder(new LocalADStarAK());
         PathPlannerLogging.setLogActivePathCallback(
             (activePath) -> {
                 Logger.recordOutput(
@@ -168,6 +163,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             (targetPose) -> {
                 Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
             });
+
 
         // Configure SysId
         sysId =

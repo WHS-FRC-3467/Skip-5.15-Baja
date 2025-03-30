@@ -48,6 +48,12 @@
               {
                 "type": "named",
                 "data": {
+                  "name": "IntakeCoral"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
                   "name": "L4"
                 }
               },
@@ -56,14 +62,57 @@
                 "data": {
                   "name": "Score"
                 }
-              },
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "D-SourceTop"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "SourceTop-C"
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
               {
                 "type": "named",
                 "data": {
                   "name": "IntakeCoral"
                 }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Score"
+                }
               }
             ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C-TopSource"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TopSource-B"
           }
         }
       ]
