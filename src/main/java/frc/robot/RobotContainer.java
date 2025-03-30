@@ -90,7 +90,7 @@ public class RobotContainer {
     // Trigger for algae/coral mode switching
     private Trigger isCoralMode;
 
-    private double speedMultiplier = 0.90;
+    private double speedMultiplier = 1.0;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
@@ -453,13 +453,12 @@ public class RobotContainer {
             .onTrue(
                 m_profiledClimber.setStateCommand(Climber.State.CLIMB));
 
-        m_driver.povLeft().onTrue(
-            Commands.sequence(
-                m_profiledElevator.setStateCommand(Elevator.State.STOW),
-                m_tongue.setStateCommand(Tongue.State.DOWN),
-                m_clawRoller.setStateCommand(State.SCORE)))
-            .onFalse(m_clawRoller.setStateCommand(State.OFF)
-                .andThen(m_tongue.setStateCommand(Tongue.State.STOW)));
+        // Manually climb more
+        m_driver.back().and(m_profiledClimber.getClimbRequest())
+            .and(m_profiledClimber.getClimbStep3())
+            .whileTrue(
+                m_profiledClimber.setStateCommand(Climber.State.MANUAL_CLIMB))
+            .onFalse(m_profiledClimber.setStateCommand(Climber.State.HOLD));
 
         // Driver POV Right: Reset Climbing Sequence if needed
         m_driver.povRight()
@@ -472,8 +471,8 @@ public class RobotContainer {
         m_profiledClimber.getClimbRequest().whileTrue(
             DriveCommands.joystickDrive(
                 m_drive,
-                () -> -m_driver.getLeftY() * 0.5,
-                () -> -m_driver.getLeftX() * 0.5,
+                () -> -m_driver.getLeftY() * 0.75,
+                () -> -m_driver.getLeftX() * 0.75,
                 () -> -m_driver.getRightX() * 0.75));
 
         m_driver.povLeft().onTrue(
