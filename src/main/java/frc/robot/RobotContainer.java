@@ -5,16 +5,22 @@
 package frc.robot;
 
 import static frc.robot.subsystems.Vision.VisionConstants.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.events.EventTrigger;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -22,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.RobotType;
 import frc.robot.FieldConstants.ReefSide;
 import frc.robot.commands.DriveCommands;
+import frc.robot.commands.DriveToPose;
 import frc.robot.commands.JoystickApproachCommand;
 import frc.robot.commands.JoystickStrafeCommand;
 import frc.robot.generated.TunerConstants;
@@ -51,6 +58,7 @@ import frc.robot.subsystems.Tongue.TongueIOSim;
 import frc.robot.subsystems.Tongue.TongueIOTalonFX;
 import frc.robot.subsystems.Vision.*;
 import frc.robot.subsystems.drive.*;
+import frc.robot.util.Util;
 import frc.robot.util.WindupXboxController;
 import frc.robot.util.PPCalcEndpoint.PPCalcEndpoint;
 import org.littletonrobotics.junction.Logger;
@@ -116,8 +124,8 @@ public class RobotContainer {
 
                 m_profiledArm = new Arm(new ArmIOTalonFX(), false);
                 m_profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
-                // m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
-                m_profiledClimber = new Climber(new ClimberIO() {}, false);
+                m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
+                // m_profiledClimber = new Climber(new ClimberIO() {}, false);
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
@@ -504,6 +512,16 @@ public class RobotContainer {
                         .and(m_clawRoller.stopped)),
                 m_clawRoller.shuffleCommand(),
                 m_tongue.lowerTongueCommand()));
+
+        SmartDashboard.putData("Drive To Start",
+            new DriveToPose(m_drive, () -> getFirstAutoPose().orElse(m_drive.getPose()),
+                Units.inchesToMeters(1), Units.inchesToMeters(1), 1));
+
+        SmartDashboard.putData("Drive to Reef", new DriveToPose(m_drive,
+            () -> Util.moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
+                ReefSide.LEFT), (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
+            Units.inchesToMeters(1.5), Units.inchesToMeters(1), 0.5));
     }
 
     /**
@@ -534,6 +552,20 @@ public class RobotContainer {
                 m_clawRoller.L4ShuffleCommand(),
                 Commands.waitSeconds(0.1)));
 
+        NamedCommands.registerCommand("AutoAlignLeft",
+            new DriveToPose(m_drive,
+                () -> Util.moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
+                    ReefSide.LEFT), (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                    .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
+                Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+
+        NamedCommands.registerCommand("AutoAlignRight",
+            new DriveToPose(m_drive,
+                () -> Util.moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
+                    ReefSide.RIGHT), (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                    .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
+                Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+
         // Intake Coral
         NamedCommands.registerCommand(
             "IntakeCoral",
@@ -547,7 +579,7 @@ public class RobotContainer {
                         Commands.waitUntil(m_clawRoller.stalled.debounce(0.1)),
                         m_clawRoller.shuffleCommand())
                         .until(m_clawRollerLaserCAN.triggered
-                            .and(m_clawRoller.stopped)),
+                            .and(m_clawRoller.stopped.debounce(0.125))),
                     m_clawRoller.shuffleCommand(),
                     m_tongue.lowerTongueCommand()),
                 Commands.sequence(
@@ -582,6 +614,31 @@ public class RobotContainer {
     public Command getAutonomousCommand()
     {
         return m_autoChooser.get();
+    }
+
+    public Optional<Pose2d> getFirstAutoPose()
+    {
+        var autoCommandName = getAutonomousCommand().getName();
+        if (AutoBuilder.getAllAutoNames().contains(autoCommandName)) {
+            try {
+                List<PathPlannerPath> pathGroup =
+                    PathPlannerAuto.getPathGroupFromAutoFile(autoCommandName);
+
+                var firstPath = pathGroup.get(0);
+                if (DriverStation.getAlliance().isPresent()
+                    && DriverStation.getAlliance().get() == Alliance.Red) {
+                    firstPath = firstPath.flipPath();
+                }
+                if (m_flipChooser.get()) {
+                    firstPath = firstPath.mirrorPath();
+                }
+                return Optional.of(new Pose2d(firstPath.getPathPoses().get(0).getTranslation(),
+                    firstPath.getIdealStartingState().rotation()));
+            } catch (Exception e) {
+                return Optional.empty();
+            }
+        }
+        return Optional.empty();
     }
 
     public Command zeroTongue()

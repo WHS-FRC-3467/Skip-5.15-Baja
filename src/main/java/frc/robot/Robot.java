@@ -176,29 +176,8 @@ public class Robot extends LoggedRobot {
                 m_pathsToShow.clear();
                 // Grabs all paths from the auto
                 try {
-                    List<PathPlannerPath> pathGroup =
-                        PathPlannerAuto.getPathGroupFromAutoFile(m_autonomousCommand.getName());
-
-                    var firstPath = pathGroup.get(0);
-                    if (m_alliance) {
-                        firstPath = firstPath.flipPath();
-                    }
-                    if (m_shouldMirror) {
-                        firstPath = firstPath.mirrorPath();
-                    }
-                    var firstPose = new Pose2d(firstPath.getPathPoses().get(0).getTranslation(),
-                        firstPath.getIdealStartingState().rotation());
-                    Logger.recordOutput("Alignment/StartPose", firstPose);
-                    SmartDashboard.putBoolean("Alignment/Translation",
-                        firstPose.getTranslation().getDistance(
-                            m_robotContainer.m_drive.getPose().getTranslation()) <= Units
-                                .inchesToMeters(4));
-                    SmartDashboard.putBoolean("Alignment/Rotation",
-                        firstPose.getRotation()
-                            .minus(m_robotContainer.m_drive.getPose().getRotation())
-                            .getDegrees() < 5);
-
-                    for (PathPlannerPath path : pathGroup) {
+                    for (PathPlannerPath path : PathPlannerAuto
+                        .getPathGroupFromAutoFile(m_autonomousCommand.getName())) {
                         // Adds all trajectories to master list
                         var finalPath = path;
                         if (m_alliance) {
@@ -218,6 +197,19 @@ public class Robot extends LoggedRobot {
         }
         m_lastAutonomousCommand = m_autonomousCommand;
         m_lastShouldMirror = m_shouldMirror;
+
+        var firstPose = m_robotContainer.getFirstAutoPose();
+        if (firstPose.isPresent()) {
+            Logger.recordOutput("Alignment/StartPose", firstPose.get());
+            SmartDashboard.putBoolean("Alignment/Translation",
+                firstPose.get().getTranslation().getDistance(
+                    m_robotContainer.m_drive.getPose().getTranslation()) <= Units
+                        .inchesToMeters(4));
+            SmartDashboard.putBoolean("Alignment/Rotation",
+                firstPose.get().getRotation()
+                    .minus(m_robotContainer.m_drive.getPose().getRotation())
+                    .getDegrees() < 5);
+        }
     }
 
 

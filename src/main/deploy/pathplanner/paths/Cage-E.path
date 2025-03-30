@@ -8,59 +8,33 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.655,
-        "y": 2.2602499999999996
+        "x": 6.6690000000000005,
+        "y": 2.075
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.02,
-        "y": 2.77
+        "x": 5.3332500000000005,
+        "y": 2.5039999999999996
       },
       "prevControl": {
-        "x": 5.226,
-        "y": 2.3479999999999994
+        "x": 5.7414713114754115,
+        "y": 2.3678995901639337
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "ReefE"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
-  "constraintZones": [
-    {
-      "name": "Slowdown",
-      "minWaypointRelativePos": 0.8001328021248305,
-      "maxWaypointRelativePos": 1.0,
-      "constraints": {
-        "maxVelocity": 1.0,
-        "maxAcceleration": 2.0,
-        "maxAngularVelocity": 540.0,
-        "maxAngularAcceleration": 720.0,
-        "nominalVoltage": 12.0,
-        "unlimited": false
-      }
-    }
-  ],
+  "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "L4",
-      "waypointRelativePos": 0.85,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "named",
-        "data": {
-          "name": "L4"
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.5,
-    "maxAcceleration": 2.5,
+    "maxAcceleration": 4.0,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 400.0,
     "nominalVoltage": 12.0,
