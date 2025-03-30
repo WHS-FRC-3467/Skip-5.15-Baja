@@ -23,7 +23,10 @@ import edu.wpi.first.math.trajectory.constraint.DifferentialDriveKinematicsConst
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+<<<<<<< HEAD
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+=======
+>>>>>>> f1708d5 (added alliance flipping)
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -735,8 +738,22 @@ public class RobotContainer {
         return m_tongue.zeroSensorCommand();
     }
 
+<<<<<<< HEAD
     public Boolean shouldMirrorPath()
     {
         return m_flipChooser.get();
+=======
+    public Rotation2d rotateForAlliance(Rotation2d target)
+    {
+        if (DriverStation.getAlliance().isPresent()) {
+            if (DriverStation.getAlliance().get() == Alliance.Red) {
+                return target.rotateBy(Rotation2d.k180deg);
+            } else {
+                return target;
+            }
+        } else {
+            return target;
+        }
+>>>>>>> f1708d5 (added alliance flipping)
     }
 }
