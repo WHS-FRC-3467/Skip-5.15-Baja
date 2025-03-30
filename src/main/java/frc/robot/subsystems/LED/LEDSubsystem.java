@@ -182,11 +182,10 @@ public class LEDSubsystem extends SubsystemBase {
             runMatchTimerPattern();
 
             // Intaking Coral?
-            if (m_ClawRoller.getState() == ClawRoller.State.INTAKE) {
-                if (!m_haveCoral.getAsBoolean()) {
-                    // Waiting for Coral
-                    newState = LEDState.INTAKING;
-                }
+            if (m_ClawRoller.getState() == ClawRoller.State.INTAKE &&
+                !m_haveCoral.getAsBoolean()) {
+                // Waiting for Coral
+                newState = LEDState.INTAKING;
 
                 // Climbing?
             } else if (m_Climber.getState() == Climber.State.PREP ||
@@ -199,11 +198,11 @@ public class LEDSubsystem extends SubsystemBase {
                 }
 
                 // Moving Superstructure?
-            } else if (m_Elevator.isElevated()) {
-                if (!m_Elevator.atPosition(0.0) || !m_Arm.atPosition(0.0)) {
-                    // An Elevated position has been commanded, but it's not there yet
-                    newState = LEDState.SUPER_MOVE;
-                }
+            } else if (m_Elevator.isElevated() &&
+                (!m_Elevator.atPosition(0.0) ||
+                    !m_Arm.atPosition(0.0))) {
+                // An Elevated position has been commanded, but it's not there yet
+                newState = LEDState.SUPER_MOVE;
 
                 // Aligning?
             } else if (DriveCommands.getDriveMode() == DriveMode.dmApproach) {
