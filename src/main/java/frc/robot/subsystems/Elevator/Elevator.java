@@ -29,7 +29,7 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         new LoggedTunableNumber("Elevator/HomingVoltageSP", -1);
 
     static LoggedTunableNumber launchHeight =
-        new LoggedTunableNumber("Elevator/LaunchHeight", 4.7);
+        new LoggedTunableNumber("Elevator/LaunchHeight", 4.3);
 
     @RequiredArgsConstructor
     @Getter
@@ -46,6 +46,8 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         ALGAE_LOW(new ProfileType.MM_POSITION(() -> 0.65, 0)),
         ALGAE_HIGH(new ProfileType.MM_POSITION(() -> 2.1, 0)),
         ALGAE_GROUND(new ProfileType.MM_POSITION(() -> 0.05, 0)),
+        ALGAE_LOLLIPOP(new ProfileType.MM_POSITION(() -> 0.07, 0)),
+        ALGAE_STOW(new ProfileType.MM_POSITION(() -> 0.2, 0)),
         PROCESSOR_SCORE(
             new ProfileType.MM_POSITION(() -> 0.05, 0)),
         BARGE(new ProfileType.MM_POSITION(() -> 5.6, 0)),
@@ -142,7 +144,7 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
     }
 
     public Trigger launchHeightTrigger =
-        new Trigger(() -> io.getPosition() > launchHeight.getAsDouble());
+        new Trigger(() -> (io.getPosition() > launchHeight.getAsDouble()));
 
     public Command homedAlertCommand()
     {

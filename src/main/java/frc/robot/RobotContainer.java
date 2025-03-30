@@ -10,6 +10,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
@@ -102,8 +103,8 @@ public class RobotContainer {
 
                 m_profiledArm = new Arm(new ArmIOTalonFX(), false);
                 m_profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
-                m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
-                // m_profiledClimber = new Climber(new ClimberIO() {}, false);
+                // m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
+                m_profiledClimber = new Climber(new ClimberIO() {}, false);
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
@@ -205,8 +206,6 @@ public class RobotContainer {
         // Configure the controller button and joystick bindings
         configureControllerBindings();
 
-        registerPathPlannerLogging();
-
         // Detect if controllers are missing / Stop multiple warnings
         if (Robot.isReal()) {
             DriverStation.silenceJoystickConnectionWarning(false);
@@ -242,8 +241,6 @@ public class RobotContainer {
 
         return Commands.deadline(
             Commands.sequence(
-                // Commands
-                // .waitUntil(() -> approachCommand.withinTolerance(Units.inchesToMeters(0.5))),
                 m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
                 Commands.either(
                     m_superStruct.getTransitionCommand(Arm.State.ALGAE_HIGH,
@@ -252,7 +249,7 @@ public class RobotContainer {
                         Elevator.State.ALGAE_LOW, Units.degreesToRotations(10), 0.1),
                     () -> FieldConstants.isAlgaeHigh(m_drive.getPose())),
                 Commands.waitUntil(m_clawRoller.stalled),
-                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)),
+                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.ALGAE_STOW)),
             approachCommand);
     }
 
@@ -270,27 +267,13 @@ public class RobotContainer {
                 Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
                 m_profiledElevator.setStateCommand(Elevator.State.BARGE),
                 Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
-                m_clawRoller.setStateCommand(ClawRoller.State.BARGE_SCORE),
-                Commands.waitUntil(m_clawRoller.stalled.negate()),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+                Commands.waitUntil(m_clawRoller.stopped.negate()),
                 Commands.waitSeconds(0.2),
                 m_clawRoller.setStateCommand(ClawRoller.State.OFF),
                 m_superStruct.getTransitionCommand(Arm.State.STOW,
                     Elevator.State.STOW, Units.degreesToRotations(10), 0.1)),
             strafeCommand);
-    }
-
-    private void registerPathPlannerLogging()
-    {
-        PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
-            // Do whatever you want with the pose here
-            Logger.recordOutput("Pathplanner Auto/Current Pose", pose);
-        });
-
-        // Logging callback for target robot pose
-        PathPlannerLogging.setLogTargetPoseCallback((pose) -> {
-            // Do whatever you want with the pose here
-            Logger.recordOutput("Pathplanner Auto/Target Pose", pose);
-        });
     }
 
     /** Button and Command mappings */
@@ -311,12 +294,8 @@ public class RobotContainer {
                     () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.LEFT)));
 
         // Driver Right Bumper and Algae mode: Descore to horns on nearest reef face
-        m_driver.rightBumper().and(isCoralMode.negate())
+        m_driver.leftBumper().and(m_driver.rightBumper()).and(isCoralMode.negate())
             .whileTrue(DescoreAlgae());
-
-        // Driver Left Bumper and Algae mode: Auto Barge
-        m_driver.leftBumper().and(isCoralMode.negate())
-            .whileTrue(BargeAlgae());
 
         // Driver A Button: Send Arm and Elevator to LEVEL_1
         m_driver
@@ -348,11 +327,19 @@ public class RobotContainer {
             .and(m_clawRoller.stalled.negate())
             .onTrue(
                 Commands.sequence(
-                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_GROUND,
-                        Elevator.State.ALGAE_GROUND),
+                    m_superStruct.getTransitionCommand(Arm.State.PROCESSOR_SCORE,
+                        Elevator.State.ALGAE_LOLLIPOP),
                     m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
                     Commands.waitUntil(m_clawRoller.stalled),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+
+        m_driver
+            .x().and(isCoralMode.negate())
+            .whileTrue(DriveCommands.joystickDriveAtAngle(
+                m_drive,
+                () -> -m_driver.getLeftY() * 0.75,
+                () -> -m_driver.getLeftX() * 0.75,
+                () -> Rotation2d.kZero)); // TODO: MAKE WORK ON BOTH ALLIANCES
 
         // Driver B Button: Send Arm and Elevator to LEVEL_3
         m_driver
@@ -368,6 +355,14 @@ public class RobotContainer {
                     m_superStruct.getTransitionCommand(Arm.State.PROCESSOR_SCORE,
                         Elevator.State.STOW)));
 
+        m_driver
+            .b().and(isCoralMode.negate())
+            .whileTrue(DriveCommands.joystickDriveAtAngle(
+                m_drive,
+                () -> -m_driver.getLeftY() * 0.75,
+                () -> -m_driver.getLeftX() * 0.75,
+                () -> Rotation2d.kCCW_90deg)); // TODO: MAKE WORK ON BOTH ALLIANCES
+
 
         // Driver Y Button: Send Arm and Elevator to LEVEL_4
         m_driver
@@ -381,8 +376,7 @@ public class RobotContainer {
         // Elevator to BARGE
         m_driver
             .y().and(isCoralMode.negate())
-            .onTrue(
-                (m_superStruct.getTransitionCommand(Arm.State.BARGE, Elevator.State.BARGE)));
+            .onTrue(BargeAlgae());
 
         // Driver Right Trigger: Place Coral or Algae (Should be done once the robot is in position)
         m_driver.rightTrigger().onTrue(
