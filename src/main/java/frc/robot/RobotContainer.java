@@ -300,6 +300,11 @@ public class RobotContainer {
             .onTrue(
                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_1, Elevator.State.LEVEL_1));
 
+        m_driver
+            .a().and(isCoralMode)
+            .whileTrue(joystickApproach(() -> FieldConstants.getNearestReefFace(m_drive.getPose())
+                .plus(new Transform2d(0, 0, Rotation2d.k180deg))));
+
         // Driver A Button and Algae mode: Send Arm and Elevator to Ground Intake
         m_driver
             .a().and(isCoralMode.negate())
@@ -378,7 +383,7 @@ public class RobotContainer {
             .onTrue(BargeAlgae());
 
         // Driver Right Trigger: Place Coral or Algae (Should be done once the robot is in position)
-        m_driver.rightTrigger().onTrue(
+        m_driver.rightTrigger().and(m_driver.a().negate()).onTrue(
             Commands.either(
                 Commands.sequence(
                     m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
@@ -393,6 +398,15 @@ public class RobotContainer {
                     () -> m_clawRoller.getState() == ClawRoller.State.ALGAE_REVERSE),
 
                 isCoralMode));
+
+        m_driver.rightTrigger().and(m_driver.a())
+            .onTrue(
+                Commands.sequence(m_clawRoller.setStateCommand(ClawRoller.State.L1_SCORE),
+                    Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+                    Commands.waitSeconds(0.2),
+                    m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
+                        Units.degreesToRotations(10), .2)));
 
         m_driver.leftTrigger()
             .whileTrue(
