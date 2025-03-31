@@ -37,6 +37,7 @@ import frc.robot.subsystems.Claw.ClawRollerLaserCAN.ClawRollerLaserCANIOSim;
 import frc.robot.subsystems.Climber.Climber;
 import frc.robot.subsystems.Climber.ClimberIO;
 import frc.robot.subsystems.Climber.ClimberIOSim;
+import frc.robot.subsystems.Climber.ClimberIOTalonFX;
 import frc.robot.subsystems.Elevator.*;
 import frc.robot.subsystems.LED.LEDSubsystem;
 import frc.robot.subsystems.LED.LEDSubsystemIO;
@@ -104,7 +105,6 @@ public class RobotContainer {
                 m_profiledArm = new Arm(new ArmIOTalonFX(), false);
                 m_profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
                 m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
-                // m_profiledClimber = new Climber(new ClimberIO() {}, false);
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
@@ -399,25 +399,25 @@ public class RobotContainer {
             .onTrue(BargeAlgae());
 
         // Driver Right Trigger: Place Coral or Algae (Should be done once the robot is in position)
-      m_driver.rightTrigger().and(isCoralMode).onTrue(
-			    Commands.either(
+        m_driver.rightTrigger().and(isCoralMode).onTrue(
+            Commands.either(
                 Commands.sequence(
                     m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
                     Commands.either(
                         Commands.sequence(
-                    Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
-                    // Commands.waitSeconds(0.2),
-                    m_clawRoller.setStateCommand(ClawRoller.State.OFF),
-                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
-                        Units.degreesToRotations(10), .2)),
-                    Commands.sequence(
-                            Commands.waitSeconds(1), 
+                            Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+                            // Commands.waitSeconds(0.2),
+                            m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                            m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
+                                Units.degreesToRotations(10), .2)),
+                        Commands.sequence(
+                            Commands.waitSeconds(1),
                             Commands.waitUntil(m_clawRoller.stalled.negate()),
                             Commands.waitSeconds(0.2),
                             m_clawRoller.setStateCommand(ClawRoller.State.OFF),
                             m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
-                            Units.degreesToRotations(10), .2)),
-                    hasLaserCAN)),
+                                Units.degreesToRotations(10), .2)),
+                        hasLaserCAN)),
 
                 Commands.either(m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
                     m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
@@ -432,17 +432,17 @@ public class RobotContainer {
                     m_tongue.setStateCommand(Tongue.State.RAISED),
                     m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
                         Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
-                        Commands.either(
-                            Commands.waitUntil(
-                                m_clawRollerLaserCAN.triggered
+                    Commands.either(
+                        Commands.waitUntil(
+                            m_clawRollerLaserCAN.triggered
                                 .and(m_tongue.coralContactTrigger)
-                                .and(m_clawRoller.stopped)), 
-                            Commands.waitUntil(
-                                m_tongue.coralContactTrigger
-                                        .and(m_clawRoller.stopped)), 
-                            hasLaserCAN), // If lasercan is not valid, don't check it while intaking
-                        m_clawRoller.shuffleCommand(),
-                        m_clawRoller.setStateCommand(ClawRoller.State.OFF)))
+                                .and(m_clawRoller.stopped)),
+                        Commands.waitUntil(
+                            m_tongue.coralContactTrigger
+                                .and(m_clawRoller.stopped)),
+                        hasLaserCAN), // If lasercan is not valid, don't check it while intaking
+                    m_clawRoller.shuffleCommand(),
+                    m_clawRoller.setStateCommand(ClawRoller.State.OFF)))
             .onFalse(
                 Commands.sequence(
                     m_clawRoller.setStateCommand(ClawRoller.State.OFF),
