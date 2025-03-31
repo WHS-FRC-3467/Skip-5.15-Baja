@@ -74,7 +74,7 @@ public final class ElevatorConstants {
 
 
         /* REAL system profile constants */
-        kSubSysConstants.kMotorConfig.Slot0.kP = 600;
+        kSubSysConstants.kMotorConfig.Slot0.kP = 580;
         kSubSysConstants.kMotorConfig.Slot0.kI = 0;
         kSubSysConstants.kMotorConfig.Slot0.kD = 50;
         kSubSysConstants.kMotorConfig.Slot0.GravityType = GravityTypeValue.Elevator_Static;

@@ -59,6 +59,8 @@ public class Superstructure {
     public Command getTransitionCommand(Arm.State armState, Elevator.State elevatorState)
     {
         return getTransitionCommand(armState, elevatorState, 0.0,
-            0.0);
+            0.0).withName(
+                "Superstructure Transition Command: Arm -> " + armState.name() +
+                    " Elevator -> " + elevatorState.name());
     }
 }

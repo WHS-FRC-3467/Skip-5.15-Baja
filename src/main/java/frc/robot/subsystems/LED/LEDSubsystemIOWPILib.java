@@ -173,11 +173,6 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
             default:
                 if (newGPMode != m_currentGPMode) {
                     switch (newGPMode) {
-                        case PROCESSOR:
-                            m_fastFlashGreen.applyTo(m_LeftTip);
-                            m_fastFlashGreen.applyTo(m_RightTip);
-                            m_tipColor = Color.kAqua.toHexString();
-                            break;
                         case ALGAE:
                             m_solidGreen.applyTo(m_LeftTip);
                             m_solidGreen.applyTo(m_RightTip);
