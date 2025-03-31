@@ -8,16 +8,11 @@ import static frc.robot.subsystems.Vision.VisionConstants.*;
 import java.util.function.Supplier;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.constraint.DifferentialDriveKinematicsConstraint;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -41,7 +36,6 @@ import frc.robot.subsystems.Claw.ClawRollerLaserCAN.ClawRollerLaserCANIOSim;
 import frc.robot.subsystems.Climber.Climber;
 import frc.robot.subsystems.Climber.ClimberIO;
 import frc.robot.subsystems.Climber.ClimberIOSim;
-import frc.robot.subsystems.Climber.ClimberIOTalonFX;
 import frc.robot.subsystems.Elevator.*;
 import frc.robot.subsystems.LED.LEDSubsystem;
 import frc.robot.subsystems.LED.LEDSubsystemIO;
@@ -53,8 +47,8 @@ import frc.robot.subsystems.Tongue.TongueIOSim;
 import frc.robot.subsystems.Tongue.TongueIOTalonFX;
 import frc.robot.subsystems.Vision.*;
 import frc.robot.subsystems.drive.*;
+import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.WindupXboxController;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -84,10 +78,11 @@ public class RobotContainer {
     public final Vision m_vision;
     public final LEDSubsystem m_LED;
 
+    public LoggedTunableNumber speedMultiplier =
+        new LoggedTunableNumber("Drivebase Speed Multiplier", 1.0);
+
     // Trigger for algae/coral mode switching
     private Trigger isCoralMode;
-
-    private double speedMultiplier = 1.0;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
@@ -221,16 +216,16 @@ public class RobotContainer {
     {
         return DriveCommands.joystickDrive(
             m_drive,
-            () -> -m_driver.getLeftY() * speedMultiplier,
-            () -> -m_driver.getLeftX() * speedMultiplier,
-            () -> -m_driver.getRightX());
+            () -> -m_driver.getLeftY() * speedMultiplier.getAsDouble(),
+            () -> -m_driver.getLeftX() * speedMultiplier.getAsDouble(),
+            () -> -m_driver.getRightX() * speedMultiplier.getAsDouble());
     }
 
     private Command joystickApproach(Supplier<Pose2d> approachPose)
     {
         return new JoystickApproachCommand(
             m_drive,
-            () -> -m_driver.getLeftY() * speedMultiplier,
+            () -> -m_driver.getLeftY() * speedMultiplier.getAsDouble(),
             approachPose);
     }
 
@@ -238,7 +233,7 @@ public class RobotContainer {
     {
         var approachCommand = new JoystickApproachCommand(
             m_drive,
-            () -> -m_driver.getLeftY() * speedMultiplier,
+            () -> -m_driver.getLeftY() * speedMultiplier.getAsDouble(),
             () -> FieldConstants.getNearestReefFace(m_drive.getPose()));
 
         return Commands.deadline(
@@ -259,7 +254,7 @@ public class RobotContainer {
     {
         var strafeCommand = new JoystickStrafeCommand(
             m_drive,
-            () -> -m_driver.getLeftX() * speedMultiplier,
+            () -> -m_driver.getLeftX() * speedMultiplier.getAsDouble(),
             () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine));
 
         return Commands.deadline(
@@ -335,12 +330,13 @@ public class RobotContainer {
                     Commands.waitUntil(m_clawRoller.stalled),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
+        // Point towards driverstation for lollipop pickup and drive slower
         m_driver
             .x().and(isCoralMode.negate())
             .whileTrue(DriveCommands.joystickDriveAtAngle(
                 m_drive,
-                () -> -m_driver.getLeftY() * 0.75,
-                () -> -m_driver.getLeftX() * 0.75,
+                () -> -m_driver.getLeftY() * speedMultiplier.getAsDouble() * 0.75,
+                () -> -m_driver.getLeftX() * speedMultiplier.getAsDouble() * 0.75,
                 () -> rotateForAlliance(Rotation2d.k180deg)));
 
         // Driver B Button: Send Arm and Elevator to LEVEL_3
@@ -357,12 +353,13 @@ public class RobotContainer {
                     m_superStruct.getTransitionCommand(Arm.State.PROCESSOR_SCORE,
                         Elevator.State.STOW)));
 
+        // Point towards processor and drive slower
         m_driver
             .b().and(isCoralMode.negate())
             .whileTrue(DriveCommands.joystickDriveAtAngle(
                 m_drive,
-                () -> -m_driver.getLeftY() * 0.75,
-                () -> -m_driver.getLeftX() * 0.75,
+                () -> -m_driver.getLeftY() * speedMultiplier.getAsDouble() * 0.75,
+                () -> -m_driver.getLeftX() * speedMultiplier.getAsDouble() * 0.75,
                 () -> rotateForAlliance(Rotation2d.kCW_90deg)));
 
 
@@ -451,13 +448,13 @@ public class RobotContainer {
                     m_profiledClimber.resetClimb(),
                     m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
-        // Slow drivetrain to 50% while climbing
+        // Slow drivetrain to 75% while climbing
         m_profiledClimber.getClimbRequest().whileTrue(
             DriveCommands.joystickDrive(
                 m_drive,
-                () -> -m_driver.getLeftY() * 0.75,
-                () -> -m_driver.getLeftX() * 0.75,
-                () -> -m_driver.getRightX() * 0.75));
+                () -> -m_driver.getLeftY() * speedMultiplier.getAsDouble() * .75,
+                () -> -m_driver.getLeftX() * speedMultiplier.getAsDouble() * .75,
+                () -> -m_driver.getRightX() * speedMultiplier.getAsDouble() * .75));
 
         m_driver.povLeft().onTrue(
             Commands.sequence(
