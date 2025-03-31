@@ -86,9 +86,10 @@ public class JoystickApproachCommand extends Command {
 
         // Calculate total linear velocity
         Translation2d linearVelocity =
-            getLinearVelocityFromJoysticks(-ySupplier.getAsDouble(), 0)
-                .plus(offsetVector)
-                .rotateBy(targetRotation2d);
+            getLinearVelocityFromJoysticks(-ySupplier.getAsDouble(),
+                0)
+                    .plus(offsetVector)
+                    .rotateBy(targetRotation2d);
 
         // Calculate angular speed
         double omega =

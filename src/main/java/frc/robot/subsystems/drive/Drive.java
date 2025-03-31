@@ -17,12 +17,10 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
@@ -45,7 +43,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -53,16 +50,14 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.RobotState;
 import frc.robot.subsystems.Vision.Vision;
+import frc.robot.util.LoggedTunableNumber;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BiConsumer;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardBoolean;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-// Maple Sim
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 
 public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     // TunerConstants doesn't include these constants, so they are declared locally
@@ -122,6 +117,13 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     private final LoggedDashboardChooser<Boolean> mirrorAutoChooser =
         new LoggedDashboardChooser<Boolean>("Left Side?");
 
+    private RobotState robotState = RobotState.getInstance();
+    private LoggedTunableNumber elevatorSlowdownHeight =
+        new LoggedTunableNumber("Drive/Elevator Slowdown Height", 5.0);
+    private LoggedTunableNumber elevatorSlowdownMultiplier =
+        new LoggedTunableNumber("Drive/Elevator Slowdown Multiplier", 0.5);
+
+
     public Drive(
         GyroIO gyroIO,
         ModuleIO flModuleIO,
@@ -146,19 +148,16 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         mirrorAutoChooser.addDefaultOption("False", false);
         mirrorAutoChooser.addOption("True", true);
 
-        AutoBuilder.configureCustom(
-            (path) -> new MirrorableFollowPathCommand(
-                path,
-                this::getPose,
-                this::getChassisSpeeds,
-                this::runVelocity,
-                new PPHolonomicDriveController(
-                    new PIDConstants(3, 0.0, 0), new PIDConstants(5.5, 0.0, 0.0)),
-                PP_CONFIG,
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                () -> mirrorAutoChooser.get(),
-                this),
-            this::getPose, this::setPose, true);
+        AutoBuilder.configure(
+            this::getPose,
+            this::setPoseIfSim,
+            this::getChassisSpeeds,
+            this::runVelocity,
+            new PPHolonomicDriveController(
+                new PIDConstants(3, 0.0, 0), new PIDConstants(5.5, 0.0, 0.0)),
+            PP_CONFIG,
+            () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+            this);
         PathPlannerLogging.setLogActivePathCallback(
             (activePath) -> {
                 Logger.recordOutput(
@@ -250,6 +249,13 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
      */
     public void runVelocity(ChassisSpeeds speeds)
     {
+        Logger.recordOutput("SwerveStates/InitSpeed", speeds);
+
+        if (robotState.getElevatorHeight() >= elevatorSlowdownHeight.getAsDouble()) {
+            speeds = speeds.times(elevatorSlowdownMultiplier.getAsDouble());
+        }
+        Logger.recordOutput("SwerveStates/LimitedSpeed", speeds);
+
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
@@ -378,6 +384,13 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
     }
 
+    public void setPoseIfSim(Pose2d pose)
+    {
+        if (true) {
+            poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+        }
+    }
+
     /** Adds a new timestamped vision measurement. */
     @Override
     public void accept(
@@ -414,5 +427,29 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                 new Translation2d(TunerConstants.BackRight.LocationX,
                     TunerConstants.BackRight.LocationY)
         };
+    }
+
+    public boolean isAtDriveSpeed(double speed)
+    {
+        speed = Math.abs(speed); // Meters per second
+        double tolerance = 0.05;
+        for (Module module : modules) {
+            if (Math.abs(module.getVelocityMetersPerSec() - speed) > tolerance) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isAtSteerSpeed(double speed) 
+    {
+        // speed is radians per second
+        double tolerance = 0.05;
+        for (Module module : modules) {
+            if (Math.abs(module.getTurnVelocityRadPerSec() - speed) > tolerance) {
+                return false;
+            }
+        }
+        return true;
     }
 }

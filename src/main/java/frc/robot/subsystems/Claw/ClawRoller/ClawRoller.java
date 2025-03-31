@@ -30,10 +30,11 @@ public class ClawRoller
             () -> .35)),
         SHUFFLE(new ProfileType.POSITION(() -> -0.1, 0)),
         L4_RETRACT(new ProfileType.POSITION(() -> -0.5, 0)),
-        SCORE(new ProfileType.OPEN_VOLTAGE(() -> 4.0)),
+        SCORE(new ProfileType.OPEN_VOLTAGE(() -> 2.0)),
+        L1_SCORE(new ProfileType.OPEN_CURRENT(() -> -60, () -> 0.35)),
         HOLDCORAL(new ProfileType.POSITION(() -> -0.1, 0)),
-        ALGAE_FORWARD(new ProfileType.OPEN_CURRENT(() -> 90, () -> 0.5)),
-        ALGAE_REVERSE(new ProfileType.OPEN_CURRENT(() -> -90, () -> 0.5));
+        ALGAE_FORWARD(new ProfileType.OPEN_CURRENT(() -> 100, () -> 1.0)),
+        ALGAE_REVERSE(new ProfileType.OPEN_CURRENT(() -> -90, () -> 1.0));
 
         private final ProfileType profileType;
     }

@@ -203,9 +203,8 @@ public class LEDSubsystem extends SubsystemBase {
                     // Vision is back, reset flashing counter
                     visionOutCounter = 0;
                 }
-			} else
             // Intaking Coral?
-            if (m_ClawRoller.getState() == ClawRoller.State.INTAKE &&
+          }else if (m_ClawRoller.getState() == ClawRoller.State.INTAKE &&
                 !m_haveCoral.getAsBoolean()) {
                 // Waiting for Coral
                 newState = LEDState.INTAKING;
