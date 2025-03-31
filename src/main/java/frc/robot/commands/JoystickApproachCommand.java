@@ -20,7 +20,6 @@ public class JoystickApproachCommand extends Command {
     Drive drive;
     DoubleSupplier ySupplier;
     Supplier<Pose2d> targetSupplier;
-    DoubleSupplier speedMultiplier;
 
     Pose2d targetPose2d;
     Pose2d currentPose2d;
@@ -52,13 +51,11 @@ public class JoystickApproachCommand extends Command {
     public JoystickApproachCommand(
         Drive drive,
         DoubleSupplier ySupplier,
-        Supplier<Pose2d> targetSupplier,
-        DoubleSupplier speedMultiplier)
+        Supplier<Pose2d> targetSupplier)
     {
         this.drive = drive;
         this.ySupplier = ySupplier;
         this.targetSupplier = targetSupplier;
-        this.speedMultiplier = speedMultiplier;
 
         angleController.enableContinuousInput(-Math.PI, Math.PI);
         alignController.setGoal(0);
@@ -89,9 +86,10 @@ public class JoystickApproachCommand extends Command {
 
         // Calculate total linear velocity
         Translation2d linearVelocity =
-            getLinearVelocityFromJoysticks(-ySupplier.getAsDouble() * speedMultiplier.getAsDouble(), 0)
-                .plus(offsetVector)
-                .rotateBy(targetRotation2d);
+            getLinearVelocityFromJoysticks(-ySupplier.getAsDouble(),
+                0)
+                    .plus(offsetVector)
+                    .rotateBy(targetRotation2d);
 
         // Calculate angular speed
         double omega =
