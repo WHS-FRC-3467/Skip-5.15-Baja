@@ -262,6 +262,14 @@ public class RobotContainer {
             });
     }
 
+    public Command elevatorLowSpeed()
+    {
+        return Commands.run(
+            () -> {
+                speedMultiplier *= 0.85;
+            });
+    }
+
     public Command toggleProcessorMode()
     {
         return Commands.runOnce(
@@ -485,11 +493,19 @@ public class RobotContainer {
             .onTrue(
                 m_profiledClimber.setStateCommand(Climber.State.CLIMB));
 
+        // If the elvator is above 4 rotations: DriveBase speed = 75% of what its set to
         m_profiledElevator.getIsElevatorHigh().whileTrue(
             elevatorHighSpeed());
 
+        // If the elvator is above 2 rotations but less the 4: DriveBase speed = 85% of what its set
+        // to
+
         m_profiledElevator.getIsElevatorMid().whileTrue(
             elevatorMidSpeed());
+
+        // If the elvator is below 2 rotations: DriveBase speed = 100% of what its set to
+        m_profiledElevator.getIsElevatorLow().whileTrue(
+            elevatorLowSpeed());
 
         // Manually climb more
         m_driver.back().and(m_profiledClimber.getClimbRequest())

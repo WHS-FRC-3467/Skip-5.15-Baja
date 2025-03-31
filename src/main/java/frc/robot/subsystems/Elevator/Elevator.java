@@ -151,7 +151,15 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         return io.getPosition() > 2.0;
     }
 
+    public boolean elevatorLow()
+    {
+        if (elevatorMid() == false && elevatorHigh() == false) {
+            return true;
+        }
+        return false;
+    }
 
+    public Trigger isElevatorLow = new Trigger(() -> elevatorLow());
     public Trigger isElevatorHigh = new Trigger(() -> elevatorHigh());
     public Trigger isElevatorMid = new Trigger(() -> elevatorMid());
 
