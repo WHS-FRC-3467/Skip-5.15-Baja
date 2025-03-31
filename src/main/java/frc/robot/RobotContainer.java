@@ -645,7 +645,7 @@ public class RobotContainer {
                         () -> Util
                             .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
                                 ReefSide.LEFT),
-                                (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                                (Constants.bumperWidth / 2) + Units.inchesToMeters(3))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
                         Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
 
@@ -654,7 +654,7 @@ public class RobotContainer {
                         () -> Util
                             .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
                                 ReefSide.RIGHT),
-                                (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                                (Constants.bumperWidth / 2) + Units.inchesToMeters(3))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
                         Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
 

@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 1.5697500000000002,
-        "y": 0.75875
+        "x": 1.6183401639344261,
+        "y": 0.746362704918032
       },
       "prevControl": {
-        "x": 1.5239872120666338,
-        "y": 1.0045258475533463
+        "x": 1.5725773760010597,
+        "y": 0.9921385524713784
       },
       "nextControl": null,
       "isLocked": false,
@@ -32,11 +32,11 @@
   "constraintZones": [
     {
       "name": "Slow Down",
-      "minWaypointRelativePos": 0.75,
+      "minWaypointRelativePos": 0.8048615800135005,
       "maxWaypointRelativePos": 1.0,
       "constraints": {
-        "maxVelocity": 1.0,
-        "maxAcceleration": 3.0,
+        "maxVelocity": 2.0,
+        "maxAcceleration": 2.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,

@@ -16,32 +16,32 @@
     },
     {
       "anchor": {
-        "x": 1.8185032894736841,
-        "y": 0.6862664473684208
+        "x": 1.8940573770491804,
+        "y": 0.734375
       },
       "prevControl": {
-        "x": 2.6047238662493086,
-        "y": 0.3102479106496426
+        "x": 2.680277953824805,
+        "y": 0.3583564632812217
       },
       "nextControl": {
-        "x": 1.3759046052631578,
-        "y": 0.8979440789473688
+        "x": 1.4514586928386541,
+        "y": 0.946052631578948
       },
       "isLocked": false,
       "linkedName": "StartSwoop"
     },
     {
       "anchor": {
-        "x": 1.1834703947368421,
-        "y": 1.2443256578947364
+        "x": 1.0908811475409836,
+        "y": 1.3097848360655735
       },
       "prevControl": {
-        "x": 0.9411627024291506,
-        "y": 1.1827871963562748
+        "x": 0.8485734552332913,
+        "y": 1.2482463745271117
       },
       "nextControl": {
-        "x": 1.7896381578947371,
-        "y": 1.3982730263157894
+        "x": 1.6970489106988786,
+        "y": 1.4637322044866266
       },
       "isLocked": false,
       "linkedName": "EndSwoop"
@@ -70,7 +70,21 @@
       "rotationDegrees": 50.0
     }
   ],
-  "constraintZones": [],
+  "constraintZones": [
+    {
+      "name": "Slow Down",
+      "minWaypointRelativePos": 0.8021607022282569,
+      "maxWaypointRelativePos": 1.8960162052667084,
+      "constraints": {
+        "maxVelocity": 2.5,
+        "maxAcceleration": 1.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 400.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
@@ -94,7 +108,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 2.0,
+    "velocity": 1.0,
     "rotation": 119.99999999999999
   },
   "reversed": false,
