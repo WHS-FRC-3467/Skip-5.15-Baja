@@ -35,7 +35,7 @@ public class LEDSubsystem extends SubsystemBase {
     // LoggedTunableNumbers for testing LED states
     private LoggedTunableNumber kMode, kState;
     // Flag for testing mode
-    boolean kTesting = true;
+    boolean kTesting = false;
 
     AllianceColor m_DSAlliance = AllianceColor.UNDETERMINED;
     LEDSubsystemIO m_io;
@@ -84,62 +84,60 @@ public class LEDSubsystem extends SubsystemBase {
         thisTimeStamp = m_timer.get();
         if (thisTimeStamp - lastTimeStamp >= 0.2) {
             lastTimeStamp = thisTimeStamp;
+        LEDState newState;
+        GPMode newGPMode;
 
-            LEDState newState;
-            GPMode newGPMode;
-
-            // Determine and Set Alliance color
-            if (m_DSAlliance == AllianceColor.UNDETERMINED) {
-                if (DriverStation.getAlliance().isPresent()) {
-                    if (DriverStation.getAlliance().get() == Alliance.Blue) {
-                        m_DSAlliance = AllianceColor.BLUE;
-                    } else {
-                        m_DSAlliance = AllianceColor.RED;
-                    }
-                }
-                m_io.setAlliance(m_DSAlliance);
-            }
-
-            if (kTesting) {
-                // Testing Mode - change values using Tunable Numbers
-                newState = testLEDState((int) kState.get());
-                switch ((int) kMode.get()) {
-                    case 1:
-                        newGPMode = GPMode.ALGAE;
-                        break;
-                    default:
-                        newGPMode = GPMode.CORAL;
-                        break;
-                }
-
-                if (newState == LEDState.ENABLED) {
-                    runMatchTimerPattern();
-                } else if (newState == LEDState.DISABLED) {
-                    this.timerDisabled();
-                }
-
-            } else {
-
-                // Real Robot
-                // Determine Game Piece Mode
-                if (m_isCoralMode.getAsBoolean()) {
-                    newGPMode = GPMode.CORAL;
+        // Determine and Set Alliance color
+        if (m_DSAlliance == AllianceColor.UNDETERMINED) {
+            if (DriverStation.getAlliance().isPresent()) {
+                if (DriverStation.getAlliance().get() == Alliance.Blue) {
+                    m_DSAlliance = AllianceColor.BLUE;
                 } else {
-                    newGPMode = GPMode.ALGAE;
+                    m_DSAlliance = AllianceColor.RED;
                 }
-                // Get latest robot state
-                newState = getRobotState();
+            }
+            m_io.setAlliance(m_DSAlliance);
+        }
+
+        if (kTesting) {
+            // Testing Mode - change values using Tunable Numbers
+            newState = testLEDState((int) kState.get());
+            switch ((int) kMode.get()) {
+                case 1:
+                    newGPMode = GPMode.ALGAE;
+                    break;
+                default:
+                    newGPMode = GPMode.CORAL;
+                    break;
             }
 
-            // Process Changes
-            m_io.setGPMode(newGPMode);
-            m_io.setRobotState(newState);
+            if (newState == LEDState.ENABLED) {
+                runMatchTimerPattern();
+            } else if (newState == LEDState.DISABLED) {
+                this.timerDisabled();
+            }
 
-            // Do AKit logging
-            m_io.updateInputs(inputs);
-            Logger.processInputs("LED", inputs);
+        } else {
 
-            Logger.recordOutput("LED/GamePiece", inputs.GamePiece);
+            // Real Robot
+            // Determine Game Piece Mode
+            if (m_isCoralMode.getAsBoolean()) {
+                newGPMode = GPMode.CORAL;
+            } else {
+                newGPMode = GPMode.ALGAE;
+            }
+            // Get latest robot state
+            newState = getRobotState();
+        }
+
+        // Process Changes
+        m_io.setGPMode(newGPMode);
+        m_io.setRobotState(newState);
+
+        // Do AKit logging
+        m_io.updateInputs(inputs);
+        Logger.processInputs("LED", inputs);
+		            Logger.recordOutput("LED/GamePiece", inputs.GamePiece);
             Logger.recordOutput("LED/RobotState", inputs.RobotState);
         }
     }
@@ -205,13 +203,12 @@ public class LEDSubsystem extends SubsystemBase {
                     // Vision is back, reset flashing counter
                     visionOutCounter = 0;
                 }
-            }
+			} else
             // Intaking Coral?
-            else if (m_ClawRoller.getState() == ClawRoller.State.INTAKE) {
-                if (!m_haveCoral.getAsBoolean()) {
-                    // Waiting for Coral
-                    newState = LEDState.INTAKING;
-                }
+            if (m_ClawRoller.getState() == ClawRoller.State.INTAKE &&
+                !m_haveCoral.getAsBoolean()) {
+                // Waiting for Coral
+                newState = LEDState.INTAKING;
 
                 // Climbing?
             } else if (m_Climber.getState() == Climber.State.PREP ||
@@ -224,11 +221,11 @@ public class LEDSubsystem extends SubsystemBase {
                 }
 
                 // Moving Superstructure?
-            } else if (m_Elevator.isElevated()) {
-                if (!m_Elevator.atPosition(0.0) || !m_Arm.atPosition(0.0)) {
-                    // An Elevated position has been commanded, but it's not there yet
-                    newState = LEDState.SUPER_MOVE;
-                }
+            } else if (m_Elevator.isElevated() &&
+                (!m_Elevator.atPosition(0.0) ||
+                    !m_Arm.atPosition(0.0))) {
+                // An Elevated position has been commanded, but it's not there yet
+                newState = LEDState.SUPER_MOVE;
 
                 // Aligning?
             } else if (DriveCommands.getDriveMode() == DriveMode.dmApproach) {
