@@ -29,7 +29,7 @@ public final class ClimberConstants {
         kSubSysConstants.kCANcoder = null;
         kSubSysConstants.kMotorConfig.Feedback.FeedbackSensorSource =
             FeedbackSensorSourceValue.RotorSensor;
-        kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio = 1.0;
+        kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio = 135.0;
         kSubSysConstants.kMotorConfig.Feedback.RotorToSensorRatio = 1.0;
 
         kSubSysConstants.kMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -43,6 +43,7 @@ public final class ClimberConstants {
 
         /* REAL system profile constants */
         kSubSysConstants.kMotorConfig.Slot0.kP = 40;
+        kSubSysConstants.kMotorConfig.Slot1.kP = 1200;
         kSubSysConstants.kMotorConfig.Slot0.kI = 0;
         kSubSysConstants.kMotorConfig.Slot0.kD = 10;
         kSubSysConstants.kMotorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
@@ -50,8 +51,8 @@ public final class ClimberConstants {
         kSubSysConstants.kMotorConfig.Slot0.kS = 0;
         kSubSysConstants.kMotorConfig.Slot0.kV = 0;
         kSubSysConstants.kMotorConfig.Slot0.kA = 0;
-        kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 40;
-        kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicAcceleration = 50;
+        kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 0.2;
+        kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicAcceleration = 1;
         kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicJerk = 0;
 
         /* SIM system profile constants */
