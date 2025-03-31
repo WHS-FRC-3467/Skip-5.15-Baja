@@ -50,7 +50,7 @@ public final class ClimberConstants {
         kSubSysConstants.kMotorConfig.Slot0.kS = 0;
         kSubSysConstants.kMotorConfig.Slot0.kV = 0;
         kSubSysConstants.kMotorConfig.Slot0.kA = 0;
-        kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 20;
+        kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicCruiseVelocity = 40;
         kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicAcceleration = 50;
         kSubSysConstants.kMotorConfig.MotionMagic.MotionMagicJerk = 0;
 
