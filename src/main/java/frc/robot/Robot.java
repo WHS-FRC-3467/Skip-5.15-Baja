@@ -16,7 +16,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.subsystems.RobotState;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -51,7 +50,6 @@ public class Robot extends LoggedRobot {
 
     private boolean withinStartingXYTol = false;
     private boolean withinStartingRotTol = false;
-    private RobotState robotState = RobotState.getInstance();
 
 
     public Robot()
@@ -211,7 +209,6 @@ public class Robot extends LoggedRobot {
                     .getDegrees() < 5;
             SmartDashboard.putBoolean("Alignment/Translation", withinStartingXYTol);
             SmartDashboard.putBoolean("Alignment/Rotation", withinStartingRotTol);
-            robotState.setAtStartingLoc(withinStartingXYTol);
         }
     }
 

@@ -5,8 +5,6 @@
 package frc.robot.subsystems;
 
 import org.littletonrobotics.junction.AutoLogOutput;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,11 +39,6 @@ public class RobotState {
     @Setter
     @AutoLogOutput(key = "RobotState/ElevatorHeight")
     private double elevatorHeight = 0.0;
-
-    @Getter
-    @Setter
-    @AutoLogOutput
-    private boolean atStartingLoc = false;
 
     public static RobotState getInstance()
     {

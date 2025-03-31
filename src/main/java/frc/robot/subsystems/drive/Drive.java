@@ -48,11 +48,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
-import frc.robot.Robot;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.RobotState;
 import frc.robot.subsystems.Vision.Vision;
+import frc.robot.util.LoggedTunableNumber;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -118,6 +118,11 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         new LoggedDashboardChooser<Boolean>("Left Side?");
 
     private RobotState robotState = RobotState.getInstance();
+    private LoggedTunableNumber elevatorSlowdownHeight =
+        new LoggedTunableNumber("Drive/Elevator Slowdown Height", 3.0);
+    private LoggedTunableNumber elevatorSlowdownMultiplier =
+        new LoggedTunableNumber("Drive/Elevator Slowdown Multiplier", 0.5);
+
 
     public Drive(
         GyroIO gyroIO,
@@ -145,7 +150,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
 
         AutoBuilder.configure(
             this::getPose,
-            this::setPose,
+            this::setPoseIfSim,
             this::getChassisSpeeds,
             this::runVelocity,
             new PPHolonomicDriveController(
@@ -244,9 +249,13 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
      */
     public void runVelocity(ChassisSpeeds speeds)
     {
-        if (robotState.getElevatorHeight() >= 3) {
-            speeds = speeds.times(0.5);
+        Logger.recordOutput("SwerveStates/InitSpeed", speeds);
+
+        if (robotState.getElevatorHeight() >= elevatorSlowdownHeight.getAsDouble()) {
+            speeds = speeds.times(elevatorSlowdownMultiplier.getAsDouble());
         }
+        Logger.recordOutput("SwerveStates/LimitedSpeed", speeds);
+
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
