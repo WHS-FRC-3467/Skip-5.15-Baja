@@ -5,7 +5,72 @@
     {
       "name": "Teleoperated",
       "grid_layout": {
-        "layouts": [],
+        "layouts": [
+          {
+            "title": "List Layout",
+            "x": 950.0,
+            "y": 350.0,
+            "width": 300.0,
+            "height": 250.0,
+            "type": "List Layout",
+            "properties": {
+              "label_position": "TOP"
+            },
+            "children": [
+              {
+                "title": "Intake Fallback Active",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/SmartDashboard/Intake Fallback Active",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Arm Fallback Active",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/SmartDashboard/Arm Fallback Active",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              },
+              {
+                "title": "Vision Fallback Active",
+                "x": 0.0,
+                "y": 0.0,
+                "width": 150.0,
+                "height": 150.0,
+                "type": "Boolean Box",
+                "properties": {
+                  "topic": "/SmartDashboard/Vision Fallback Active",
+                  "period": 0.06,
+                  "data_type": "boolean",
+                  "true_color": 4283215696,
+                  "false_color": 4294198070,
+                  "true_icon": "None",
+                  "false_icon": "None"
+                }
+              }
+            ]
+          }
+        ],
         "containers": [
           {
             "title": "Arm",
@@ -109,7 +174,8 @@
             "type": "Camera Stream",
             "properties": {
               "topic": "/CameraPublisher/front_left-raw",
-              "period": 0.06
+              "period": 0.06,
+              "rotation_turns": 0
             }
           },
           {
@@ -121,7 +187,8 @@
             "type": "Camera Stream",
             "properties": {
               "topic": "/CameraPublisher/front_right-raw",
-              "period": 0.06
+              "period": 0.06,
+              "rotation_turns": 0
             }
           },
           {
@@ -137,50 +204,9 @@
             }
           },
           {
-            "title": "LedState",
-            "x": 800.0,
-            "y": 500.0,
-            "width": 150.0,
-            "height": 100.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/AdvantageKit/LED/LedState",
-              "period": 0.06,
-              "data_type": "string",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "GpMode",
-            "x": 800.0,
-            "y": 400.0,
-            "width": 150.0,
-            "height": 100.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/AdvantageKit/LED/GpMode",
-              "period": 0.06,
-              "data_type": "string",
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "GamePiece",
-            "x": 950.0,
-            "y": 400.0,
-            "width": 150.0,
-            "height": 100.0,
-            "type": "Single Color View",
-            "properties": {
-              "topic": "/AdvantageKit/LED/GamePiece",
-              "period": 0.06,
-              "data_type": "string"
-            }
-          },
-          {
             "title": "RobotState",
-            "x": 950.0,
-            "y": 500.0,
+            "x": 800.0,
+            "y": 350.0,
             "width": 150.0,
             "height": 100.0,
             "type": "Single Color View",
@@ -260,7 +286,8 @@
             "type": "Camera Stream",
             "properties": {
               "topic": "/CameraPublisher/front_left-processed",
-              "period": 0.06
+              "period": 0.06,
+              "rotation_turns": 0
             }
           },
           {
@@ -272,7 +299,8 @@
             "type": "Camera Stream",
             "properties": {
               "topic": "/CameraPublisher/front_right-processed",
-              "period": 0.06
+              "period": 0.06,
+              "rotation_turns": 0
             }
           },
           {
