@@ -119,7 +119,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
 
     private RobotState robotState = RobotState.getInstance();
     private LoggedTunableNumber elevatorSlowdownHeight =
-        new LoggedTunableNumber("Drive/Elevator Slowdown Height", 3.0);
+        new LoggedTunableNumber("Drive/Elevator Slowdown Height", 5.0);
     private LoggedTunableNumber elevatorSlowdownMultiplier =
         new LoggedTunableNumber("Drive/Elevator Slowdown Multiplier", 0.5);
 
