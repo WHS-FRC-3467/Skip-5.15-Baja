@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import lombok.Getter;
@@ -12,33 +13,39 @@ import lombok.Setter;
 public class RobotState {
     private static RobotState instance;
 
-    public enum TARGET {
-        NONE,
-        CORAL_STATION,
-        REEF,
-        PROCESSOR,
-        BARGE,
-        CAGES,
-        GROUND_ALGAE;
-    }
+    // public enum TARGET {
+    // NONE,
+    // CORAL_STATION,
+    // REEF,
+    // PROCESSOR,
+    // BARGE,
+    // CAGES,
+    // GROUND_ALGAE;
+    // }
 
-    @Getter
-    private TARGET currentTarget = TARGET.NONE;
+    // @Getter
+    // private TARGET currentTarget = TARGET.NONE;
 
-    public enum GAMEPIECE {
-        NONE,
-        CORAL,
-        LOWER_ALGAE,
-        UPPER_ALGAE;
-    }
+    // public enum GAMEPIECE {
+    // NONE,
+    // CORAL,
+    // LOWER_ALGAE,
+    // UPPER_ALGAE;
+    // }
+
+    // @Getter
+    // @Setter
+    // private GAMEPIECE heldGamepiece = GAMEPIECE.NONE;
 
     @Getter
     @Setter
-    private GAMEPIECE heldGamepiece = GAMEPIECE.NONE;
+    @AutoLogOutput(key = "RobotState/ElevatorHeight")
+    private double elevatorHeight = 0.0;
 
     @Getter
     @Setter
-    private boolean isElevatorExtended = false;
+    @AutoLogOutput
+    private boolean atStartingLoc = false;
 
     public static RobotState getInstance()
     {
@@ -47,9 +54,10 @@ public class RobotState {
         return instance;
     }
 
-    public Command setTargetCommand(TARGET newTarget)
-    {
-        return Commands.runOnce(() -> this.currentTarget = newTarget);
-    }
+    // public Command setTargetCommand(TARGET newTarget)
+    // {
+    // return Commands.runOnce(() -> this.currentTarget = newTarget);
+    // }
+
 
 }

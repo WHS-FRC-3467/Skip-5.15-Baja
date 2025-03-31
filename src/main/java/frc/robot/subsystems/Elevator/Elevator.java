@@ -8,7 +8,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.RobotState;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.TargetState;
 import frc.robot.util.LoggedTunableNumber;
@@ -74,7 +76,7 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
     public void periodic()
     {
         super.periodic();
-        robotState.setElevatorExtended(isElevated());
+        robotState.setElevatorHeight(this.io.getPosition());
     }
 
     public Command setStateCommand(State state)
@@ -139,41 +141,4 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
     public Trigger launchHeightTrigger =
         new Trigger(() -> (io.getPosition() > launchHeight.getAsDouble()));
 
-    public Command homedAlertCommand()
-    {
-        return new SequentialCommandGroup(
-            new InstantCommand(() -> homedAlert.set(true)),
-            Commands.waitSeconds(1),
-            new InstantCommand(() -> homedAlert.set(false)));
-    }
-
-    public Command staticCharacterization(double outputRampRate)
-    {
-        final StaticCharacterizationState state = new StaticCharacterizationState();
-        Timer timer = new Timer();
-        return Commands.startRun(
-            () -> {
-                this.state = State.CHARACTERIZATION;
-                timer.restart(); // Starts the timer that tracks the time of the characterization
-            },
-            () -> {
-                state.characterizationOutput = outputRampRate * timer.get();
-                io.runCurrent(state.characterizationOutput, 1);
-                Logger.recordOutput(
-                    "Elevator/StaticCharacterizationOutput", state.characterizationOutput);
-            })
-            .until(() -> inputs.velocityRps * 2 * Math.PI >= staticCharacterizationVelocityThresh
-                .get())
-            .finallyDo(
-                () -> {
-                    timer.stop();
-                    Logger.recordOutput("Elevator/CharacterizationOutput",
-                        state.characterizationOutput);
-                    this.state = State.STOW;
-                });
-    }
-
-    private static class StaticCharacterizationState {
-        public double characterizationOutput = 0.0;
-    }
 }
