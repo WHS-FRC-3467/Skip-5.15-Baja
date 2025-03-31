@@ -7,7 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Cage-E"
+            "pathName": "Cage-F"
           }
         },
         {
@@ -15,15 +15,22 @@
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "parallel",
                 "data": {
-                  "name": "AutoAlignLeft"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L4"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AutoAlignRight"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "L4"
+                      }
+                    }
+                  ]
                 }
               },
               {
@@ -38,7 +45,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "E-SourceTop"
+            "pathName": "F-SourceTop"
           }
         },
         {
@@ -52,15 +59,22 @@
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "parallel",
                 "data": {
-                  "name": "AutoAlignRight"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L4"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AutoAlignRight"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "L4"
+                      }
+                    }
+                  ]
                 }
               },
               {
@@ -89,15 +103,22 @@
           "data": {
             "commands": [
               {
-                "type": "named",
+                "type": "parallel",
                 "data": {
-                  "name": "AutoAlignLeft"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "L4"
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AutoAlignLeft"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "L4"
+                      }
+                    }
+                  ]
                 }
               },
               {
@@ -116,9 +137,47 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "SourceTop-E"
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AutoAlignLeft"
+                      }
+                    },
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "L4"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Score"
+                }
+              }
+            ]
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "IntakeCoral"
+            "name": "Stow"
           }
         }
       ]

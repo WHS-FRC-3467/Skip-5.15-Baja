@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 3.3735000000000004,
-        "y": 2.5332499999999993
+        "x": 3.47,
+        "y": 2.59
       },
       "prevControl": {
-        "x": 3.1492500000000003,
-        "y": 2.2602499999999996
+        "x": 3.24575,
+        "y": 2.317
       },
       "nextControl": null,
       "isLocked": false,
@@ -45,12 +45,6 @@
               "data": {
                 "name": "IntakeCoral"
               }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "L4Path"
-              }
             }
           ]
         }
@@ -66,7 +60,7 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
+    "velocity": 1.0,
     "rotation": 59.99999999999999
   },
   "reversed": false,

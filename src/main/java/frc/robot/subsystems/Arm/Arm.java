@@ -69,4 +69,12 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
         return io.atPosition(state.profileType, tolerance);
     }
 
+    public boolean checkState(State desiredState, State currentState)
+    {
+        if (desiredState != currentState) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

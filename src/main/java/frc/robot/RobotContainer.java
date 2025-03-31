@@ -496,7 +496,7 @@ public class RobotContainer {
             .andThen(m_profiledElevator.getHomeCommand()));
 
         SmartDashboard.putData("ReefPositions",
-            Commands.runOnce(() -> ppAuto.calculatePPEndpoints(Units.inchesToMeters(3)))
+            Commands.runOnce(() -> ppAuto.calculatePPEndpoints(Units.inchesToMeters(19)))
                 .ignoringDisable(true));
 
         SmartDashboard.putData("AutoIntakeCommand",
@@ -529,81 +529,171 @@ public class RobotContainer {
      */
     private void registerNamedCommands()
     {
-        // Go to the L4 Position
-        NamedCommands.registerCommand(
-            "L4Path",
-            Commands.sequence(
-                Commands.waitUntil(new EventTrigger("L4")),
-                m_tongue.setStateCommand(Tongue.State.DOWN),
-                m_superStruct.getTransitionCommand(Arm.State.LEVEL_4, Elevator.State.LEVEL_4,
-                    Units.degreesToRotations(10),
-                    0.8),
-                m_clawRoller.L4ShuffleCommand(),
-                Commands.waitSeconds(0.1)));
+        switch (Constants.currentMode) {
+            case REAL:
+                // Go to the L4 Position
+                NamedCommands.registerCommand(
+                    "L4Path",
+                    Commands.sequence(
+                        Commands.waitUntil(new EventTrigger("L4")),
+                        m_tongue.setStateCommand(Tongue.State.DOWN),
+                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
+                            Elevator.State.LEVEL_4,
+                            Units.degreesToRotations(10),
+                            0.8),
+                        m_clawRoller.L4ShuffleCommand(),
+                        Commands.waitSeconds(0.1)));
 
-        NamedCommands.registerCommand(
-            "L4",
-            Commands.sequence(
-                Commands.waitUntil(m_clawRollerLaserCAN.triggered),
-                m_tongue.setStateCommand(Tongue.State.DOWN),
-                m_superStruct.getTransitionCommand(Arm.State.LEVEL_4, Elevator.State.LEVEL_4,
-                    Units.degreesToRotations(10),
-                    0.8),
-                m_clawRoller.L4ShuffleCommand(),
-                Commands.waitSeconds(0.1)));
+                NamedCommands.registerCommand(
+                    "L4",
+                    Commands.sequence(
+                        Commands.waitUntil(m_clawRollerLaserCAN.triggered),
+                        m_tongue.setStateCommand(Tongue.State.DOWN),
+                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
+                            Elevator.State.LEVEL_4,
+                            Units.degreesToRotations(10),
+                            0.8),
+                        m_clawRoller.L4ShuffleCommand(),
+                        Commands.waitSeconds(0.1)));
 
-        NamedCommands.registerCommand("AutoAlignLeft",
-            new DriveToPose(m_drive,
-                () -> Util.moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
-                    ReefSide.LEFT), (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
-                    .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+                NamedCommands.registerCommand("AutoAlignLeft",
+                    new DriveToPose(m_drive,
+                        () -> Util
+                            .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
+                                ReefSide.LEFT),
+                                (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
+                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
 
-        NamedCommands.registerCommand("AutoAlignRight",
-            new DriveToPose(m_drive,
-                () -> Util.moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
-                    ReefSide.RIGHT), (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
-                    .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+                NamedCommands.registerCommand("AutoAlignRight",
+                    new DriveToPose(m_drive,
+                        () -> Util
+                            .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
+                                ReefSide.RIGHT),
+                                (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
+                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
 
-        // Intake Coral
-        NamedCommands.registerCommand(
-            "IntakeCoral",
-            Commands.either(
-                Commands.sequence(
-                    m_tongue.setStateCommand(Tongue.State.RAISED),
-                    m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
-                        Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
-                    Commands.repeatingSequence(
+                // Intake Coral
+                NamedCommands.registerCommand(
+                    "IntakeCoral",
+                    Commands.either(
+                        Commands.sequence(
+                            m_tongue.setStateCommand(Tongue.State.RAISED),
+                            m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                                Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
+                            Commands.repeatingSequence(
+                                m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                                Commands.waitUntil(m_clawRoller.stalled.debounce(0.1)),
+                                m_clawRoller.shuffleCommand())
+                                .until(m_clawRollerLaserCAN.triggered
+                                    .and(m_clawRoller.stopped.debounce(0.125))),
+                            m_clawRoller.shuffleCommand(),
+                            m_tongue.lowerTongueCommand()),
+                        Commands.sequence(
+                            m_clawRoller.shuffleCommand(),
+                            m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
+                            m_tongue.setStateCommand(Tongue.State.DOWN)),
+                        m_clawRollerLaserCAN.triggered.negate()));
+
+                // Prepare Necessary Subsystems Before Intaking
+                NamedCommands.registerCommand(
+                    "IntakePrep",
+                    Commands.sequence(
                         m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
-                        Commands.waitUntil(m_clawRoller.stalled.debounce(0.1)),
-                        m_clawRoller.shuffleCommand())
-                        .until(m_clawRollerLaserCAN.triggered
-                            .and(m_clawRoller.stopped.debounce(0.125))),
-                    m_clawRoller.shuffleCommand(),
-                    m_tongue.lowerTongueCommand()),
-                Commands.sequence(
-                    m_clawRoller.shuffleCommand(),
-                    m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
-                    m_tongue.setStateCommand(Tongue.State.DOWN)),
-                m_clawRollerLaserCAN.triggered.negate()));
+                        m_tongue.setStateCommand(Tongue.State.RAISED),
+                        m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                            Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2)));
 
-        // Prepare Necessary Subsystems Before Intaking
-        NamedCommands.registerCommand(
-            "IntakePrep",
-            Commands.sequence(
-                m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
-                m_tongue.setStateCommand(Tongue.State.RAISED),
-                m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
-                    Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2)));
+                // Score Coral
+                NamedCommands.registerCommand(
+                    "Score",
+                    Commands.sequence(
+                        m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
+                        Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+                        m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
 
-        // Score Coral
-        NamedCommands.registerCommand(
-            "Score",
-            Commands.sequence(
-                m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
-                Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
-                m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
+                NamedCommands.registerCommand(
+                    "Stow",
+                    Commands.sequence(
+                        m_superStruct.getTransitionCommand(Arm.State.STOW,
+                            Elevator.State.STOW, Units.degreesToRotations(10), .2)));
+                break;
+            case SIM:
+                // Go to the L4 Position
+                NamedCommands.registerCommand(
+                    "L4Path",
+                    Commands.sequence(
+                        Commands.waitUntil(new EventTrigger("L4")),
+                        m_tongue.setStateCommand(Tongue.State.DOWN),
+                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
+                            Elevator.State.LEVEL_4,
+                            Units.degreesToRotations(10),
+                            0.8),
+                        m_clawRoller.L4ShuffleCommand(),
+                        Commands.waitSeconds(0.1)));
+
+                NamedCommands.registerCommand(
+                    "L4",
+                    Commands.sequence(
+                        m_tongue.setStateCommand(Tongue.State.DOWN),
+                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
+                            Elevator.State.LEVEL_4,
+                            Units.degreesToRotations(10),
+                            0.8),
+                        m_clawRoller.L4ShuffleCommand()));
+
+                NamedCommands.registerCommand("AutoAlignLeft",
+                    new DriveToPose(m_drive,
+                        () -> Util
+                            .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
+                                ReefSide.LEFT),
+                                (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
+                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+
+                NamedCommands.registerCommand("AutoAlignRight",
+                    new DriveToPose(m_drive,
+                        () -> Util
+                            .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
+                                ReefSide.RIGHT),
+                                (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
+                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+
+                // Intake Coral
+                NamedCommands.registerCommand(
+                    "IntakeCoral",
+                    Commands.sequence(
+                        m_tongue.setStateCommand(Tongue.State.RAISED),
+                        m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                            Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
+                        m_clawRoller.shuffleCommand(),
+                        m_tongue.lowerTongueCommand()));
+
+                // Prepare Necessary Subsystems Before Intaking
+                NamedCommands.registerCommand(
+                    "IntakePrep",
+                    Commands.sequence(
+                        m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                        m_tongue.setStateCommand(Tongue.State.RAISED),
+                        m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
+                            Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2)));
+
+                // Score Coral
+                NamedCommands.registerCommand(
+                    "Score",
+                    Commands.sequence(
+                        m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
+                        m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
+
+                NamedCommands.registerCommand(
+                    "Stow",
+                    Commands.sequence(
+                        m_superStruct.getTransitionCommand(Arm.State.STOW,
+                            Elevator.State.STOW, Units.degreesToRotations(10), .2)));
+                break;
+        }
     }
 
     /**

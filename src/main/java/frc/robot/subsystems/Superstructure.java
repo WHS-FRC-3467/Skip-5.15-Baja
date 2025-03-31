@@ -41,9 +41,12 @@ public class Superstructure {
         return Commands.sequence(
 
             // Always move Arm to STOW position before moving Elevator
-            Commands.sequence(
-                m_Arm.setStateCommand(Arm.State.STOW),
-                Commands.waitUntil(() -> m_Arm.atPosition(armTolerance))),
+            Commands.either(
+                Commands.none(), // If True
+                Commands.sequence( // If False
+                    m_Arm.setStateCommand(Arm.State.STOW),
+                    Commands.waitUntil(() -> m_Arm.atPosition(armTolerance))),
+                () -> m_Arm.checkState(armState, m_Arm.getState())), // Condition
 
             // Move Elevator to new position
             Commands.sequence(
