@@ -10,6 +10,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -584,7 +585,7 @@ public class RobotContainer {
                     0.8),
                 Commands.waitSeconds(0.25)));
 
-        NamedCommands.registerCommand(    
+        NamedCommands.registerCommand(
             "AlgaeGround",
             Commands.sequence(
                 m_superStruct.getTransitionCommand(Arm.State.ALGAE_GROUND,
@@ -605,26 +606,26 @@ public class RobotContainer {
                 Commands.waitUntil(m_clawRoller.stalled.negate()),
                 m_superStruct.getTransitionCommand(Arm.State.ALGAE_LOW,
                     Elevator.State.ALGAE_LOW),
-                    m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
-                    Commands.waitUntil(m_clawRoller.stalled),
-                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+                Commands.waitUntil(m_clawRoller.stalled),
+                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
         // Send Arm and Elevator to ALGAE_HIGH position
         NamedCommands.registerCommand(
             "AlgaeHigh",
-                Commands.sequence(
-                    Commands.waitUntil(m_clawRoller.stalled.negate()),
-                    m_superStruct.getTransitionCommand(Arm.State.ALGAE_HIGH,
-                        Elevator.State.ALGAE_HIGH),
-                    m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
-                    Commands.waitUntil(m_clawRoller.stalled),
-                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+            Commands.sequence(
+                Commands.waitUntil(m_clawRoller.stalled.negate()),
+                m_superStruct.getTransitionCommand(Arm.State.ALGAE_HIGH,
+                    Elevator.State.ALGAE_HIGH),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+                Commands.waitUntil(m_clawRoller.stalled),
+                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
         // Algae Barge SP
         NamedCommands.registerCommand(
             "AlgaeBarge",
-                Commands.sequence(
-                    m_superStruct.getTransitionCommand(Arm.State.BARGE, Elevator.State.BARGE)));
+            Commands.sequence(
+                m_superStruct.getTransitionCommand(Arm.State.BARGE, Elevator.State.BARGE)));
 
         // Release Algae
         NamedCommands.registerCommand(
@@ -634,18 +635,18 @@ public class RobotContainer {
                     m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
                     () -> m_clawRoller.getState() == ClawRoller.State.ALGAE_REVERSE),
                 Commands.waitUntil(m_clawRoller.stalled.negate()),
-                    Commands.waitSeconds(1),
-                    m_clawRoller.setStateCommand(ClawRoller.State.OFF),
-                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+                Commands.waitSeconds(1),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
         // Tells drivebase to drive at 1 meter per second, no turning
         NamedCommands.registerCommand(
-            "DriveTest", 
+            "DriveTest",
             driveTest(1.0));
 
         // Tells drivebase to rotate at 1 radian per second, no turning
         NamedCommands.registerCommand(
-            "SteerTest", 
+            "SteerTest",
             steerTest(1.0));
 
     }
