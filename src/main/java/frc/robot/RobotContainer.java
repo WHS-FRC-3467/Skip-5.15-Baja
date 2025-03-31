@@ -104,10 +104,10 @@ public class RobotContainer {
     public RobotContainer()
     {
         m_flipChooser =
-            new LoggedDashboardChooser<>("Should Flip?");
+            new LoggedDashboardChooser<>("Side");
 
-        m_flipChooser.addOption("True", true);
-        m_flipChooser.addDefaultOption("False", false);
+        m_flipChooser.addOption("Left", true);
+        m_flipChooser.addDefaultOption("Right", false);
 
         ppAuto = new PPCalcEndpoint();
         switch (Constants.currentMode) {
