@@ -16,6 +16,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.subsystems.RobotState;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -47,6 +48,11 @@ public class Robot extends LoggedRobot {
     private List<Pose2d> m_pathsToShow = new ArrayList<Pose2d>();
     public static final Translation2d fieldCenter =
         new Translation2d(fieldLength / 2, fieldWidth / 2);
+
+    private boolean withinStartingXYTol = false;
+    private boolean withinStartingRotTol = false;
+    private RobotState robotState = RobotState.getInstance();
+
 
     public Robot()
     {
@@ -110,6 +116,7 @@ public class Robot extends LoggedRobot {
                 throw new RuntimeException(
                     "You are using an unsupported swerve configuration, which this template does not support without manual customization. The 2025 release of Phoenix supports some swerve configurations which were not available during 2025 beta testing, preventing any development and support from the AdvantageKit developers.");
             }
+
         }
 
         // Log active commands
@@ -194,13 +201,17 @@ public class Robot extends LoggedRobot {
         if (!m_pathsToShow.isEmpty()) {
             var firstPose = m_pathsToShow.get(0);
             Logger.recordOutput("Alignment/StartPose", firstPose);
-            SmartDashboard.putBoolean("Alignment/Translation",
-                firstPose.getTranslation().getDistance(
-                    m_robotContainer.m_drive.getPose().getTranslation()) <= Units
-                        .inchesToMeters(4));
-            SmartDashboard.putBoolean("Alignment/Rotation",
+
+            withinStartingXYTol = firstPose.getTranslation()
+                .getDistance(m_robotContainer.m_drive.getPose().getTranslation()) <= Units
+                    .inchesToMeters(4);
+
+            withinStartingRotTol =
                 firstPose.getRotation().minus(m_robotContainer.m_drive.getPose().getRotation())
-                    .getDegrees() < 5);
+                    .getDegrees() < 5;
+            SmartDashboard.putBoolean("Alignment/Translation", withinStartingXYTol);
+            SmartDashboard.putBoolean("Alignment/Rotation", withinStartingRotTol);
+            robotState.setAtStartingLoc(withinStartingXYTol);
         }
     }
 
