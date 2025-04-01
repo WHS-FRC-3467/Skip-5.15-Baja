@@ -1,7 +1,11 @@
 package frc.robot.subsystems.Claw.ClawRollerLaserCAN;
 
 import static edu.wpi.first.units.Units.Meter;
+import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.GenericLaserCANSubsystem.GenericLaserCANSubsystem;
 import frc.robot.subsystems.GenericLaserCANSubsystem.GenericLaserCANSubsystem.DistanceState;
@@ -13,6 +17,12 @@ public class ClawRollerLaserCAN extends GenericLaserCANSubsystem<ClawRollerLaser
 
     public Trigger triggered = new Trigger(() -> super.isTriggered());
 
+    private Debouncer validDebouncer = new Debouncer(2, DebounceType.kRising);
+
+    public Trigger validMeasurement =
+        new Trigger(
+            () -> validDebouncer.calculate(io.getValidStatus()));
+            
     @RequiredArgsConstructor
     @Getter
     public enum State implements DistanceState {
@@ -31,4 +41,10 @@ public class ClawRollerLaserCAN extends GenericLaserCANSubsystem<ClawRollerLaser
         super(ClawRollerLaserCANConstants.kSubSysConstants.kName, io);
     }
 
+    @Override
+    public void periodic() {
+        super.periodic();
+        SmartDashboard.putBoolean("Intake Fallback Active", !validMeasurement.getAsBoolean());
+        Logger.recordOutput("ClawRollerLaserCAN/Fallback Active", validMeasurement.getAsBoolean());
+    }
 }

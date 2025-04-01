@@ -40,6 +40,11 @@ public class LEDSubsystem extends SubsystemBase {
     AllianceColor m_DSAlliance = AllianceColor.UNDETERMINED;
     LEDSubsystemIO m_io;
 
+    int visionOutCounter = 0;
+    Timer m_timer = new Timer();
+    double lastTimeStamp = 0.0;
+    double thisTimeStamp;
+
     protected final LEDSubsystemIOInputsAutoLogged inputs =
         new LEDSubsystemIOInputsAutoLogged();
 
@@ -69,11 +74,16 @@ public class LEDSubsystem extends SubsystemBase {
         // Tunable numbers for testing
         kMode = new LoggedTunableNumber("LED/Mode", 0);
         kState = new LoggedTunableNumber("LED/State", 0);
+        m_timer.start();
     }
 
     @Override
     public void periodic()
     {
+        // Only loop through periodic LED checking every 0.2 seconds, makes code more efficient
+        thisTimeStamp = m_timer.get();
+        if (thisTimeStamp - lastTimeStamp >= 0.2) {
+            lastTimeStamp = thisTimeStamp;
         LEDState newState;
         GPMode newGPMode;
 
@@ -127,6 +137,9 @@ public class LEDSubsystem extends SubsystemBase {
         // Do AKit logging
         m_io.updateInputs(inputs);
         Logger.processInputs("LED", inputs);
+		            Logger.recordOutput("LED/GamePiece", inputs.GamePiece);
+            Logger.recordOutput("LED/RobotState", inputs.RobotState);
+        }
     }
 
     // Determine the current state of the robot
@@ -181,8 +194,17 @@ public class LEDSubsystem extends SubsystemBase {
             // Run MatchTimer
             runMatchTimerPattern();
 
+            // Vision Out? For 2 seconds, quickly flash the LEDs red
+            if (visionOutCounter < 10) {
+                if (!m_Vision.anyCameraConnected) {
+                    visionOutCounter++;
+                    newState = LEDState.VISION_OUT;
+                } else {
+                    // Vision is back, reset flashing counter
+                    visionOutCounter = 0;
+                }
             // Intaking Coral?
-            if (m_ClawRoller.getState() == ClawRoller.State.INTAKE &&
+          }else if (m_ClawRoller.getState() == ClawRoller.State.INTAKE &&
                 !m_haveCoral.getAsBoolean()) {
                 // Waiting for Coral
                 newState = LEDState.INTAKING;
@@ -285,18 +307,20 @@ public class LEDSubsystem extends SubsystemBase {
             case 4:
                 return LEDState.AUTONOMOUS;
             case 5:
-                return LEDState.INTAKING;
+                return LEDState.VISION_OUT;
             case 6:
-                return LEDState.CLIMBING;
+                return LEDState.INTAKING;
             case 7:
-                return LEDState.CLIMBED;
+                return LEDState.CLIMBING;
             case 8:
-                return LEDState.SUPER_MOVE;
+                return LEDState.CLIMBED;
             case 9:
-                return LEDState.ALIGNING;
+                return LEDState.SUPER_MOVE;
             case 10:
-                return LEDState.HAVE_CORAL;
+                return LEDState.ALIGNING;
             case 11:
+                return LEDState.HAVE_CORAL;
+            case 12:
                 return LEDState.ENABLED;
         }
     }
