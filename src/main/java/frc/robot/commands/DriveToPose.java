@@ -37,7 +37,7 @@ public class DriveToPose extends Command {
     TuneableProfiledPID angleController =
         new TuneableProfiledPID(
             "angleController",
-            4.2,
+            4.5,
             0.0,
             0.4,
             20,
@@ -46,16 +46,16 @@ public class DriveToPose extends Command {
     TuneableProfiledPID xController =
         new TuneableProfiledPID(
             "xController",
-            3,
+            5,
             0.0,
-            0.1,
+            0.2,
             3.7,
             4);
 
     TuneableProfiledPID yController =
         new TuneableProfiledPID(
             "yController",
-            3,
+            4,
             0.0,
             0.1,
             3.7,
