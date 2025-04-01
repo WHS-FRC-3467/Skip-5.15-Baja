@@ -220,6 +220,8 @@ public class RobotContainer {
         // Pathplanner commands
         registerNamedCommands();
 
+        registerSelfTestCommands();
+
         // Add all PathPlanner autos to dashboard
         m_autoChooser =
             new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -237,11 +239,8 @@ public class RobotContainer {
         configureControllerBindings();
 
         // Detect if controllers are missing / Stop multiple warnings
-        if (Robot.isReal()) {
-            DriverStation.silenceJoystickConnectionWarning(false);
-        } else {
-            DriverStation.silenceJoystickConnectionWarning(true);
-        }
+        DriverStation.silenceJoystickConnectionWarning(false);
+
 
     }
 
@@ -430,7 +429,7 @@ public class RobotContainer {
             .onTrue(BargeAlgae());
 
         // Driver Right Trigger: Place Coral or Algae (Should be done once the robot is in position)
-        m_driver.rightTrigger().and(isCoralMode).onTrue(
+        m_driver.rightTrigger().and(isCoralMode).and(m_driver.a().negate()).onTrue(
             Commands.either(
                 Commands.sequence(
                     m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
@@ -455,6 +454,15 @@ public class RobotContainer {
                     () -> m_clawRoller.getState() == ClawRoller.State.ALGAE_REVERSE),
 
                 isCoralMode));
+
+        m_driver.rightTrigger().and(m_driver.a())
+            .onTrue(
+                Commands.sequence(m_clawRoller.setStateCommand(ClawRoller.State.L1_SCORE),
+                    Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+                    Commands.waitSeconds(0.2),
+                    m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
+                        Units.degreesToRotations(10), .2)));
 
         m_driver.leftTrigger()
             .whileTrue(
@@ -571,19 +579,8 @@ public class RobotContainer {
     {
         switch (Constants.currentMode) {
             case REAL:
-                // Go to the L4 Position
-                NamedCommands.registerCommand(
-                    "L4Path",
-                    Commands.sequence(
-                        Commands.waitUntil(new EventTrigger("L4")),
-                        m_tongue.setStateCommand(Tongue.State.DOWN),
-                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
-                            Elevator.State.LEVEL_4,
-                            Units.degreesToRotations(10),
-                            0.8),
-                        m_clawRoller.L4ShuffleCommand(),
-                        Commands.waitSeconds(0.1)));
 
+                // Go to the L4 Position
                 NamedCommands.registerCommand(
                     "L4",
                     Commands.sequence(
@@ -653,6 +650,7 @@ public class RobotContainer {
                         Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
                         m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
 
+                // Move to Stow
                 NamedCommands.registerCommand(
                     "Stow",
                     Commands.sequence(
@@ -667,18 +665,6 @@ public class RobotContainer {
                             Elevator.State.LEVEL_3, Units.degreesToRotations(10), .2)));
                 break;
             case SIM:
-                // Go to the L4 Position
-                NamedCommands.registerCommand(
-                    "L4Path",
-                    Commands.sequence(
-                        Commands.waitUntil(new EventTrigger("L4")),
-                        m_tongue.setStateCommand(Tongue.State.DOWN),
-                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
-                            Elevator.State.LEVEL_4,
-                            Units.degreesToRotations(10),
-                            0.8),
-                        m_clawRoller.L4ShuffleCommand(),
-                        Commands.waitSeconds(0.1)));
 
                 NamedCommands.registerCommand(
                     "L4",
@@ -799,5 +785,94 @@ public class RobotContainer {
         } else {
             return target;
         }
+    }
+
+    public void registerSelfTestCommands()
+    {
+        // Go to the L3 Position
+        NamedCommands.registerCommand(
+            "L3",
+            Commands.sequence(
+                Commands.waitUntil(m_clawRollerLaserCAN.triggered),
+                m_tongue.setStateCommand(Tongue.State.DOWN),
+                m_superStruct.getTransitionCommand(Arm.State.LEVEL_3, Elevator.State.LEVEL_3,
+                    Units.degreesToRotations(10),
+                    0.8),
+                Commands.waitSeconds(0.25)));
+
+        // Go to the L2 Position
+        NamedCommands.registerCommand(
+            "L2",
+            Commands.sequence(
+                Commands.waitUntil(m_clawRollerLaserCAN.triggered),
+                m_tongue.setStateCommand(Tongue.State.DOWN),
+                m_superStruct.getTransitionCommand(Arm.State.LEVEL_2, Elevator.State.LEVEL_2,
+                    Units.degreesToRotations(10),
+                    0.8),
+                Commands.waitSeconds(0.25)));
+
+        NamedCommands.registerCommand(
+            "AlgaeGround",
+            Commands.sequence(
+                m_superStruct.getTransitionCommand(Arm.State.ALGAE_GROUND,
+                    Elevator.State.STOW),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+                Commands.waitUntil(m_clawRoller.stalled),
+                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+
+        NamedCommands.registerCommand(
+            "Processor",
+            m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW,
+                Units.degreesToRotations(10), 0.8));
+
+        // Driver X Button and Algae mode: Send Arm and Elevator to ALGAE_LOW position
+        NamedCommands.registerCommand(
+            "AlgaeLow",
+            Commands.sequence(
+                Commands.waitUntil(m_clawRoller.stalled.negate()),
+                m_superStruct.getTransitionCommand(Arm.State.ALGAE_LOW,
+                    Elevator.State.ALGAE_LOW),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+                Commands.waitUntil(m_clawRoller.stalled),
+                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+
+        // Send Arm and Elevator to ALGAE_HIGH position
+        NamedCommands.registerCommand(
+            "AlgaeHigh",
+            Commands.sequence(
+                Commands.waitUntil(m_clawRoller.stalled.negate()),
+                m_superStruct.getTransitionCommand(Arm.State.ALGAE_HIGH,
+                    Elevator.State.ALGAE_HIGH),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+                Commands.waitUntil(m_clawRoller.stalled),
+                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+
+        // Algae Barge SP
+        NamedCommands.registerCommand(
+            "AlgaeBarge",
+            Commands.sequence(
+                m_superStruct.getTransitionCommand(Arm.State.BARGE, Elevator.State.BARGE)));
+
+        // Release Algae
+        NamedCommands.registerCommand(
+            "AlgaeScore",
+            Commands.sequence(
+                Commands.either(m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+                    m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+                    () -> m_clawRoller.getState() == ClawRoller.State.ALGAE_REVERSE),
+                Commands.waitUntil(m_clawRoller.stalled.negate()),
+                Commands.waitSeconds(1),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
+
+        // Tells drivebase to drive at 1 meter per second, no turning
+        NamedCommands.registerCommand(
+            "DriveTest",
+            driveTest(1.0));
+
+        // Tells drivebase to rotate at 1 radian per second, no turning
+        NamedCommands.registerCommand(
+            "SteerTest",
+            steerTest(1.0));
     }
 }
