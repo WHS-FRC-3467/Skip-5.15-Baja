@@ -18,11 +18,11 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
     public enum State implements TargetState {
         STOW(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(125.18), 0)),
         CORAL_INTAKE(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(135.7), 0)),
-        LEVEL_1(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(94.13), 0)),
+        LEVEL_1(new ProfileType.MM_POSITION(() -> .352, 0)),
         LEVEL_2(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(94.48), 0)),
         LEVEL_3(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(104.48), 0)),
         LEVEL_4(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(101.33), 0)),
-        CLIMB(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(82.4), 0)),
+        CLIMB(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(73.44), 0)),
         ALGAE_LOW(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(103.3), 0)),
         // ALGAE_LOW_P(new ProfileType.MM_POSITION(() -> .2377, 0)),
         ALGAE_HIGH(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(103.3), 0)),

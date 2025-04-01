@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.Arm.Arm;
@@ -63,6 +64,23 @@ public class Superstructure {
     {
         return getTransitionCommand(armState, elevatorState, 0.0,
             0.0).withName(
+                "Superstructure Transition Command: Arm -> " + armState.name() +
+                    " Elevator -> " + elevatorState.name());
+    }
+
+    /**
+     * Get a Command to transition the states of the Arm and Elevator in the proper order.
+     * 
+     * This version uses default tolerance of 10deg and .4 rot
+     * 
+     * @param armState
+     * @param elevatorState
+     * @return Transtition Command with normal tolerances
+     */
+    public Command getDefaultTransitionCommand(Arm.State armState, Elevator.State elevatorState)
+    {
+        return getTransitionCommand(armState, elevatorState, Units.degreesToRotations(10),
+            0.4).withName(
                 "Superstructure Transition Command: Arm -> " + armState.name() +
                     " Elevator -> " + elevatorState.name());
     }
