@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.TuneableProfiledPID;
@@ -33,7 +34,7 @@ public class JoystickApproachCommand extends Command {
     TuneableProfiledPID angleController =
         new TuneableProfiledPID(
             "angleController",
-            5.0,
+            4.5,
             0.0,
             0.4,
             8.0,
@@ -42,11 +43,11 @@ public class JoystickApproachCommand extends Command {
     TuneableProfiledPID alignController =
         new TuneableProfiledPID(
             "alignController",
-            0.6,
+            4,
             0.0,
             0,
-            20,
-            8);
+            3.7,
+            4);
 
     public JoystickApproachCommand(
         Drive drive,
@@ -69,16 +70,19 @@ public class JoystickApproachCommand extends Command {
     {
         alignController.reset(0);
         angleController.reset(drive.getPose().getRotation().getRadians());
+        targetPose2d = targetSupplier.get();
     }
 
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute()
     {
+        angleController.updatePID();
+        alignController.updatePID();
+
         running = true;
-        targetPose2d = targetSupplier.get();
         relativePose2d = drive.getPose().relativeTo(targetPose2d);
-        targetRotation2d = targetSupplier.get().getRotation();
+        targetRotation2d = targetPose2d.getRotation();
 
         // Calculate lateral linear velocity
         Translation2d offsetVector =
@@ -87,7 +91,7 @@ public class JoystickApproachCommand extends Command {
         // Calculate total linear velocity
         Translation2d linearVelocity =
             getLinearVelocityFromJoysticks(-ySupplier.getAsDouble(),
-                0)
+                0).times(drive.getMaxLinearSpeedMetersPerSec())
                     .plus(offsetVector)
                     .rotateBy(targetRotation2d);
 
@@ -100,8 +104,8 @@ public class JoystickApproachCommand extends Command {
         // Convert to field relative speeds & send command
         ChassisSpeeds speeds =
             new ChassisSpeeds(
-                linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                linearVelocity.getX(),
+                linearVelocity.getY(),
                 omega);
 
         drive.runVelocity(

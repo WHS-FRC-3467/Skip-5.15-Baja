@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import static frc.robot.subsystems.Vision.VisionConstants.maxAmbiguity;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -36,7 +37,7 @@ public class DriveToPose extends Command {
     TuneableProfiledPID angleController =
         new TuneableProfiledPID(
             "angleController",
-            5.0,
+            4.5,
             0.0,
             0.4,
             20,
@@ -45,16 +46,16 @@ public class DriveToPose extends Command {
     TuneableProfiledPID xController =
         new TuneableProfiledPID(
             "xController",
-            3,
+            5,
             0.0,
-            0.1,
+            0.2,
             3.7,
             4);
 
     TuneableProfiledPID yController =
         new TuneableProfiledPID(
             "yController",
-            3,
+            4,
             0.0,
             0.1,
             3.7,
@@ -101,11 +102,8 @@ public class DriveToPose extends Command {
         yController.updatePID();
 
         running = true;
-        targetPose2d = targetSupplier.get();
         relativePose2d = drive.getPose().relativeTo(targetPose2d);
-        targetRotation2d = targetSupplier.get().getRotation();
-
-        Logger.recordOutput("test", relativePose2d);
+        targetRotation2d = targetPose2d.getRotation();
 
         // Calculate lateral linear velocity
         Translation2d offsetVector =
@@ -125,12 +123,9 @@ public class DriveToPose extends Command {
         // Convert to field relative speeds & send command
         ChassisSpeeds speeds =
             new ChassisSpeeds(
-                MathUtil.clamp(linearVelocity.getX(), -drive.getMaxLinearSpeedMetersPerSec(),
-                    drive.getMaxLinearSpeedMetersPerSec()),
-                MathUtil.clamp(linearVelocity.getY(), -drive.getMaxLinearSpeedMetersPerSec(),
-                    drive.getMaxLinearSpeedMetersPerSec()),
-                MathUtil.clamp(omega, -drive.getMaxLinearSpeedMetersPerSec(),
-                    drive.getMaxAngularSpeedRadPerSec()));
+                linearVelocity.getX(),
+                linearVelocity.getY(),
+                omega);
 
         drive.runVelocity(
             ChassisSpeeds.fromFieldRelativeSpeeds(
