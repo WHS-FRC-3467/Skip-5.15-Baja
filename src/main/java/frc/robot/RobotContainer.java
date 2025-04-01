@@ -108,8 +108,8 @@ public class RobotContainer {
         m_flipChooser =
             new LoggedDashboardChooser<>("Side");
 
-        m_flipChooser.addOption("Left", true);
-        m_flipChooser.addDefaultOption("Right", false);
+        m_flipChooser.addOption("Right", false);
+        m_flipChooser.addDefaultOption("Left", true);
 
         ppAuto = new PPCalcEndpoint();
         switch (Constants.currentMode) {
@@ -599,19 +599,19 @@ public class RobotContainer {
                     new DriveToPose(m_drive,
                         () -> Util
                             .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
-                                ReefSide.LEFT),
+                                shouldMirrorPath() ? ReefSide.RIGHT : ReefSide.LEFT),
                                 (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .04));
+                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .04).withTimeout(2));
 
                 NamedCommands.registerCommand("AutoAlignRight",
                     new DriveToPose(m_drive,
                         () -> Util
                             .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
-                                ReefSide.RIGHT),
+                                shouldMirrorPath() ? ReefSide.LEFT : ReefSide.RIGHT),
                                 (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .04));
+                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .04).withTimeout(2));
 
                 // Intake Coral
                 NamedCommands.registerCommand(
@@ -694,19 +694,19 @@ public class RobotContainer {
                     new DriveToPose(m_drive,
                         () -> Util
                             .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
-                                ReefSide.LEFT),
-                                (Constants.bumperWidth / 2) + Units.inchesToMeters(3))
+                                shouldMirrorPath() ? ReefSide.RIGHT : ReefSide.LEFT),
+                                (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02).withTimeout(2));
 
                 NamedCommands.registerCommand("AutoAlignRight",
                     new DriveToPose(m_drive,
                         () -> Util
                             .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
-                                ReefSide.RIGHT),
-                                (Constants.bumperWidth / 2) + Units.inchesToMeters(3))
+                                shouldMirrorPath() ? ReefSide.LEFT : ReefSide.RIGHT),
+                                (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02).withTimeout(2));
 
                 // Intake Coral
                 NamedCommands.registerCommand(
