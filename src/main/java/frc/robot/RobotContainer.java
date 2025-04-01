@@ -552,10 +552,9 @@ public class RobotContainer {
                         m_tongue.setStateCommand(Tongue.State.DOWN),
                         m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
                             Elevator.State.LEVEL_4,
-                            Units.degreesToRotations(10),
+                            Units.degreesToRotations(6),
                             0.8),
-                        m_clawRoller.L4ShuffleCommand(),
-                        Commands.waitSeconds(0.1)));
+                        m_clawRoller.L4ShuffleCommand()));
 
                 NamedCommands.registerCommand("AutoAlignLeft",
                     new DriveToPose(m_drive,
@@ -564,7 +563,7 @@ public class RobotContainer {
                                 ReefSide.LEFT),
                                 (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .04));
 
                 NamedCommands.registerCommand("AutoAlignRight",
                     new DriveToPose(m_drive,
@@ -573,7 +572,7 @@ public class RobotContainer {
                                 ReefSide.RIGHT),
                                 (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .04));
 
                 // Intake Coral
                 NamedCommands.registerCommand(
@@ -588,7 +587,7 @@ public class RobotContainer {
                                 Commands.waitUntil(m_clawRoller.stalled.debounce(0.1)),
                                 m_clawRoller.shuffleCommand())
                                 .until(m_clawRollerLaserCAN.triggered
-                                    .and(m_clawRoller.stopped.debounce(0.125))),
+                                    .and(m_clawRoller.stopped.debounce(0.05))),
                             m_clawRoller.shuffleCommand(),
                             m_tongue.lowerTongueCommand()),
                         Commands.sequence(
@@ -610,6 +609,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand(
                     "Score",
                     Commands.sequence(
+                        m_tongue.setStateCommand(Tongue.State.DOWN),
                         m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
                         Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
                         m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
@@ -619,6 +619,13 @@ public class RobotContainer {
                     Commands.sequence(
                         m_superStruct.getTransitionCommand(Arm.State.STOW,
                             Elevator.State.STOW, Units.degreesToRotations(10), .2)));
+
+                NamedCommands.registerCommand(
+                    "PrepScore",
+                    Commands.sequence(
+                        m_tongue.setStateCommand(Tongue.State.DOWN),
+                        m_superStruct.getTransitionCommand(Arm.State.STOW,
+                            Elevator.State.LEVEL_3, Units.degreesToRotations(10), .2)));
                 break;
             case SIM:
                 // Go to the L4 Position

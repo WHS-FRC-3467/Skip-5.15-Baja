@@ -39,26 +39,26 @@ public class DriveToPose extends Command {
             5.0,
             0.0,
             0.4,
-            3,
+            20,
             20.0);
 
     TuneableProfiledPID xController =
         new TuneableProfiledPID(
             "xController",
-            2,
+            3,
             0.0,
             0.1,
-            3,
-            2.5);
+            3.7,
+            4);
 
     TuneableProfiledPID yController =
         new TuneableProfiledPID(
             "yController",
-            2,
+            3,
             0.0,
             0.1,
-            3,
-            2.5);
+            3.7,
+            4);
 
     public DriveToPose(
         Drive drive,
@@ -87,8 +87,8 @@ public class DriveToPose extends Command {
         targetPose2d = targetSupplier.get();
         relativePose2d = drive.getPose().relativeTo(targetPose2d);
         targetRotation2d = targetSupplier.get().getRotation();
-        xController.reset(drive.getChassisSpeeds().vxMetersPerSecond);
-        yController.reset(drive.getChassisSpeeds().vyMetersPerSecond);
+        xController.reset(relativePose2d.getX());
+        yController.reset(relativePose2d.getY());
         angleController.reset(drive.getPose().getRotation().getRadians());
     }
 
@@ -125,9 +125,12 @@ public class DriveToPose extends Command {
         // Convert to field relative speeds & send command
         ChassisSpeeds speeds =
             new ChassisSpeeds(
-                MathUtil.clamp(linearVelocity.getX(), 0, drive.getMaxLinearSpeedMetersPerSec()),
-                MathUtil.clamp(linearVelocity.getY(), 0, drive.getMaxLinearSpeedMetersPerSec()),
-                MathUtil.clamp(omega, 0, drive.getMaxAngularSpeedRadPerSec()));
+                MathUtil.clamp(linearVelocity.getX(), -drive.getMaxLinearSpeedMetersPerSec(),
+                    drive.getMaxLinearSpeedMetersPerSec()),
+                MathUtil.clamp(linearVelocity.getY(), -drive.getMaxLinearSpeedMetersPerSec(),
+                    drive.getMaxLinearSpeedMetersPerSec()),
+                MathUtil.clamp(omega, -drive.getMaxLinearSpeedMetersPerSec(),
+                    drive.getMaxAngularSpeedRadPerSec()));
 
         drive.runVelocity(
             ChassisSpeeds.fromFieldRelativeSpeeds(

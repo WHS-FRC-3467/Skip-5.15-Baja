@@ -8,8 +8,8 @@
     "Strafe"
   ],
   "autoFolders": [],
-  "defaultMaxVel": 3.5,
-  "defaultMaxAccel": 4.0,
+  "defaultMaxVel": 3.7,
+  "defaultMaxAccel": 4.5,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 400.0,
   "defaultNominalVoltage": 12.0,
