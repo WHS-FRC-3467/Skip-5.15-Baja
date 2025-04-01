@@ -616,8 +616,7 @@ public class RobotContainer {
                     new DriveToPose(m_drive,
                         () -> Util
                             .moveForward(
-                                FieldConstants.getNearestReefBranch(
-                                    getFuturePose(alignPredictionSeconds.get()),
+                                FieldConstants.getNearestReefBranch(m_drive.getPose(),
                                     shouldMirrorPath() ? ReefSide.RIGHT : ReefSide.LEFT),
                                 (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
@@ -627,8 +626,7 @@ public class RobotContainer {
                     new DriveToPose(m_drive,
                         () -> Util
                             .moveForward(
-                                FieldConstants.getNearestReefBranch(
-                                    getFuturePose(alignPredictionSeconds.get()),
+                                FieldConstants.getNearestReefBranch(m_drive.getPose(),
                                     shouldMirrorPath() ? ReefSide.LEFT : ReefSide.RIGHT),
                                 (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
@@ -715,8 +713,7 @@ public class RobotContainer {
                     new DriveToPose(m_drive,
                         () -> Util
                             .moveForward(
-                                FieldConstants.getNearestReefBranch(
-                                    getFuturePose(alignPredictionSeconds.get()),
+                                FieldConstants.getNearestReefBranch(m_drive.getPose(),
                                     shouldMirrorPath() ? ReefSide.RIGHT : ReefSide.LEFT),
                                 (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
@@ -726,8 +723,7 @@ public class RobotContainer {
                     new DriveToPose(m_drive,
                         () -> Util
                             .moveForward(
-                                FieldConstants.getNearestReefBranch(
-                                    getFuturePose(alignPredictionSeconds.get()),
+                                FieldConstants.getNearestReefBranch(m_drive.getPose(),
                                     shouldMirrorPath() ? ReefSide.LEFT : ReefSide.RIGHT),
                                 (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
                             .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
