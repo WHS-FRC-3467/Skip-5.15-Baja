@@ -125,9 +125,9 @@ public class DriveToPose extends Command {
         // Convert to field relative speeds & send command
         ChassisSpeeds speeds =
             new ChassisSpeeds(
-                linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
-                omega);
+                MathUtil.clamp(linearVelocity.getX(), 0, drive.getMaxLinearSpeedMetersPerSec()),
+                MathUtil.clamp(linearVelocity.getY(), 0, drive.getMaxLinearSpeedMetersPerSec()),
+                MathUtil.clamp(omega, 0, drive.getMaxAngularSpeedRadPerSec()));
 
         drive.runVelocity(
             ChassisSpeeds.fromFieldRelativeSpeeds(
