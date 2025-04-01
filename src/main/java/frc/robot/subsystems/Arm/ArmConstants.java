@@ -81,9 +81,9 @@ public final class ArmConstants {
         kSubSysConstants.kMotorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
         /* REAL system profile constants */
-        kSubSysConstants.kMotorConfig.Slot0.kP = 1000;
+        kSubSysConstants.kMotorConfig.Slot0.kP = 1200;
         kSubSysConstants.kMotorConfig.Slot0.kI = 0;
-        kSubSysConstants.kMotorConfig.Slot0.kD = 85;
+        kSubSysConstants.kMotorConfig.Slot0.kD = 170;
         kSubSysConstants.kMotorConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
         kSubSysConstants.kMotorConfig.Slot0.kG = 12;
         kSubSysConstants.kMotorConfig.Slot0.kS = 4;
