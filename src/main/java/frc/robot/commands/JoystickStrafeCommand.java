@@ -33,7 +33,7 @@ public class JoystickStrafeCommand extends Command {
     TuneableProfiledPID angleController =
         new TuneableProfiledPID(
             "angleController",
-            5.0,
+            4.2,
             0.0,
             0.4,
             8.0,
@@ -42,7 +42,7 @@ public class JoystickStrafeCommand extends Command {
     TuneableProfiledPID alignController =
         new TuneableProfiledPID(
             "alignController",
-            6,
+            3,
             0.0,
             0,
             3.7,
