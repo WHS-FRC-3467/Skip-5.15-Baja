@@ -39,7 +39,7 @@ public class DriveToPose extends Command {
             5.0,
             0.0,
             0.4,
-            8.0,
+            3,
             20.0);
 
     TuneableProfiledPID xController =
@@ -48,8 +48,8 @@ public class DriveToPose extends Command {
             2,
             0.0,
             0.1,
-            20,
-            8);
+            3,
+            2.5);
 
     TuneableProfiledPID yController =
         new TuneableProfiledPID(
@@ -57,8 +57,8 @@ public class DriveToPose extends Command {
             2,
             0.0,
             0.1,
-            20,
-            8);
+            3,
+            2.5);
 
     public DriveToPose(
         Drive drive,
@@ -87,8 +87,8 @@ public class DriveToPose extends Command {
         targetPose2d = targetSupplier.get();
         relativePose2d = drive.getPose().relativeTo(targetPose2d);
         targetRotation2d = targetSupplier.get().getRotation();
-        xController.reset(relativePose2d.getX());
-        yController.reset(relativePose2d.getY());
+        xController.reset(drive.getChassisSpeeds().vxMetersPerSecond);
+        yController.reset(drive.getChassisSpeeds().vyMetersPerSecond);
         angleController.reset(drive.getPose().getRotation().getRadians());
     }
 
