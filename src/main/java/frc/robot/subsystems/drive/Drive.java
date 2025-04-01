@@ -143,20 +143,16 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         // Start odometry thread
         PhoenixOdometryThread.getInstance().start();
 
-        AutoBuilder.configureCustom(
-            (path) -> new MirrorableFollowPathCommand(
-                path,
-                this::getPose,
-                this::getChassisSpeeds,
-                this::runVelocity,
-                new PPHolonomicDriveController(
-                    new PIDConstants(3, 0.0, 0), new PIDConstants(5.5, 0.0, 0.0)),
-                PP_CONFIG,
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                mirrorAuto,
-                this),
-            this::getPose, this::setPose, true);
-        // Pathfinding.setPathfinder(new LocalADStarAK());
+        AutoBuilder.configure(
+            this::getPose,
+            this::setPose,
+            this::getChassisSpeeds,
+            this::runVelocity,
+            new PPHolonomicDriveController(
+                new PIDConstants(3, 0.0, 0), new PIDConstants(5.5, 0.0, 0.0)),
+            PP_CONFIG,
+            () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+            this);
         PathPlannerLogging.setLogActivePathCallback(
             (activePath) -> {
                 Logger.recordOutput(

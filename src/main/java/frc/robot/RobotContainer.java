@@ -221,6 +221,10 @@ public class RobotContainer {
         m_autoChooser =
             new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
+        for (String autoName : AutoBuilder.getAllAutoNames()) {
+            m_autoChooser.addOption(autoName + " - Mirrored", new PathPlannerAuto(autoName, true));
+        }
+
         // Drivebase characterizations
         m_autoChooser.addOption(
             "Drive Wheel Radius Characterization",
