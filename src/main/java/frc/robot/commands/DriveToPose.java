@@ -101,9 +101,8 @@ public class DriveToPose extends Command {
         yController.updatePID();
 
         running = true;
-        targetPose2d = targetSupplier.get();
         relativePose2d = drive.getPose().relativeTo(targetPose2d);
-        targetRotation2d = targetSupplier.get().getRotation();
+        targetRotation2d = targetPose2d.getRotation();
 
         Logger.recordOutput("test", relativePose2d);
 

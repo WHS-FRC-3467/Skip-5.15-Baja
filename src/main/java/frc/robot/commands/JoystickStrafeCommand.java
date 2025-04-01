@@ -67,6 +67,7 @@ public class JoystickStrafeCommand extends Command {
     @Override
     public void initialize()
     {
+        targetPose2d = targetSupplier.get();
         alignController.reset(0);
         angleController.reset(drive.getPose().getRotation().getRadians());
     }
@@ -76,9 +77,8 @@ public class JoystickStrafeCommand extends Command {
     public void execute()
     {
         running = true;
-        targetPose2d = targetSupplier.get();
         relativePose2d = drive.getPose().relativeTo(targetPose2d);
-        targetRotation2d = targetSupplier.get().getRotation();
+        targetRotation2d = targetPose2d.getRotation();
 
         // Calculate lateral linear velocity
         Translation2d offsetVector =

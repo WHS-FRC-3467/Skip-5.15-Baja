@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.TuneableProfiledPID;
@@ -69,6 +70,7 @@ public class JoystickApproachCommand extends Command {
     {
         alignController.reset(0);
         angleController.reset(drive.getPose().getRotation().getRadians());
+        targetPose2d = targetSupplier.get();
     }
 
     // Called every time the scheduler runs while the command is scheduled.
@@ -76,9 +78,8 @@ public class JoystickApproachCommand extends Command {
     public void execute()
     {
         running = true;
-        targetPose2d = targetSupplier.get();
         relativePose2d = drive.getPose().relativeTo(targetPose2d);
-        targetRotation2d = targetSupplier.get().getRotation();
+        targetRotation2d = targetPose2d.getRotation();
 
         // Calculate lateral linear velocity
         Translation2d offsetVector =
