@@ -130,6 +130,7 @@ public class RobotContainer {
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
+                isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
                 m_vision =
                     new Vision(
                         m_drive,
@@ -144,7 +145,6 @@ public class RobotContainer {
                 } else {
                     m_LED = null;
                 }
-
                 break;
 
             case SIM:
@@ -165,6 +165,7 @@ public class RobotContainer {
                 m_clawRoller = new ClawRoller(new ClawRollerIOSim(), true);
                 m_tongue = new Tongue(new TongueIOSim(), true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOSim());
+                isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
 
                 // m_vision =
                 // new Vision(
@@ -195,6 +196,7 @@ public class RobotContainer {
                 m_clawRoller = new ClawRoller(new ClawRollerIO() {}, true);
                 m_tongue = new Tongue(new TongueIO() {}, true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIO() {});
+                isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
                 m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
                 m_LED = new LEDSubsystem(new LEDSubsystemIO() {},
                     m_clawRoller, m_profiledArm, m_profiledElevator, m_profiledClimber,
@@ -202,8 +204,6 @@ public class RobotContainer {
 
                 break;
         }
-
-        isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
 
         // Fallback Triggers
         hasVision = new Trigger(() -> m_vision.anyCameraConnected);
