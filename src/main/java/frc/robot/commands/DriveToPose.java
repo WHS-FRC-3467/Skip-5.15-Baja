@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import static frc.robot.subsystems.Vision.VisionConstants.maxAmbiguity;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -45,7 +46,7 @@ public class DriveToPose extends Command {
     TuneableProfiledPID xController =
         new TuneableProfiledPID(
             "xController",
-            3,
+            6,
             0.0,
             0.1,
             3.7,
@@ -54,7 +55,7 @@ public class DriveToPose extends Command {
     TuneableProfiledPID yController =
         new TuneableProfiledPID(
             "yController",
-            3,
+            6,
             0.0,
             0.1,
             3.7,
@@ -104,8 +105,6 @@ public class DriveToPose extends Command {
         relativePose2d = drive.getPose().relativeTo(targetPose2d);
         targetRotation2d = targetPose2d.getRotation();
 
-        Logger.recordOutput("test", relativePose2d);
-
         // Calculate lateral linear velocity
         Translation2d offsetVector =
             new Translation2d(xController.calculate(relativePose2d.getX()),
@@ -124,12 +123,9 @@ public class DriveToPose extends Command {
         // Convert to field relative speeds & send command
         ChassisSpeeds speeds =
             new ChassisSpeeds(
-                MathUtil.clamp(linearVelocity.getX(), -drive.getMaxLinearSpeedMetersPerSec(),
-                    drive.getMaxLinearSpeedMetersPerSec()),
-                MathUtil.clamp(linearVelocity.getY(), -drive.getMaxLinearSpeedMetersPerSec(),
-                    drive.getMaxLinearSpeedMetersPerSec()),
-                MathUtil.clamp(omega, -drive.getMaxLinearSpeedMetersPerSec(),
-                    drive.getMaxAngularSpeedRadPerSec()));
+                linearVelocity.getX(),
+                linearVelocity.getY(),
+                omega);
 
         drive.runVelocity(
             ChassisSpeeds.fromFieldRelativeSpeeds(

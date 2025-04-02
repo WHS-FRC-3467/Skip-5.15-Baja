@@ -43,11 +43,11 @@ public class JoystickApproachCommand extends Command {
     TuneableProfiledPID alignController =
         new TuneableProfiledPID(
             "alignController",
-            0.6,
+            6,
             0.0,
             0,
-            20,
-            8);
+            3.7,
+            4);
 
     public JoystickApproachCommand(
         Drive drive,
@@ -77,6 +77,9 @@ public class JoystickApproachCommand extends Command {
     @Override
     public void execute()
     {
+        angleController.updatePID();
+        alignController.updatePID();
+
         running = true;
         relativePose2d = drive.getPose().relativeTo(targetPose2d);
         targetRotation2d = targetPose2d.getRotation();
@@ -88,7 +91,7 @@ public class JoystickApproachCommand extends Command {
         // Calculate total linear velocity
         Translation2d linearVelocity =
             getLinearVelocityFromJoysticks(-ySupplier.getAsDouble(),
-                0)
+                0).times(drive.getMaxLinearSpeedMetersPerSec())
                     .plus(offsetVector)
                     .rotateBy(targetRotation2d);
 
@@ -101,8 +104,8 @@ public class JoystickApproachCommand extends Command {
         // Convert to field relative speeds & send command
         ChassisSpeeds speeds =
             new ChassisSpeeds(
-                linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                linearVelocity.getX(),
+                linearVelocity.getY(),
                 omega);
 
         drive.runVelocity(
