@@ -312,11 +312,7 @@ public class RobotContainer {
 
     private Pose2d getFuturePose(double seconds)
     {
-        var chassisSpeeds = m_drive.getChassisSpeeds().times(seconds);
-        var transform = new Transform2d(chassisSpeeds.vxMetersPerSecond,
-            chassisSpeeds.vyMetersPerSecond,
-            Rotation2d.fromRadians(chassisSpeeds.omegaRadiansPerSecond));
-        return m_drive.getPose().transformBy(transform);
+        return m_drive.getPose().exp(m_drive.getChassisSpeeds().toTwist2d(seconds));
     }
 
     /** Button and Command mappings */
