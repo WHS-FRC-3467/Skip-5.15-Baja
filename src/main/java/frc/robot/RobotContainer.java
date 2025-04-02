@@ -588,7 +588,7 @@ public class RobotContainer {
     private void registerNamedCommands()
     {
         switch (Constants.currentMode) {
-            case REAL:
+            default:
 
                 // Go to the L4 Position
                 NamedCommands.registerCommand(
