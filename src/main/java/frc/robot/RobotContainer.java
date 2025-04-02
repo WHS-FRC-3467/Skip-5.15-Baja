@@ -450,9 +450,11 @@ public class RobotContainer {
                         Commands.either(
                             Commands.sequence(
                                 Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+                                Commands.waitSeconds(0.2),
                                 m_clawRoller.setStateCommand(ClawRoller.State.OFF),
                                 m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
                                     Elevator.State.STOW)),
+
                             Commands.sequence(
                                 Commands.waitUntil(m_clawRoller.stalled.negate()
                                     .and(m_clawRoller.stopped.negate())),
@@ -460,6 +462,7 @@ public class RobotContainer {
                                 m_clawRoller.setStateCommand(ClawRoller.State.OFF),
                                 m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
                                     Elevator.State.STOW)),
+
                             hasLaserCAN)),
 
                     Commands.either(
@@ -660,6 +663,7 @@ public class RobotContainer {
                         m_tongue.setStateCommand(Tongue.State.DOWN),
                         m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
                         Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+                        Commands.waitSeconds(0.2),
                         m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
 
                 // Move to Stow
