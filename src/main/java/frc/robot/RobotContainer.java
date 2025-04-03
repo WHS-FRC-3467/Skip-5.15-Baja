@@ -611,7 +611,6 @@ public class RobotContainer {
                 NamedCommands.registerCommand(
                     "L4",
                     Commands.sequence(
-                        Commands.waitUntil(m_clawRollerLaserCAN.triggered),
                         m_tongue.setStateCommand(Tongue.State.DOWN),
                         m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
                             Elevator.State.LEVEL_4,
