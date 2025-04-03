@@ -65,7 +65,7 @@
           "data": {
             "commands": [
               {
-                "type": "deadline",
+                "type": "race",
                 "data": {
                   "commands": [
                     {
@@ -134,7 +134,7 @@
           "data": {
             "commands": [
               {
-                "type": "deadline",
+                "type": "race",
                 "data": {
                   "commands": [
                     {
