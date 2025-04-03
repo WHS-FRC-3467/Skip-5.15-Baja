@@ -169,12 +169,12 @@ public class RobotContainer {
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOSim());
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
 
-                m_vision =
-                    new Vision(
-                        m_drive,
-                        new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, m_drive::getPose),
-                        new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, m_drive::getPose));
-                // m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
+                // m_vision =
+                // new Vision(
+                // m_drive,
+                // new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, m_drive::getPose),
+                // new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, m_drive::getPose));
+                m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
                 m_LED = new LEDSubsystem(new LEDSubsystemIOWPILib(),
                     m_clawRoller, m_profiledArm, m_profiledElevator, m_profiledClimber,
                     m_vision, m_clawRollerLaserCAN.triggered, isCoralMode);
@@ -360,7 +360,7 @@ public class RobotContainer {
 
         // Driver A Button and Algae mode: Send Arm and Elevator to Ground Intake
         m_driver
-            .a().and(isCoralMode.negate())
+            .a().and(isCoralMode.negate()).and(m_driver.rightTrigger().negate())
             .onTrue(
                 Commands.sequence(
                     m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_GROUND,
@@ -563,6 +563,12 @@ public class RobotContainer {
                     m_profiledArm.setStateCommand(Arm.State.STOW),
                     m_profiledElevator.getHomeCommand()));
 
+        m_driver
+            .povUp().onTrue(
+                Commands.parallel(
+                    m_profiledElevator.setStateCommand(Elevator.State.LEVEL_2),
+                    m_profiledArm.setStateCommand(Arm.State.LEVEL_2)));
+
         // SmartDashboard.putData("ReefPositions",
         // Commands.runOnce(() -> ppAuto.calculatePPEndpoints(Units.inchesToMeters(19)))
         // .ignoringDisable(true));
@@ -676,7 +682,7 @@ public class RobotContainer {
                         m_superStruct.getTransitionCommand(Arm.State.STOW,
                             Elevator.State.LEVEL_3, Units.degreesToRotations(10), .2)));
                 break;
-            case SIM:
+            case REPLAY:
 
                 NamedCommands.registerCommand(
                     "L4",
@@ -798,6 +804,13 @@ public class RobotContainer {
             }
         } else {
             return target;
+        }
+    }
+
+    public void lowerTongueTele()
+    {
+        if (!m_clawRollerLaserCAN.triggered.getAsBoolean()) {
+            m_tongue.lowerTongueCommand().schedule();
         }
     }
 

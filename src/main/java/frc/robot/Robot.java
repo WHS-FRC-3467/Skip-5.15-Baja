@@ -254,6 +254,9 @@ public class Robot extends LoggedRobot {
             m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
         }
 
+        // Bring the Tongue back down after auto
+        m_robotContainer.lowerTongueTele();
+
 
     }
 
