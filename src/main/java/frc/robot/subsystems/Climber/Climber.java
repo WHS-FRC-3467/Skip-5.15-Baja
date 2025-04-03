@@ -52,7 +52,8 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
 
     public Command zeroPositionCommand()
     {
-        return Commands.runOnce(() -> io.zeroSensors());
+        return Commands
+            .sequence(Commands.runOnce(() -> io.zeroSensors()), this.setStateCommand(State.HOME));
     }
 
     public Command setClimbRequestCommand(boolean enabled)
