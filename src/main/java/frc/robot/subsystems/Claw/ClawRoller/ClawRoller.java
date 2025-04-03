@@ -16,7 +16,7 @@ public class ClawRoller
     extends GenericMotionProfiledSubsystem<ClawRoller.State> {
 
     private static final LoggedTunableNumber L1_SPEED =
-        new LoggedTunableNumber("ClawRoller/L1 Speed", 0.7);
+        new LoggedTunableNumber("ClawRoller/L1 Speed", 0.8);
 
     public final Trigger stalled =
         new Trigger(
