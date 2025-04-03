@@ -222,9 +222,9 @@ public class RobotContainer {
         m_autoChooser =
             new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-        for (String autoName : AutoBuilder.getAllAutoNames()) {
-            m_autoChooser.addOption(autoName + " - Mirrored", new PathPlannerAuto(autoName, true));
-        }
+        // for (String autoName : AutoBuilder.getAllAutoNames()) {
+        // m_autoChooser.addOption(autoName + " - Mirrored", new PathPlannerAuto(autoName, true));
+        // }
 
         // Drivebase characterizations
         m_autoChooser.addOption(
@@ -348,10 +348,7 @@ public class RobotContainer {
             .a().and(isCoralMode)
             .onTrue(
                 m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_1,
-                    Elevator.State.LEVEL_1));
-
-        m_driver
-            .a().and(isCoralMode)
+                    Elevator.State.LEVEL_1))
             .whileTrue(
                 joystickApproach(
                     () -> FieldConstants
