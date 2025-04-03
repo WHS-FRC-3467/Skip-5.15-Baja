@@ -99,7 +99,7 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
             Commands.waitUntil(homedTrigger))
             .finallyDo(() -> {
                 io.zeroSensors();
-                this.setStateCommand(State.HOME);
+                this.setState(State.HOME);
             });
     }
 }
