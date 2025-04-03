@@ -36,7 +36,8 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
     {
         super(State.HOME.profileType, ClimberConstants.kSubSysConstants, io, isSim);
         SmartDashboard.putData("Climber Home Command", homeCommand());
-        SmartDashboard.putData("Climber Zero Command", zeroPositionCommand());
+        SmartDashboard.putData("Climber Zero Command",
+            zeroPositionCommand().ignoringDisable(true));
     }
 
     public Command setStateCommand(State state)
@@ -84,18 +85,20 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
     public Trigger climbStep2 = new Trigger(() -> climbStep == 2);
     public Trigger climbStep3 = new Trigger(() -> climbStep >= 3);
 
-    private Debouncer homedDebouncer = new Debouncer(0.1, DebounceType.kRising);
+    private Debouncer homedDebouncer = new Debouncer(0.25, DebounceType.kRising);
 
     private Trigger homedTrigger =
         new Trigger(() -> homedDebouncer
-            .calculate(Math.abs(super.inputs.supplyCurrentAmps[0]) >= 15));
+            .calculate(Math.abs(super.inputs.supplyCurrentAmps[0]) >= 12));
 
     private Command homeCommand()
     {
         return Commands.sequence(
             this.setStateCommand(State.HOMING),
-            Commands.waitUntil(homedTrigger),
-            this.zeroPositionCommand(),
-            this.setStateCommand(State.HOME));
+            Commands.waitUntil(homedTrigger))
+            .finallyDo(() -> {
+                io.zeroSensors();
+                this.setStateCommand(State.HOME);
+            });
     }
 }
