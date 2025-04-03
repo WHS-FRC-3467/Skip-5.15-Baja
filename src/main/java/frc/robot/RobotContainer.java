@@ -343,29 +343,44 @@ public class RobotContainer {
             .whileTrue(
                 DescoreAlgae());
 
-        // Driver A Button: Send Arm and Elevator to LEVEL_1
         m_driver
-            .a().and(isCoralMode)
+            .a()
             .onTrue(
-                m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_1,
-                    Elevator.State.LEVEL_1))
-            .whileTrue(
-                joystickApproach(
-                    () -> FieldConstants
-                        .getNearestReefFace(getFuturePose(alignPredictionSeconds.get()))
-                        .plus(new Transform2d(0, 0, Rotation2d.k180deg))));
+                Commands.either(
+                    // Driver A Button: Send Arm and Elevator to LEVEL_1
+                    m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_1,
+                        Elevator.State.LEVEL_1),
+                    // Driver A Button and Algae mode: Send Arm and Elevator to Ground Intake
+                    Commands.sequence(
+                        m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_GROUND,
+                            Elevator.State.STOW),
+                        m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+                        Commands.waitUntil(m_clawRoller.stalled),
+                        m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
+                            Elevator.State.STOW)),
+                    isCoralMode))
+            .whileTrue(Commands.none());
+        // Commands.either(
+        // DriveCommands.joystickDriveAtAngle(
+        // m_drive,
+        // () -> -m_driver.getLeftY() * speedMultiplier.getAsDouble() * 0.75,
+        // () -> -m_driver.getLeftX() * speedMultiplier.getAsDouble() * 0.75,
+        // () -> FieldConstants
+        // .getNearestReefFace(getFuturePose(alignPredictionSeconds.get())).getRotation(),
+        // Commands.none(),
+        // isCoralMode)));
 
-        // Driver A Button and Algae mode: Send Arm and Elevator to Ground Intake
-        m_driver
-            .a().and(isCoralMode.negate()).and(m_driver.rightTrigger().negate())
-            .onTrue(
-                Commands.sequence(
-                    m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_GROUND,
-                        Elevator.State.STOW),
-                    m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
-                    Commands.waitUntil(m_clawRoller.stalled),
-                    m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
-                        Elevator.State.STOW)));
+
+        // m_driver
+        // .a().and(isCoralMode.negate())
+        // .onTrue(
+        // Commands.sequence(
+        // m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_GROUND,
+        // Elevator.State.STOW),
+        // m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+        // Commands.waitUntil(m_clawRoller.stalled),
+        // m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
+        // Elevator.State.STOW)));
 
         // Driver X Button: Send Arm and Elevator to LEVEL_2
         m_driver
