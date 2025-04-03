@@ -610,13 +610,16 @@ public class RobotContainer {
                 // Go to the L4 Position
                 NamedCommands.registerCommand(
                     "L4",
-                    Commands.sequence(
-                        m_tongue.setStateCommand(Tongue.State.DOWN),
-                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
-                            Elevator.State.LEVEL_4,
-                            Units.degreesToRotations(6),
-                            0.8),
-                        m_clawRoller.L4ShuffleCommand()));
+                    Commands.either(
+                        Commands.sequence(
+                            m_tongue.setStateCommand(Tongue.State.DOWN),
+                            m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
+                                Elevator.State.LEVEL_4,
+                                Units.degreesToRotations(6),
+                                0.8),
+                            m_clawRoller.L4ShuffleCommand()),
+                        Commands.none(),
+                        m_clawRollerLaserCAN.triggered));
 
                 NamedCommands.registerCommand("AutoAlignLeft",
                     new DriveToPose(m_drive,
