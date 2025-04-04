@@ -23,7 +23,7 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
         HOME(new ProfileType.POSITION(() -> 0, 0)),
         PREP(new ProfileType.POSITION(() -> -1.7, 0)),
         CLIMB(new ProfileType.MM_POSITION(() -> -0.3, 1)),
-        MANUAL_CLIMB(new ProfileType.OPEN_VOLTAGE(() -> 12)),
+        MANUAL_CLIMB(new ProfileType.OPEN_VOLTAGE(() -> 8)),
         HOMING(new ProfileType.OPEN_VOLTAGE(() -> 4));
 
         private final ProfileType profileType;

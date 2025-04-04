@@ -693,7 +693,7 @@ public class RobotContainer {
                                 Commands.waitUntil(m_clawRoller.stalled.debounce(0.1)),
                                 m_clawRoller.shuffleCommand())
                                 .until(m_clawRollerLaserCAN.triggered
-                                    .and(m_clawRoller.stopped.debounce(0.05))),
+                                    .and(m_clawRoller.stopped.debounce(0.15))),
                             m_clawRoller.shuffleCommand(),
                             m_tongue.lowerTongueCommand()),
                         Commands.sequence(

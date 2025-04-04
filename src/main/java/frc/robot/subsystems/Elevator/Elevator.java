@@ -136,6 +136,6 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
     }
 
     public Trigger launchHeightTrigger =
-        new Trigger(() -> (io.getPosition() > launchHeight.getAsDouble()));
+        new Trigger(() -> (io.getPosition() >= launchHeight.getAsDouble()));
 
 }
