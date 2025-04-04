@@ -277,6 +277,33 @@ public class RobotContainer {
             (hasVision.getAsBoolean()) ? approachCommand : Commands.none());
     }
 
+    private Command DescoreAlgaeAuto()
+    {
+        var approachCommand = new DriveToPose(
+            m_drive,
+            () -> Util
+                .moveForward(
+                    FieldConstants.getNearestReefFace(m_drive.getPose()),
+                    (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                .transformBy(
+                    new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
+            Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .04);
+
+        return Commands.deadline(
+            Commands.sequence(
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+                Commands.either(
+                    m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_HIGH,
+                        Elevator.State.ALGAE_HIGH),
+                    m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_LOW,
+                        Elevator.State.ALGAE_LOW),
+                    () -> FieldConstants.isAlgaeHigh(m_drive.getPose())),
+                Commands.waitUntil(m_clawRoller.stalled),
+                m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
+                    Elevator.State.ALGAE_STOW)),
+            approachCommand);
+    }
+
     private Command BargeAlgae()
     {
         var strafeCommand = new JoystickStrafeCommand(
@@ -652,6 +679,10 @@ public class RobotContainer {
                                 .withTimeout(2),
                         Commands.none(),
                         m_clawRollerLaserCAN.triggered));
+
+                NamedCommands.registerCommand("DescoreAlgae", DescoreAlgaeAuto());
+
+                NamedCommands.registerCommand("BargeAlgae", BargeAlgae());
 
                 // Intake Coral
                 NamedCommands.registerCommand(

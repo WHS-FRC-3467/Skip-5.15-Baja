@@ -45,7 +45,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Stow"
+            "name": "DescoreAlgae"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "H-Barge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "BargeAlgae"
           }
         }
       ]
