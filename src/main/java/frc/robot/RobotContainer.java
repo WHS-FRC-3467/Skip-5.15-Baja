@@ -298,9 +298,7 @@ public class RobotContainer {
                     m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_LOW,
                         Elevator.State.ALGAE_LOW),
                     () -> FieldConstants.isAlgaeHigh(m_drive.getPose())),
-                Commands.waitUntil(m_clawRoller.stalled),
-                m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
-                    Elevator.State.ALGAE_STOW)),
+                Commands.waitUntil(m_clawRoller.stalled)),
             approachCommand);
     }
 
