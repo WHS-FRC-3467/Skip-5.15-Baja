@@ -25,7 +25,7 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
     public enum State implements TargetState {
         HOLD(new ProfileType.DISABLED_BRAKE()),
         HOME(new ProfileType.POSITION(() -> 0, 0)),
-        PREP(new ProfileType.POSITION(() -> -1.7, 0)),
+        PREP(new ProfileType.POSITION(() -> -1.2, 0)),
         CLIMB(new ProfileType.MM_POSITION(climbHeight, 1)),
         MANUAL_CLIMB(new ProfileType.OPEN_VOLTAGE(() -> 8)),
         HOMING(new ProfileType.OPEN_VOLTAGE(() -> 4));
