@@ -286,8 +286,10 @@ public class RobotContainer {
 
         return Commands.deadline(
             Commands.sequence(
-                Commands.waitUntil(() -> strafeCommand.withinTolerance(Units.inchesToMeters(2.0))),
-                m_profiledArm.setStateCommand(Arm.State.STOW),
+                Commands.deadline(
+                    Commands
+                        .waitUntil(() -> strafeCommand.withinTolerance(Units.inchesToMeters(2.0))),
+                    m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.LEVEL_3)),
                 Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
                 m_profiledElevator.setStateCommand(Elevator.State.BARGE),
                 Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
