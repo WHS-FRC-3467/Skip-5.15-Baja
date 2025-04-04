@@ -257,7 +257,7 @@ public class RobotContainer {
     {
         return new JoystickApproachCommand(
             m_drive,
-            () -> -m_driver.getLeftY() * speedMultiplier.getAsDouble(),
+            () -> m_driver.getLeftY() * speedMultiplier.getAsDouble(),
             approachPose);
     }
 
@@ -288,11 +288,12 @@ public class RobotContainer {
         var strafeCommand = new JoystickStrafeCommand(
             m_drive,
             () -> -m_driver.getLeftX() * speedMultiplier.getAsDouble(),
-            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine));
+            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine))
+                .withTolerance(Units.inchesToMeters(2.0), Rotation2d.fromDegrees(0.04));
 
         return Commands.deadline(
             Commands.sequence(
-                Commands.waitUntil(() -> strafeCommand.withinTolerance(Units.inchesToMeters(2.0))),
+                Commands.waitUntil(() -> strafeCommand.isFinished()),
                 m_profiledArm.setStateCommand(Arm.State.STOW),
                 Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
                 m_profiledElevator.setStateCommand(Elevator.State.BARGE),
@@ -323,12 +324,12 @@ public class RobotContainer {
         m_drive.setDefaultCommand(joystickDrive());
 
         // Driver Right Bumper: Approach Nearest Right-Side Reef Branch
-        m_driver.rightBumper().and(isCoralMode).and(hasVision)
+        m_driver.rightBumper().and(isCoralMode)// .and(hasVision)
             .whileTrue(
                 joystickApproach(
                     () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.RIGHT)));
 
-        m_driver.leftBumper().and(isCoralMode).and(hasVision)
+        m_driver.leftBumper().and(isCoralMode)// .and(hasVision)
             .whileTrue(
                 joystickApproach(
                     () -> FieldConstants.getNearestReefBranch(m_drive.getPose(), ReefSide.LEFT)));
@@ -562,14 +563,14 @@ public class RobotContainer {
                 m_tongue.lowerTongueCommand()));
 
         SmartDashboard.putData("Drive To Start",
-            new DriveToPose(m_drive, () -> getFirstAutoPose().orElse(m_drive.getPose()),
-                Units.inchesToMeters(1), Units.inchesToMeters(1), 1));
+            new DriveToPose(m_drive, () -> getFirstAutoPose().orElse(m_drive.getPose()))
+                .withTolerance(Units.inchesToMeters(1), Rotation2d.fromDegrees(1)));
 
         SmartDashboard.putData("Drive to Reef", new DriveToPose(m_drive,
             () -> Util.moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
                 ReefSide.LEFT), (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
-                .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-            Units.inchesToMeters(1.5), Units.inchesToMeters(1), 0.5));
+                .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)))
+                    .withTolerance(Units.inchesToMeters(1), Rotation2d.fromDegrees(1)));
     }
 
     /**
@@ -598,8 +599,9 @@ public class RobotContainer {
                             .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
                                 ReefSide.LEFT),
                                 (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
-                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .04));
+                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)))
+                                .withTolerance(Units.inchesToMeters(1),
+                                    Rotation2d.fromDegrees(0.04)));
 
                 NamedCommands.registerCommand("AutoAlignRight",
                     new DriveToPose(m_drive,
@@ -607,8 +609,9 @@ public class RobotContainer {
                             .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
                                 ReefSide.RIGHT),
                                 (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
-                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .04));
+                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)))
+                                .withTolerance(Units.inchesToMeters(1),
+                                    Rotation2d.fromDegrees(0.04)));
 
                 // Intake Coral
                 NamedCommands.registerCommand(
@@ -681,18 +684,20 @@ public class RobotContainer {
                         () -> Util
                             .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
                                 ReefSide.LEFT),
-                                (Constants.bumperWidth / 2) + Units.inchesToMeters(3))
-                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+                                (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)))
+                                .withTolerance(Units.inchesToMeters(1),
+                                    Rotation2d.fromDegrees(0.04)));
 
                 NamedCommands.registerCommand("AutoAlignRight",
                     new DriveToPose(m_drive,
                         () -> Util
                             .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
                                 ReefSide.RIGHT),
-                                (Constants.bumperWidth / 2) + Units.inchesToMeters(3))
-                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-                        Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .02));
+                                (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
+                            .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)))
+                                .withTolerance(Units.inchesToMeters(1),
+                                    Rotation2d.fromDegrees(0.04)));
 
                 // Intake Coral
                 NamedCommands.registerCommand(
