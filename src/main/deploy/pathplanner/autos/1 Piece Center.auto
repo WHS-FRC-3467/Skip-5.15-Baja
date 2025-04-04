@@ -59,6 +59,12 @@
           "data": {
             "name": "BargeAlgae"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Barge-Back"
+          }
         }
       ]
     }
