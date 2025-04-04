@@ -18,7 +18,7 @@ import lombok.Setter;
 public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
 
     private static final LoggedTunableNumber climbHeight =
-        new LoggedTunableNumber("Climber/Climb Height", -0.3);
+        new LoggedTunableNumber("Climber/ClimbHeight", -0.3);
 
     @RequiredArgsConstructor
     @Getter
