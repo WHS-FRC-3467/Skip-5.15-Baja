@@ -90,7 +90,7 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
     public Trigger climbStep2 = new Trigger(() -> climbStep == 2);
     public Trigger climbStep3 = new Trigger(() -> climbStep >= 3);
 
-    private Debouncer homedDebouncer = new Debouncer(0.25, DebounceType.kRising);
+    private Debouncer homedDebouncer = new Debouncer(0.75, DebounceType.kRising);
 
     private Trigger homedTrigger =
         new Trigger(() -> homedDebouncer
