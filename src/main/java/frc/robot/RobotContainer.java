@@ -385,27 +385,6 @@ public class RobotContainer {
                             Elevator.State.STOW)),
                     isCoralMode))
             .whileTrue(Commands.none());
-        // Commands.either(
-        // DriveCommands.joystickDriveAtAngle(
-        // m_drive,
-        // () -> -m_driver.getLeftY() * speedMultiplier.getAsDouble() * 0.75,
-        // () -> -m_driver.getLeftX() * speedMultiplier.getAsDouble() * 0.75,
-        // () -> FieldConstants
-        // .getNearestReefFace(getFuturePose(alignPredictionSeconds.get())).getRotation(),
-        // Commands.none(),
-        // isCoralMode)));
-
-
-        // m_driver
-        // .a().and(isCoralMode.negate())
-        // .onTrue(
-        // Commands.sequence(
-        // m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_GROUND,
-        // Elevator.State.STOW),
-        // m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
-        // Commands.waitUntil(m_clawRoller.stalled),
-        // m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
-        // Elevator.State.STOW)));
 
         // Driver X Button: Send Arm and Elevator to LEVEL_2
         m_driver
