@@ -1,6 +1,10 @@
 package frc.robot.util;
 
+import static edu.wpi.first.units.Units.Meters;
 import java.util.List;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Distance;
 
 /** Contains basic functions that are used often. */
 public class Util {
@@ -73,5 +77,18 @@ public class Util {
             result &= epsilonEquals(value_in, value, epsilon);
         }
         return result;
+    }
+
+    public static Pose2d moveForward(Pose2d original, Distance distance)
+    {
+        return new Pose2d(
+            original.getTranslation()
+                .plus(new Translation2d(distance, Meters.zero()).rotateBy(original.getRotation())),
+            original.getRotation());
+    }
+
+    public static Pose2d moveForward(Pose2d original, double meters)
+    {
+        return moveForward(original, Meters.of(meters));
     }
 }

@@ -50,12 +50,14 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.RobotState;
 import frc.robot.subsystems.Vision.Vision;
+import frc.robot.util.LoggedTunableNumber;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
-// Maple Sim
 
 public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     // TunerConstants doesn't include these constants, so they are declared locally
@@ -73,7 +75,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                     TunerConstants.BackRight.LocationY)));
     // PathPlanner config constants
     private static final double ROBOT_MASS_KG = 64.728;
-    private static final double ROBOT_MOI = 8.835;
+    private static final double ROBOT_MOI = 5.835;
     private static final double WHEEL_COF = 1.13; // https://www.chiefdelphi.com/t/vexpro-new-products-2023-2024/446005/91?
     private static final RobotConfig PP_CONFIG =
         new RobotConfig(
@@ -112,12 +114,20 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions,
             new Pose2d());
 
+    private RobotState robotState = RobotState.getInstance();
+    private LoggedTunableNumber elevatorSlowdownHeight =
+        new LoggedTunableNumber("Drive/Elevator Slowdown Height", 5.0);
+    private LoggedTunableNumber elevatorSlowdownMultiplier =
+        new LoggedTunableNumber("Drive/Elevator Slowdown Multiplier", 0.5);
+
+
     public Drive(
         GyroIO gyroIO,
         ModuleIO flModuleIO,
         ModuleIO frModuleIO,
         ModuleIO blModuleIO,
-        ModuleIO brModuleIO)
+        ModuleIO brModuleIO,
+        BooleanSupplier mirrorAuto)
     {
         SmartDashboard.putData("Robot Pose Field Map", fieldMap);
         this.gyroIO = gyroIO;
@@ -133,10 +143,9 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         // Start odometry thread
         PhoenixOdometryThread.getInstance().start();
 
-        // Configure AutoBuilder for PathPlanner
         AutoBuilder.configure(
             this::getPose,
-            this::setPose,
+            this::setPoseIfSim,
             this::getChassisSpeeds,
             this::runVelocity,
             new PPHolonomicDriveController(
@@ -153,6 +162,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             (targetPose) -> {
                 Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
             });
+
 
         // Configure SysId
         sysId =
@@ -235,6 +245,13 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
      */
     public void runVelocity(ChassisSpeeds speeds)
     {
+        Logger.recordOutput("SwerveStates/InitSpeed", speeds);
+
+        if (robotState.getElevatorHeight() >= elevatorSlowdownHeight.getAsDouble()) {
+            speeds = speeds.times(elevatorSlowdownMultiplier.getAsDouble());
+        }
+        Logger.recordOutput("SwerveStates/LimitedSpeed", speeds);
+
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
         SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
@@ -319,7 +336,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
 
     /** Returns the measured chassis speeds of the robot. */
     @AutoLogOutput(key = "SwerveChassisSpeeds/Measured")
-    private ChassisSpeeds getChassisSpeeds()
+    public ChassisSpeeds getChassisSpeeds()
     {
         return kinematics.toChassisSpeeds(getModuleStates());
     }
@@ -363,6 +380,13 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
     }
 
+    public void setPoseIfSim(Pose2d pose)
+    {
+        if (true) {
+            poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
+        }
+    }
+
     /** Adds a new timestamped vision measurement. */
     @Override
     public void accept(
@@ -399,5 +423,29 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                 new Translation2d(TunerConstants.BackRight.LocationX,
                     TunerConstants.BackRight.LocationY)
         };
+    }
+
+    public boolean isAtDriveSpeed(double speed)
+    {
+        speed = Math.abs(speed); // Meters per second
+        double tolerance = 0.05;
+        for (Module module : modules) {
+            if (Math.abs(module.getVelocityMetersPerSec() - speed) > tolerance) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean isAtSteerSpeed(double speed)
+    {
+        // speed is radians per second
+        double tolerance = 0.05;
+        for (Module module : modules) {
+            if (Math.abs(module.getTurnVelocityRadPerSec() - speed) > tolerance) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -3,6 +3,7 @@ package frc.robot.subsystems.GenericMotionProfiledSubsystem;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.util.LoggedTunableNumber;
@@ -186,6 +187,11 @@ public abstract class GenericMotionProfiledSubsystem<G extends GenericMotionProf
 
         Logger.recordOutput(m_name + "/Goal State", getState().toString());
         Logger.recordOutput(m_name + "/Profile Type", getState().getProfileType().toString());
+        // As the Arm is the only non-drive subsystem with an external CANcoder, report if Arm is in fallback
+        if (m_constants.kCANcoder != null) {
+            SmartDashboard.putBoolean("Arm Fallback Active", ((m_constants.kCANcoder != null) && (!inputs.CANcoderConnected)));
+            Logger.recordOutput(m_name + "/Fallback Active", !inputs.CANcoderConnected);
+        }
 
         if (Constants.tuningMode) {
             Logger.recordOutput(m_name + "/Setpoint", io.getSetpoint());

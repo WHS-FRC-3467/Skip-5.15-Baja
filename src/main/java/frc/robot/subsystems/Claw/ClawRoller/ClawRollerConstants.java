@@ -41,8 +41,7 @@ public final class ClawRollerConstants {
         kSubSysConstants.kMotorConfig.CurrentLimits.StatorCurrentLimitEnable = false;
 
         /* REAL system profile constants */
-
-        kSubSysConstants.kMotorConfig.Slot0.kP = 500;
+        kSubSysConstants.kMotorConfig.Slot0.kP = 800;
         kSubSysConstants.kMotorConfig.Slot0.kI = 0;
         kSubSysConstants.kMotorConfig.Slot0.kD = 5;
         kSubSysConstants.kMotorConfig.Slot0.kG = 0;

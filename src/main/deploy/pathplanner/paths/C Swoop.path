@@ -1,0 +1,121 @@
+{
+  "version": "2025.0",
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 3.6658717105263157,
+        "y": 2.9377467105263158
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.5215460526315785,
+        "y": 2.7068256578947363
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 1.8940573770491804,
+        "y": 0.734375
+      },
+      "prevControl": {
+        "x": 2.680277953824805,
+        "y": 0.3583564632812217
+      },
+      "nextControl": {
+        "x": 1.4514586928386541,
+        "y": 0.946052631578948
+      },
+      "isLocked": false,
+      "linkedName": "StartSwoop"
+    },
+    {
+      "anchor": {
+        "x": 1.0908811475409836,
+        "y": 1.3097848360655735
+      },
+      "prevControl": {
+        "x": 0.8485734552332913,
+        "y": 1.2482463745271117
+      },
+      "nextControl": {
+        "x": 1.6970489106988786,
+        "y": 1.4637322044866266
+      },
+      "isLocked": false,
+      "linkedName": "EndSwoop"
+    },
+    {
+      "anchor": {
+        "x": 5.3015625,
+        "y": 2.533634868421052
+      },
+      "prevControl": {
+        "x": 4.512582236842106,
+        "y": 2.3412006578947353
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.6037735849056605,
+      "rotationDegrees": 50.0
+    },
+    {
+      "waypointRelativePos": 2.386792452830182,
+      "rotationDegrees": 50.0
+    }
+  ],
+  "constraintZones": [
+    {
+      "name": "Slow Down",
+      "minWaypointRelativePos": 0.8021607022282569,
+      "maxWaypointRelativePos": 1.8960162052667084,
+      "constraints": {
+        "maxVelocity": 2.5,
+        "maxAcceleration": 1.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 400.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    }
+  ],
+  "pointTowardsZones": [],
+  "eventMarkers": [
+    {
+      "name": "IntakeCoral",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "IntakeCoral"
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 3.7,
+    "maxAcceleration": 4.5,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 400.0,
+    "nominalVoltage": 12.0,
+    "unlimited": false
+  },
+  "goalEndState": {
+    "velocity": 1.0,
+    "rotation": 119.99999999999999
+  },
+  "reversed": false,
+  "folder": "Swoop 4 Piece",
+  "idealStartingState": {
+    "velocity": 0,
+    "rotation": 59.99999999999999
+  },
+  "useDefaultConstraints": true
+}

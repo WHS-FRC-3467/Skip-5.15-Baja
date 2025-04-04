@@ -155,11 +155,6 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
                         m_teleopBegun = true;
                     }
                     switch (newGPMode) {
-                        case PROCESSOR:
-                            m_LeftTip.setAnimation(a_FastFlashGreen);
-                            m_RightTip.setAnimation(a_FastFlashGreen);
-                            m_tipColor = Color.kAqua.toHexString();
-                            break;
                         case ALGAE:
                             m_LeftTip.setColor(Color.kGreen);
                             m_RightTip.setColor(Color.kGreen);
@@ -191,6 +186,7 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
         // - DISABLED_BOTH_OK -> Both sides Green
         // - AUTONOMOUS -> Flames
         // State:
+        // - VISION_OUT -> Orange Flash
         // - INTAKING -> Red Flash Slow
         // - FEEDING -> Blue
         // - CLIMBING -> Red Flash Fast
@@ -240,6 +236,11 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
                 m_FullRight.setAnimation(a_RightFlame);
                 m_MatchTime.setAnimation(a_InAutonomous);
                 m_tipColor = Color.kOrange.toHexString();
+                m_stateColor = Color.kOrange.toHexString();
+                break;
+
+            case VISION_OUT:
+                m_State.setAnimation(a_FastFlashOrange);
                 m_stateColor = Color.kOrange.toHexString();
                 break;
 
@@ -405,10 +406,19 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
         new FireAnimation(1.0, 0.75, m_FullLeft.segmentSize, 1.0, 0.1, false,
             m_FullLeft.startIndex);
 
-    // Robot State Animations
+    // GamePieceMode Animations
     // Processor
-    Animation a_FastFlashGreen =
+    Animation a_LeftFlashGreen =
         new StrobeAnimation(getR(Color.kGreen), getG(Color.kGreen), getB(Color.kGreen),
+            0, 0.8, m_LeftTip.segmentSize, m_LeftTip.startIndex);
+    Animation a_RightFlashGreen =
+        new StrobeAnimation(getR(Color.kGreen), getG(Color.kGreen), getB(Color.kGreen),
+            0, 0.8, m_RightTip.segmentSize, m_RightTip.startIndex);
+
+    // Robot State Animations
+    // Lost vision?
+    Animation a_FastFlashOrange =
+        new StrobeAnimation(getR(Color.kRed), getG(Color.kOrange), getB(Color.kOrange),
             0, 0.8, m_State.segmentSize, m_State.startIndex);
     // Intaking
     Animation a_FastFlashRed =

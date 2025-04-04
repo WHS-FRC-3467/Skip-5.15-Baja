@@ -12,7 +12,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -25,7 +24,10 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.util.Elastic;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -41,9 +43,15 @@ public class Robot extends LoggedRobot {
     public static final double fieldLength = Units.inchesToMeters(690.876);
     public static final double fieldWidth = Units.inchesToMeters(317);
     private Command m_lastAutonomousCommand;
+    private boolean m_shouldMirror;
+    private boolean m_lastShouldMirror;
     private List<Pose2d> m_pathsToShow = new ArrayList<Pose2d>();
     public static final Translation2d fieldCenter =
         new Translation2d(fieldLength / 2, fieldWidth / 2);
+
+    private boolean withinStartingXYTol = false;
+    private boolean withinStartingRotTol = false;
+
 
     public Robot()
     {
@@ -107,7 +115,27 @@ public class Robot extends LoggedRobot {
                 throw new RuntimeException(
                     "You are using an unsupported swerve configuration, which this template does not support without manual customization. The 2025 release of Phoenix supports some swerve configurations which were not available during 2025 beta testing, preventing any development and support from the AdvantageKit developers.");
             }
+
         }
+
+        // Log active commands
+        Map<String, Integer> commandCounts = new HashMap<>();
+        BiConsumer<Command, Boolean> logCommandFunction =
+            (Command command, Boolean active) -> {
+                String name = command.getName();
+                int count = commandCounts.getOrDefault(name, 0) + (active ? 1 : -1);
+                commandCounts.put(name, count);
+                Logger.recordOutput(
+                    "CommandsUnique/" + name + "_" + Integer.toHexString(command.hashCode()),
+                    active);
+                Logger.recordOutput("CommandsAll/" + name, count > 0);
+            };
+        CommandScheduler.getInstance()
+            .onCommandInitialize((Command command) -> logCommandFunction.accept(command, true));
+        CommandScheduler.getInstance()
+            .onCommandFinish((Command command) -> logCommandFunction.accept(command, false));
+        CommandScheduler.getInstance()
+            .onCommandInterrupt((Command command) -> logCommandFunction.accept(command, false));
 
         // Instantiate our RobotContainer. This will perform all our button bindings,
         // and put our autonomous chooser on the dashboard.
@@ -138,10 +166,13 @@ public class Robot extends LoggedRobot {
     {
         var m_alliance = DriverStation.getAlliance().isPresent()
             && DriverStation.getAlliance().get() == Alliance.Red;
+
         // Get currently selected command
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        m_shouldMirror = m_robotContainer.shouldMirrorPath();
         // Check if is the same as the last one
-        if (m_autonomousCommand != m_lastAutonomousCommand && m_autonomousCommand != null) {
+        if ((m_autonomousCommand != m_lastAutonomousCommand || m_shouldMirror != m_lastShouldMirror)
+            && m_autonomousCommand != null) {
             // Check if its contained in the list of our autos
             if (AutoBuilder.getAllAutoNames().contains(m_autonomousCommand.getName())) {
                 // Clear the current path
@@ -150,34 +181,36 @@ public class Robot extends LoggedRobot {
                 try {
                     for (PathPlannerPath path : PathPlannerAuto
                         .getPathGroupFromAutoFile(m_autonomousCommand.getName())) {
-                        // Adds all poses to master list
-                        m_pathsToShow.addAll(path.getPathPoses());
+                        // Adds all trajectories to master list
+                        var finalPath = path;
+                        if (m_alliance) {
+                            finalPath = path.flipPath();
+                        }
+                        if (m_shouldMirror) {
+                            finalPath = path.mirrorPath();
+                        }
+                        m_pathsToShow.addAll(finalPath.getPathPoses());
                     }
                 } catch (IOException | ParseException e) {
                     e.printStackTrace();
-                }
-                // Check to see which alliance we are on Red Alliance
-                if (m_alliance) {
-                    for (int i = 0; i < m_pathsToShow.size(); i++) {
-                        m_pathsToShow.set(i,
-                            m_pathsToShow.get(i).rotateAround(fieldCenter, Rotation2d.k180deg));
-                    }
                 }
                 // Displays all poses on Field2d widget
                 m_autoTraj.getObject("traj").setPoses(m_pathsToShow);
             }
         }
         m_lastAutonomousCommand = m_autonomousCommand;
+        m_lastShouldMirror = m_shouldMirror;
 
-        if (!m_pathsToShow.isEmpty()) {
-            var firstPose = m_pathsToShow.get(0);
-            Logger.recordOutput("Alignment/StartPose", firstPose);
+        var firstPose = m_robotContainer.getFirstAutoPose();
+        if (firstPose.isPresent()) {
+            Logger.recordOutput("Alignment/StartPose", firstPose.get());
             SmartDashboard.putBoolean("Alignment/Translation",
-                firstPose.getTranslation().getDistance(
+                firstPose.get().getTranslation().getDistance(
                     m_robotContainer.m_drive.getPose().getTranslation()) <= Units
                         .inchesToMeters(4));
             SmartDashboard.putBoolean("Alignment/Rotation",
-                firstPose.getRotation().minus(m_robotContainer.m_drive.getPose().getRotation())
+                firstPose.get().getRotation()
+                    .minus(m_robotContainer.m_drive.getPose().getRotation())
                     .getDegrees() < 5);
         }
     }
@@ -189,7 +222,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit()
     {
-        m_robotContainer.zeroTounge().schedule(); // Zeros the tounge on enable
+        m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
         // schedule the autonomous command (example)
@@ -218,8 +251,11 @@ public class Robot extends LoggedRobot {
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(0);
         } else {
-            m_robotContainer.zeroTounge().schedule(); // Zeros the tounge on enable
+            m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
         }
+
+        // Bring the Tongue back down after auto
+        m_robotContainer.lowerTongueTele();
 
 
     }

@@ -31,7 +31,6 @@ public class LEDSubsystem extends SubsystemBase {
 
     Trigger m_haveCoral;
     Trigger m_isCoralMode;
-    Trigger m_isProcessorMode;
 
     // LoggedTunableNumbers for testing LED states
     private LoggedTunableNumber kMode, kState;
@@ -40,6 +39,11 @@ public class LEDSubsystem extends SubsystemBase {
 
     AllianceColor m_DSAlliance = AllianceColor.UNDETERMINED;
     LEDSubsystemIO m_io;
+
+    int visionOutCounter = 0;
+    Timer m_timer = new Timer();
+    double lastTimeStamp = 0.0;
+    double thisTimeStamp;
 
     protected final LEDSubsystemIOInputsAutoLogged inputs =
         new LEDSubsystemIOInputsAutoLogged();
@@ -55,8 +59,7 @@ public class LEDSubsystem extends SubsystemBase {
         Climber climber,
         Vision vision,
         Trigger haveCoral,
-        Trigger isCoralMode,
-        Trigger isProcessorMode)
+        Trigger isCoralMode)
     {
 
         m_io = io;
@@ -67,74 +70,76 @@ public class LEDSubsystem extends SubsystemBase {
         m_Vision = vision;
         m_haveCoral = haveCoral;
         m_isCoralMode = isCoralMode;
-        m_isProcessorMode = isProcessorMode;
 
         // Tunable numbers for testing
         kMode = new LoggedTunableNumber("LED/Mode", 0);
         kState = new LoggedTunableNumber("LED/State", 0);
+        m_timer.start();
     }
 
     @Override
     public void periodic()
     {
-        LEDState newState;
-        GPMode newGPMode;
+        // Only loop through periodic LED checking every 0.2 seconds, makes code more efficient
+        thisTimeStamp = m_timer.get();
+        if (thisTimeStamp - lastTimeStamp >= 0.2) {
+            lastTimeStamp = thisTimeStamp;
+            LEDState newState;
+            GPMode newGPMode;
 
-        // Determine and Set Alliance color
-        if (m_DSAlliance == AllianceColor.UNDETERMINED) {
-            if (DriverStation.getAlliance().isPresent()) {
-                if (DriverStation.getAlliance().get() == Alliance.Blue) {
-                    m_DSAlliance = AllianceColor.BLUE;
-                } else {
-                    m_DSAlliance = AllianceColor.RED;
+            // Determine and Set Alliance color
+            if (m_DSAlliance == AllianceColor.UNDETERMINED) {
+                if (DriverStation.getAlliance().isPresent()) {
+                    if (DriverStation.getAlliance().get() == Alliance.Blue) {
+                        m_DSAlliance = AllianceColor.BLUE;
+                    } else {
+                        m_DSAlliance = AllianceColor.RED;
+                    }
                 }
-            }
-            m_io.setAlliance(m_DSAlliance);
-        }
-
-        if (kTesting) {
-            // Testing Mode - change values using Tunable Numbers
-            newState = testLEDState((int) kState.get());
-            switch ((int) kMode.get()) {
-                case 1:
-                    newGPMode = GPMode.ALGAE;
-                    break;
-                case 2:
-                    newGPMode = GPMode.PROCESSOR;
-                    break;
-                default:
-                    newGPMode = GPMode.CORAL;
-                    break;
+                m_io.setAlliance(m_DSAlliance);
             }
 
-            if (newState == LEDState.ENABLED) {
-                runMatchTimerPattern();
-            } else if (newState == LEDState.DISABLED) {
-                this.timerDisabled();
-            }
+            if (kTesting) {
+                // Testing Mode - change values using Tunable Numbers
+                newState = testLEDState((int) kState.get());
+                switch ((int) kMode.get()) {
+                    case 1:
+                        newGPMode = GPMode.ALGAE;
+                        break;
+                    default:
+                        newGPMode = GPMode.CORAL;
+                        break;
+                }
 
-        } else {
+                if (newState == LEDState.ENABLED) {
+                    runMatchTimerPattern();
+                } else if (newState == LEDState.DISABLED) {
+                    this.timerDisabled();
+                }
 
-            // Real Robot
-            // Determine Game Piece Mode
-            if (m_isCoralMode.getAsBoolean()) {
-                newGPMode = GPMode.CORAL;
-            } else if (m_isProcessorMode.getAsBoolean()) {
-                newGPMode = GPMode.PROCESSOR;
             } else {
-                newGPMode = GPMode.ALGAE;
+
+                // Real Robot
+                // Determine Game Piece Mode
+                if (m_isCoralMode.getAsBoolean()) {
+                    newGPMode = GPMode.CORAL;
+                } else {
+                    newGPMode = GPMode.ALGAE;
+                }
+                // Get latest robot state
+                newState = getRobotState();
             }
-            // Get latest robot state
-            newState = getRobotState();
+
+            // Process Changes
+            m_io.setGPMode(newGPMode);
+            m_io.setRobotState(newState);
+
+            // Do AKit logging
+            m_io.updateInputs(inputs);
+            Logger.processInputs("LED", inputs);
+            Logger.recordOutput("LED/GamePiece", inputs.GamePiece);
+            Logger.recordOutput("LED/RobotState", inputs.RobotState);
         }
-
-        // Process Changes
-        m_io.setGPMode(newGPMode);
-        m_io.setRobotState(newState);
-
-        // Do AKit logging
-        m_io.updateInputs(inputs);
-        Logger.processInputs("LED", inputs);
     }
 
     // Determine the current state of the robot
@@ -148,6 +153,7 @@ public class LEDSubsystem extends SubsystemBase {
         // - DISABLED
         // - AUTONOMOUS
         // Operating State:
+        // - VISION_OUT
         // - INTAKING
         // - FEEDING
         // - CLIMBING
@@ -189,12 +195,23 @@ public class LEDSubsystem extends SubsystemBase {
             // Run MatchTimer
             runMatchTimerPattern();
 
-            // Intaking Coral?
-            if (m_ClawRoller.getState() == ClawRoller.State.INTAKE) {
-                if (!m_haveCoral.getAsBoolean()) {
-                    // Waiting for Coral
-                    newState = LEDState.INTAKING;
+            // Vision Out? For 2 seconds, quickly flash the LEDs red
+            if (!m_Vision.anyCameraConnected) {
+                if (visionOutCounter < 10) {
+                    visionOutCounter++;
+                    newState = LEDState.VISION_OUT;
+                    // End the function so newState doesn't get overwritten
+                    return newState;
                 }
+            } else {
+                // Vision is back, reset flashing counter
+                visionOutCounter = 0;
+            }
+            // Intaking Coral?
+            if (m_ClawRoller.getState() == ClawRoller.State.INTAKE &&
+                !m_haveCoral.getAsBoolean()) {
+                // Waiting for Coral
+                newState = LEDState.INTAKING;
 
                 // Climbing?
             } else if (m_Climber.getState() == Climber.State.PREP ||
@@ -207,11 +224,11 @@ public class LEDSubsystem extends SubsystemBase {
                 }
 
                 // Moving Superstructure?
-            } else if (m_Elevator.isElevated()) {
-                if (!m_Elevator.atPosition(0.0) || !m_Arm.atPosition(0.0)) {
-                    // An Elevated position has been commanded, but it's not there yet
-                    newState = LEDState.SUPER_MOVE;
-                }
+            } else if (m_Elevator.isElevated() &&
+                (!m_Elevator.atPosition(0.0) ||
+                    !m_Arm.atPosition(0.0))) {
+                // An Elevated position has been commanded, but it's not there yet
+                newState = LEDState.SUPER_MOVE;
 
                 // Aligning?
             } else if (DriveCommands.getDriveMode() == DriveMode.dmApproach) {
@@ -294,18 +311,20 @@ public class LEDSubsystem extends SubsystemBase {
             case 4:
                 return LEDState.AUTONOMOUS;
             case 5:
-                return LEDState.INTAKING;
+                return LEDState.VISION_OUT;
             case 6:
-                return LEDState.CLIMBING;
+                return LEDState.INTAKING;
             case 7:
-                return LEDState.CLIMBED;
+                return LEDState.CLIMBING;
             case 8:
-                return LEDState.SUPER_MOVE;
+                return LEDState.CLIMBED;
             case 9:
-                return LEDState.ALIGNING;
+                return LEDState.SUPER_MOVE;
             case 10:
-                return LEDState.HAVE_CORAL;
+                return LEDState.ALIGNING;
             case 11:
+                return LEDState.HAVE_CORAL;
+            case 12:
                 return LEDState.ENABLED;
         }
     }

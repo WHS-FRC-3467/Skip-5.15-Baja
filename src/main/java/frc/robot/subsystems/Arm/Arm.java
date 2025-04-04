@@ -16,20 +16,20 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
     @RequiredArgsConstructor
     @Getter
     public enum State implements TargetState {
-        STOW(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(125.18), 0)),
+        STOW(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(120.18), 0)),
         CORAL_INTAKE(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(135.7), 0)),
-        LEVEL_1(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(94.13), 0)),
+        LEVEL_1(new ProfileType.MM_POSITION(() -> .352, 0)),
         LEVEL_2(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(94.48), 0)),
         LEVEL_3(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(104.48), 0)),
         LEVEL_4(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(101.33), 0)),
-        CLIMB(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(82.4), 0)),
+        CLIMB(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(73.44), 0)),
         ALGAE_LOW(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(103.3), 0)),
-        ALGAE_LOW_P(new ProfileType.MM_POSITION(() -> .2377, 0)),
+        // ALGAE_LOW_P(new ProfileType.MM_POSITION(() -> .2377, 0)),
         ALGAE_HIGH(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(103.3), 0)),
-        ALGAE_HIGH_P(new ProfileType.MM_POSITION(() -> .2446, 0)),
+        // ALGAE_HIGH_P(new ProfileType.MM_POSITION(() -> .2446, 0)),
         ALGAE_GROUND(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(70.0), 0)),
         PROCESSOR_SCORE(
-            new ProfileType.MM_POSITION(() -> Units.degreesToRotations(120.0), 0)),
+            new ProfileType.MM_POSITION(() -> 0.204, 0)),
         BARGE(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(130.0), 0)),
         COAST(new ProfileType.DISABLED_COAST()),
         BRAKE(new ProfileType.DISABLED_BRAKE());
@@ -51,7 +51,7 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
     /** Constructor */
     public Command setStateCommand(State state)
     {
-        return this.runOnce(() -> this.state = state);
+        return this.runOnce(() -> this.state = state).withName("Arm Set State: " + state.name());
     }
 
     public Command setCoastStateCommand()
@@ -69,4 +69,12 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
         return io.atPosition(state.profileType, tolerance);
     }
 
+    public boolean checkState(State desiredState, State currentState)
+    {
+        if (desiredState != currentState) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

@@ -20,6 +20,8 @@ public class Constants {
         return robotType;
     }
 
+    public static double bumperWidth = 0.99;
+
     /**
      * This enum defines the runtime mode used by AdvantageKit. The mode is always "real" when
      * running on a roboRIO. Change the value of "simMode" to switch between "sim" (physics sim) and

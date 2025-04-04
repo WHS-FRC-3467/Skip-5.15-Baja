@@ -17,7 +17,7 @@ public abstract class GenericLaserCANSubsystem<G extends GenericLaserCANSubsyste
     public abstract G getState();
 
     private final String name;
-    private final GenericLaserCANSubsystemIO io;
+    protected final GenericLaserCANSubsystemIO io;
     protected final LaserCANIOInputsAutoLogged inputs = new LaserCANIOInputsAutoLogged();
 
     @Getter
