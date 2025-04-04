@@ -1,6 +1,5 @@
 package frc.robot.subsystems.Climber;
 
-import org.littletonrobotics.junction.AutoLogOutput;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -9,7 +8,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.TargetState;
-import frc.robot.util.LoggedTunableNumber;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -23,8 +21,8 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
     public enum State implements TargetState {
         HOLD(new ProfileType.DISABLED_BRAKE()),
         HOME(new ProfileType.POSITION(() -> 0, 0)),
-        PREP(new ProfileType.POSITION(() -> -1.5, 0)),
-        CLIMB(new ProfileType.MM_POSITION(() -> -0.2, 1)),
+        PREP(new ProfileType.POSITION(() -> -1.7, 0)),
+        CLIMB(new ProfileType.MM_POSITION(() -> -0.3, 1)),
         MANUAL_CLIMB(new ProfileType.OPEN_VOLTAGE(() -> 12)),
         HOMING(new ProfileType.OPEN_VOLTAGE(() -> 4));
 

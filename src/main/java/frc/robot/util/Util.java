@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.Meters;
 import java.util.List;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 
 /** Contains basic functions that are used often. */

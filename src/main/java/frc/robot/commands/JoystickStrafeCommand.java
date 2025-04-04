@@ -33,7 +33,7 @@ public class JoystickStrafeCommand extends Command {
     TuneableProfiledPID angleController =
         new TuneableProfiledPID(
             "angleController",
-            5.0,
+            4.5,
             0.0,
             0.4,
             8.0,
@@ -42,11 +42,11 @@ public class JoystickStrafeCommand extends Command {
     TuneableProfiledPID alignController =
         new TuneableProfiledPID(
             "alignController",
-            0.6,
+            4,
             0.0,
             0,
-            20,
-            8);
+            3.7,
+            4);
 
     public JoystickStrafeCommand(
         Drive drive,
@@ -67,6 +67,7 @@ public class JoystickStrafeCommand extends Command {
     @Override
     public void initialize()
     {
+        targetPose2d = targetSupplier.get();
         alignController.reset(0);
         angleController.reset(drive.getPose().getRotation().getRadians());
     }
@@ -75,10 +76,12 @@ public class JoystickStrafeCommand extends Command {
     @Override
     public void execute()
     {
+        angleController.updatePID();
+        alignController.updatePID();
+
         running = true;
-        targetPose2d = targetSupplier.get();
         relativePose2d = drive.getPose().relativeTo(targetPose2d);
-        targetRotation2d = targetSupplier.get().getRotation();
+        targetRotation2d = targetPose2d.getRotation();
 
         // Calculate lateral linear velocity
         Translation2d offsetVector =
@@ -87,6 +90,7 @@ public class JoystickStrafeCommand extends Command {
         // Calculate total linear velocity
         Translation2d linearVelocity =
             getLinearVelocityFromJoysticks(0, -xSupplier.getAsDouble())
+                .times(drive.getMaxLinearSpeedMetersPerSec())
                 .plus(offsetVector)
                 .rotateBy(targetRotation2d);
 
@@ -99,8 +103,8 @@ public class JoystickStrafeCommand extends Command {
         // Convert to field relative speeds & send command
         ChassisSpeeds speeds =
             new ChassisSpeeds(
-                linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                linearVelocity.getX(),
+                linearVelocity.getY(),
                 omega);
 
         drive.runVelocity(

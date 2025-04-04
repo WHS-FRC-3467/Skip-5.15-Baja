@@ -16,7 +16,7 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
     @RequiredArgsConstructor
     @Getter
     public enum State implements TargetState {
-        STOW(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(125.18), 0)),
+        STOW(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(120.18), 0)),
         CORAL_INTAKE(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(135.7), 0)),
         LEVEL_1(new ProfileType.MM_POSITION(() -> .352, 0)),
         LEVEL_2(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(94.48), 0)),
