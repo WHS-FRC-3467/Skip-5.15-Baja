@@ -26,7 +26,7 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         new LoggedTunableNumber("Elevator/HomingVoltageSP", -1);
 
     static LoggedTunableNumber launchHeight =
-        new LoggedTunableNumber("Elevator/LaunchHeight", 3.8);
+        new LoggedTunableNumber("Elevator/LaunchHeight", 3.4);
 
     @RequiredArgsConstructor
     @Getter
