@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.TargetState;
+import frc.robot.util.LoggedTunableNumber;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -16,13 +17,16 @@ import lombok.Setter;
 @Getter
 public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
 
+    private static final LoggedTunableNumber climbHeight =
+        new LoggedTunableNumber("Climber/Climb Height", -0.3);
+
     @RequiredArgsConstructor
     @Getter
     public enum State implements TargetState {
         HOLD(new ProfileType.DISABLED_BRAKE()),
         HOME(new ProfileType.POSITION(() -> 0, 0)),
         PREP(new ProfileType.POSITION(() -> -1.7, 0)),
-        CLIMB(new ProfileType.MM_POSITION(() -> -0.3, 1)),
+        CLIMB(new ProfileType.MM_POSITION(climbHeight, 1)),
         MANUAL_CLIMB(new ProfileType.OPEN_VOLTAGE(() -> 8)),
         HOMING(new ProfileType.OPEN_VOLTAGE(() -> 4));
 
