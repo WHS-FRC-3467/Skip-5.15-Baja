@@ -43,6 +43,12 @@
           }
         },
         {
+          "type": "path",
+          "data": {
+            "pathName": "H-Algae"
+          }
+        },
+        {
           "type": "named",
           "data": {
             "name": "DescoreAlgae"
