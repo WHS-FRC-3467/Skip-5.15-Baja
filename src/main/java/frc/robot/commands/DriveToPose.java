@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -50,9 +51,9 @@ public class DriveToPose extends Command {
     TuneableProfiledPID yController =
         new TuneableProfiledPID(
             "yController",
-            4,
+            5.3,
             0.0,
-            0.1,
+            0.2,
             3.7,
             4);
 
@@ -86,6 +87,8 @@ public class DriveToPose extends Command {
         xController.reset(relativePose2d.getX());
         yController.reset(relativePose2d.getY());
         angleController.reset(drive.getPose().getRotation().getRadians());
+
+        Logger.recordOutput("AutoAlign/DriveToPose/Target", targetPose2d);
     }
 
     // Called every time the scheduler runs while the command is scheduled.

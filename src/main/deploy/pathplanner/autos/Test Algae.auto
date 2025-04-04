@@ -62,6 +62,6 @@
     }
   },
   "resetOdom": true,
-  "folder": "Self Test",
+  "folder": null,
   "choreoAuto": false
 }
