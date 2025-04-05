@@ -317,7 +317,7 @@ public class RobotContainer {
                 m_profiledElevator.setStateCommand(Elevator.State.BARGE),
                 Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
                 m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
-                Commands.waitUntil(m_clawRoller.stopped.negate()),
+                Commands.waitUntil(m_clawRoller.freeSpin),
                 Commands.waitSeconds(0.2),
                 m_clawRoller.setStateCommand(ClawRoller.State.OFF),
                 m_superStruct.getTransitionCommand(Arm.State.STOW,
