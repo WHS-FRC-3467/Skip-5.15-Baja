@@ -6,6 +6,7 @@ package frc.robot;
 
 import static frc.robot.subsystems.Vision.VisionConstants.*;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -24,6 +25,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.RobotType;
+import frc.robot.FieldConstants.ReefHeight;
 import frc.robot.FieldConstants.ReefSide;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
@@ -60,6 +62,7 @@ import frc.robot.util.Util;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.WindupXboxController;
 import frc.robot.util.PPCalcEndpoint.PPCalcEndpoint;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -100,8 +103,17 @@ public class RobotContainer {
 
     // Trigger for algae/coral mode switching
     private Trigger isCoralMode;
+
+    // Override Triggers
+    private boolean autoScoreOverride = false;
     public Trigger hasVision;
     public Trigger hasLaserCAN;
+
+    private Trigger autoScore;
+
+    // Auto Score Height
+    @AutoLogOutput
+    private ReefHeight scoreHeight = ReefHeight.L2;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
@@ -147,6 +159,8 @@ public class RobotContainer {
                 } else {
                     m_LED = null;
                 }
+
+                hasVision = new Trigger(() -> m_vision.anyCameraConnected);
                 break;
 
             case SIM:
@@ -179,6 +193,7 @@ public class RobotContainer {
                     m_clawRoller, m_profiledArm, m_profiledElevator, m_profiledClimber,
                     m_vision, m_clawRollerLaserCAN.triggered, isCoralMode);
 
+                hasVision = new Trigger(() -> true);
                 break;
 
             default:
@@ -204,12 +219,14 @@ public class RobotContainer {
                     m_clawRoller, m_profiledArm, m_profiledElevator, m_profiledClimber,
                     m_vision, m_clawRollerLaserCAN.triggered, isCoralMode);
 
+                hasVision = new Trigger(() -> m_vision.anyCameraConnected);
                 break;
         }
 
         // Fallback Triggers
-        hasVision = new Trigger(() -> m_vision.anyCameraConnected);
         hasLaserCAN = new Trigger(m_clawRollerLaserCAN.validMeasurement);
+        autoScore = hasVision.and(new Trigger(() -> autoScoreOverride).negate());
+
         // Superstructure coordinates Arm and Elevator motions
         m_superStruct = new Superstructure(m_profiledArm, m_profiledElevator);
 
@@ -324,6 +341,50 @@ public class RobotContainer {
                 Elevator.State.STOW, Units.degreesToRotations(10), 0.1));
     }
 
+    private Command superstructLevel()
+    {
+        return Commands.select(Map.of(
+            ReefHeight.L1,
+            m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_1, Elevator.State.LEVEL_1),
+            ReefHeight.L2,
+            m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_2, Elevator.State.LEVEL_2),
+            ReefHeight.L3,
+            m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_3, Elevator.State.LEVEL_3),
+            ReefHeight.L4,
+            m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_4, Elevator.State.LEVEL_4)),
+            () -> scoreHeight);
+    }
+
+    private Command scoreCoral(ReefSide side)
+    {
+        return Commands.sequence(
+            new DriveToPose(
+                m_drive,
+                () -> Util
+                    .moveForward(
+                        FieldConstants.getNearestReefBranch(
+                            getFuturePose(alignPredictionSeconds.get()),
+                            side),
+                        (Constants.bumperWidth / 2) + 0.5)
+                    .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg)))
+                        .withTolerance(Units.inchesToMeters(5.0),
+                            Rotation2d.fromDegrees(3)),
+            Commands.parallel(
+                new DriveToPose(
+                    m_drive,
+                    () -> Util
+                        .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
+                            side),
+                            (Constants.bumperWidth / 2))
+                        .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg)))
+                            .withTolerance(Units.inchesToMeters(2.0),
+                                Rotation2d.fromDegrees(0.04)),
+                superstructLevel()),
+            m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
+            Commands.waitUntil(isCoralMode.negate()),
+            m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW));
+    }
+
     private Command driveTest(double speed)
     {
         return DriveCommands.driveTest(m_drive, speed);
@@ -347,19 +408,33 @@ public class RobotContainer {
 
         // Driver Right Bumper and Coral Mode: Approach Nearest Right-Side Reef Branch
         m_driver
-            .rightBumper().and(isCoralMode).and(hasVision)
+            .rightBumper().and(hasVision)
             .whileTrue(
-                joystickApproach(
-                    () -> FieldConstants.getNearestReefBranch(
-                        getFuturePose(alignPredictionSeconds.get()), ReefSide.RIGHT)));
+                Commands.either(
+                    Commands.either(
+                        scoreCoral(ReefSide.RIGHT),
+                        joystickApproach(
+                            () -> FieldConstants.getNearestReefBranch(
+                                getFuturePose(alignPredictionSeconds.get()), ReefSide.RIGHT))
+                                    .until(isCoralMode.negate()),
+                        autoScore),
+                    Commands.none(),
+                    isCoralMode));
 
         // Driver Left Bumper and Coral Mode: Approach Nearest Left-Side Reef Branch
         m_driver
-            .leftBumper().and(isCoralMode).and(hasVision)
+            .leftBumper().and(hasVision)
             .whileTrue(
-                joystickApproach(
-                    () -> FieldConstants.getNearestReefBranch(
-                        getFuturePose(alignPredictionSeconds.get()), ReefSide.LEFT)));
+                Commands.either(
+                    Commands.either(
+                        scoreCoral(ReefSide.LEFT),
+                        joystickApproach(
+                            () -> FieldConstants.getNearestReefBranch(
+                                getFuturePose(alignPredictionSeconds.get()), ReefSide.LEFT))
+                                    .until(isCoralMode.negate()),
+                        autoScore),
+                    Commands.none(),
+                    isCoralMode));
 
         // Driver Left and Right Bumpers and Algae mode: Descore to horns on nearest reef face
         m_driver
@@ -389,7 +464,11 @@ public class RobotContainer {
         m_driver
             .x().and(isCoralMode)
             .onTrue(
-                m_superStruct.getTransitionCommand(Arm.State.LEVEL_2, Elevator.State.LEVEL_2));
+                Commands.either(
+                    Commands.runOnce(() -> scoreHeight = ReefHeight.L2),
+                    m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_2,
+                        Elevator.State.LEVEL_2),
+                    autoScore));
 
         // Driver X Button and Algae mode: Lollipop Collect
         m_driver
@@ -417,8 +496,11 @@ public class RobotContainer {
         m_driver
             .b().and(isCoralMode)
             .onTrue(
-                m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_3,
-                    Elevator.State.LEVEL_3));
+                Commands.either(
+                    Commands.runOnce(() -> scoreHeight = ReefHeight.L3),
+                    m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_3,
+                        Elevator.State.LEVEL_3),
+                    autoScore));
 
         // Driver B Button and Algae mode: Send Arm PROCESSOR SCORE
         m_driver
@@ -443,8 +525,11 @@ public class RobotContainer {
         m_driver
             .y().and(isCoralMode)
             .onTrue(
-                m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_4,
-                    Elevator.State.LEVEL_4));
+                Commands.either(
+                    Commands.runOnce(() -> scoreHeight = ReefHeight.L4),
+                    m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_4,
+                        Elevator.State.LEVEL_4),
+                    autoScore));
 
         // Driver Y Button: Auto Barge
         m_driver
@@ -584,9 +669,14 @@ public class RobotContainer {
                     m_profiledElevator.setStateCommand(Elevator.State.LEVEL_2),
                     m_profiledArm.setStateCommand(Arm.State.LEVEL_2)));
 
-        // SmartDashboard.putData("ReefPositions",
-        // Commands.runOnce(() -> ppAuto.calculatePPEndpoints(Units.inchesToMeters(19)))
-        // .ignoringDisable(true));
+        // Driver Start x 2: Override Auto Scoring
+        m_driver.start()
+            .onTrue(
+                Commands.race(
+                    Commands.waitSeconds(0.5),
+                    Commands.sequence(Commands.waitUntil(m_driver.start().negate()),
+                        Commands.waitUntil(m_driver.start()),
+                        Commands.runOnce(() -> autoScoreOverride = !autoScoreOverride))));
 
         SmartDashboard.putData("Drive To Start",
             new DriveToPose(m_drive, () -> getFirstAutoPose().orElse(m_drive.getPose()))
