@@ -259,7 +259,7 @@ public class RobotContainer {
     {
         var approachCommand = new JoystickApproachCommand(
             m_drive,
-            () -> -m_driver.getLeftY() * speedMultiplier.getAsDouble(),
+            () -> m_driver.getLeftY() * speedMultiplier.getAsDouble(),
             () -> FieldConstants.getNearestReefFace(getFuturePose(alignPredictionSeconds.get())));
 
         return Commands.deadline(
