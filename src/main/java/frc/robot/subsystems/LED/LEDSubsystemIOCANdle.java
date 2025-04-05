@@ -391,10 +391,10 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
     // Disabled Animations
     Animation a_StrobeRedLeft =
         new StrobeAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed),
-            0, 1.5, m_FullLeft.segmentSize, m_FullLeft.startIndex);
+            0, 0.2, m_FullLeft.segmentSize, m_FullLeft.startIndex);
     Animation a_StrobeRedRight =
         new StrobeAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed),
-            0, 1.5, m_FullRight.segmentSize, m_FullRight.startIndex);
+            0, 0.2, m_FullRight.segmentSize, m_FullRight.startIndex);
     Animation a_RightRedLarson =
         new LarsonAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed), 0, 0.2,
             m_FullRight.segmentSize, BounceMode.Front, 10, m_FullRight.startIndex);
