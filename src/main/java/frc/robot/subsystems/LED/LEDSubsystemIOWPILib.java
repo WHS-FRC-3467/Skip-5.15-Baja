@@ -230,7 +230,7 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
                 break;
 
             case DISABLED_FAR:
-                m_fastFlashRed.applyTo(m_State);
+                m_fastFlashRed.applyTo(m_FullLeft);
                 m_stateColor = Color.kRed.toHexString();
                 break;
 
