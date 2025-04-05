@@ -291,20 +291,18 @@ public class RobotContainer {
             () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine))
                 .withTolerance(Units.inchesToMeters(2.0), Rotation2d.fromDegrees(0.04));
 
-        return Commands.deadline(
-            Commands.sequence(
-                Commands.waitUntil(() -> strafeCommand.isFinished()),
-                m_profiledArm.setStateCommand(Arm.State.STOW),
-                Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
-                m_profiledElevator.setStateCommand(Elevator.State.BARGE),
-                Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
-                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
-                Commands.waitUntil(m_clawRoller.stopped.negate()),
-                Commands.waitSeconds(0.2),
-                m_clawRoller.setStateCommand(ClawRoller.State.OFF),
-                m_superStruct.getTransitionCommand(Arm.State.STOW,
-                    Elevator.State.STOW, Units.degreesToRotations(10), 0.1)),
-            strafeCommand);
+        return Commands.sequence(
+            strafeCommand,
+            m_profiledArm.setStateCommand(Arm.State.STOW),
+            Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
+            m_profiledElevator.setStateCommand(Elevator.State.BARGE),
+            Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
+            m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+            Commands.waitUntil(m_clawRoller.stopped.negate()),
+            Commands.waitSeconds(0.2),
+            m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+            m_superStruct.getTransitionCommand(Arm.State.STOW,
+                Elevator.State.STOW, Units.degreesToRotations(10), 0.1));
     }
 
     private Command driveTest(double speed)

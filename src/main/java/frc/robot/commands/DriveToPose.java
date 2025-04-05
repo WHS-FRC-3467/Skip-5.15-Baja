@@ -217,8 +217,8 @@ public class DriveToPose extends Command {
     public boolean isFinished()
     {
         return running
-            && Math.abs(driveErrorAbs) < driveTolerance
-            && Math.abs(thetaErrorAbs) < thetaTolerance.getRadians();
+            && Math.abs(driveErrorAbs) <= driveTolerance
+            && Math.abs(thetaErrorAbs) <= thetaTolerance.getRadians();
     }
 
     @Override
