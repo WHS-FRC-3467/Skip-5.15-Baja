@@ -13,7 +13,7 @@ public class Constants {
     // Use LoggedTunableNumbers
     public static final boolean tuningMode = true;
 
-    private static RobotType robotType = RobotType.GORT;
+    private static RobotType robotType = RobotType.BAJA;
 
     public static RobotType getRobot()
     {

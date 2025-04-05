@@ -1,14 +1,11 @@
 package frc.robot.subsystems.Elevator;
 
-import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.RobotState;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
@@ -29,7 +26,7 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         new LoggedTunableNumber("Elevator/HomingVoltageSP", -1);
 
     static LoggedTunableNumber launchHeight =
-        new LoggedTunableNumber("Elevator/LaunchHeight", 4.3);
+        new LoggedTunableNumber("Elevator/LaunchHeight", 3.4);
 
     @RequiredArgsConstructor
     @Getter
@@ -40,8 +37,8 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         LEVEL_1(new ProfileType.MM_POSITION(() -> 0.09, 0)),
         LEVEL_2(new ProfileType.MM_POSITION(() -> 1.217, 0)),
         LEVEL_3(new ProfileType.MM_POSITION(() -> 2.7, 0)),
-        // LEVEL_4(new ProfileType.MM_POSITION(() -> 4.95, 0)), UNH settings
-        LEVEL_4(new ProfileType.MM_POSITION(() -> 5.11, 0)),
+        LEVEL_4(new ProfileType.MM_POSITION(() -> 4.95, 0)), // UNH settings
+        // LEVEL_4(new ProfileType.MM_POSITION(() -> 5.11, 0)), // Toyota settings
         CLIMB(new ProfileType.MM_POSITION(() -> 0.0, 0)),
         ALGAE_LOW(new ProfileType.MM_POSITION(() -> 0.65, 0)),
         ALGAE_HIGH(new ProfileType.MM_POSITION(() -> 2.1, 0)),
@@ -139,6 +136,6 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
     }
 
     public Trigger launchHeightTrigger =
-        new Trigger(() -> (io.getPosition() > launchHeight.getAsDouble()));
+        new Trigger(() -> (io.getPosition() >= launchHeight.getAsDouble()));
 
 }

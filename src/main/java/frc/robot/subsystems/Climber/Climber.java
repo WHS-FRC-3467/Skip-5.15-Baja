@@ -1,6 +1,5 @@
 package frc.robot.subsystems.Climber;
 
-import org.littletonrobotics.junction.AutoLogOutput;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -18,14 +17,17 @@ import lombok.Setter;
 @Getter
 public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
 
+    private static final LoggedTunableNumber climbHeight =
+        new LoggedTunableNumber("Climber/ClimbHeight", 0);
+
     @RequiredArgsConstructor
     @Getter
     public enum State implements TargetState {
         HOLD(new ProfileType.DISABLED_BRAKE()),
         HOME(new ProfileType.POSITION(() -> 0, 0)),
-        PREP(new ProfileType.POSITION(() -> -1.5, 0)),
-        CLIMB(new ProfileType.MM_POSITION(() -> -0.2, 1)),
-        MANUAL_CLIMB(new ProfileType.OPEN_VOLTAGE(() -> 12)),
+        PREP(new ProfileType.POSITION(() -> -1.2, 0)),
+        CLIMB(new ProfileType.MM_POSITION(climbHeight, 1)),
+        MANUAL_CLIMB(new ProfileType.OPEN_VOLTAGE(() -> 8)),
         HOMING(new ProfileType.OPEN_VOLTAGE(() -> 4));
 
         private final ProfileType profileType;
@@ -38,7 +40,8 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
     {
         super(State.HOME.profileType, ClimberConstants.kSubSysConstants, io, isSim);
         SmartDashboard.putData("Climber Home Command", homeCommand());
-        SmartDashboard.putData("Climber Zero Command", zeroPositionCommand());
+        SmartDashboard.putData("Climber Zero Command",
+            zeroPositionCommand().ignoringDisable(true));
     }
 
     public Command setStateCommand(State state)
@@ -53,7 +56,8 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
 
     public Command zeroPositionCommand()
     {
-        return Commands.runOnce(() -> io.zeroSensors());
+        return Commands
+            .sequence(Commands.runOnce(() -> io.zeroSensors()), this.setStateCommand(State.HOME));
     }
 
     public Command setClimbRequestCommand(boolean enabled)
@@ -86,18 +90,20 @@ public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
     public Trigger climbStep2 = new Trigger(() -> climbStep == 2);
     public Trigger climbStep3 = new Trigger(() -> climbStep >= 3);
 
-    private Debouncer homedDebouncer = new Debouncer(0.1, DebounceType.kRising);
+    private Debouncer homedDebouncer = new Debouncer(0.75, DebounceType.kRising);
 
     private Trigger homedTrigger =
         new Trigger(() -> homedDebouncer
-            .calculate(Math.abs(super.inputs.supplyCurrentAmps[0]) >= 15));
+            .calculate(Math.abs(super.inputs.supplyCurrentAmps[0]) >= 4.7));
 
     private Command homeCommand()
     {
         return Commands.sequence(
             this.setStateCommand(State.HOMING),
-            Commands.waitUntil(homedTrigger),
-            this.zeroPositionCommand(),
-            this.setStateCommand(State.HOME));
+            Commands.waitUntil(homedTrigger))
+            .finallyDo(() -> {
+                io.zeroSensors();
+                this.setState(State.HOME);
+            });
     }
 }

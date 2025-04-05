@@ -12,7 +12,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -23,7 +22,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.Elastic;
-import static edu.wpi.first.units.Units.Rotation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -255,6 +253,9 @@ public class Robot extends LoggedRobot {
         } else {
             m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
         }
+
+        // Bring the Tongue back down after auto
+        m_robotContainer.lowerTongueTele();
 
 
     }
