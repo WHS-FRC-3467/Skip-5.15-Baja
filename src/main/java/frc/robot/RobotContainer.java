@@ -296,27 +296,36 @@ public class RobotContainer {
 
     private Command DescoreAlgaeAuto()
     {
-        var approachCommand = new DriveToPose(
-            m_drive,
-            () -> Util
-                .moveForward(
-                    FieldConstants.getNearestReefFace(m_drive.getPose()),
-                    (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
-                .transformBy(
-                    new Transform2d(Translation2d.kZero, Rotation2d.k180deg)))
-                        .withTolerance(Units.inchesToMeters(1.5), Rotation2d.fromDegrees(0.04));
-
-        return Commands.deadline(
-            Commands.sequence(
-                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+        return Commands.sequence(
+            m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+            new DriveToPose(
+                m_drive,
+                () -> Util
+                    .moveForward(
+                        FieldConstants.getNearestReefFace(
+                            getFuturePose(alignPredictionSeconds.get())),
+                        (Constants.bumperWidth / 2) + 0.5)
+                    .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg)))
+                        .withTolerance(Units.inchesToMeters(5.0),
+                            Rotation2d.fromDegrees(3)),
+            Commands.parallel(
+                new DriveToPose(
+                    m_drive,
+                    () -> Util
+                        .moveForward(
+                            FieldConstants.getNearestReefFace(
+                                getFuturePose(alignPredictionSeconds.get())),
+                            (Constants.bumperWidth / 2))
+                        .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg)))
+                            .withTolerance(Units.inchesToMeters(1.0),
+                                Rotation2d.fromDegrees(0.04)),
                 Commands.either(
                     m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_HIGH,
                         Elevator.State.ALGAE_HIGH),
                     m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_LOW,
                         Elevator.State.ALGAE_LOW),
                     () -> FieldConstants.isAlgaeHigh(m_drive.getPose())),
-                Commands.waitUntil(m_clawRoller.stalled)),
-            approachCommand);
+                Commands.waitUntil(m_clawRoller.stalled)));
     }
 
     private Command BargeAlgae()
@@ -440,7 +449,10 @@ public class RobotContainer {
         m_driver
             .leftBumper().and(m_driver.rightBumper()).and(isCoralMode.negate())
             .whileTrue(
-                DescoreAlgae());
+                Commands.either(
+                    DescoreAlgaeAuto(),
+                    DescoreAlgae(),
+                    autoScore));
 
         m_driver
             .a()
