@@ -214,7 +214,6 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
             case DISABLED_FAR:
                 m_FullLeft.setAnimation(a_StrobeRedLeft);
                 m_FullRight.setAnimation(a_StrobeRedRight);
-                m_stateColor = Color.kRed.toHexString();
                 break;
 
             case DISABLED_TRANSLATION_OK:
