@@ -213,8 +213,8 @@ public class Robot extends LoggedRobot {
                     .minus(m_robotContainer.m_drive.getPose().getRotation())
                     .getDegrees() < 5);
             SmartDashboard.putNumber("Alignment/Distance To Auto Start",
-                firstPose.get().getTranslation().getDistance(
-                    m_robotContainer.m_drive.getPose().getTranslation()));
+                Units.metersToInches(firstPose.get().getTranslation().getDistance(
+                    m_robotContainer.m_drive.getPose().getTranslation())));
         }
     }
 

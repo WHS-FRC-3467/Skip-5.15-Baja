@@ -175,7 +175,7 @@ public class LEDSubsystem extends SubsystemBase {
             boolean goodRot = SmartDashboard.getBoolean("Alignment/Rotation", false);
             if (goodTrans && goodRot) {
                 newState = LEDState.DISABLED_BOTH_OK;
-            } else if (SmartDashboard.getNumber("Alignment/Distance To Auto Start", 0) >= 3) {
+            } else if (SmartDashboard.getNumber("Alignment/Distance To Auto Start", 0) >= 1) {
                 newState = LEDState.DISABLED_FAR;
             } else if (goodTrans) {
                 newState = LEDState.DISABLED_TRANSLATION_OK;
