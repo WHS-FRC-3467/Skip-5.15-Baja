@@ -3,7 +3,6 @@ package frc.robot.commands;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -24,6 +23,8 @@ import frc.robot.subsystems.Elevator.Elevator;
 import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCAN;
 import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCAN;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.TunablePIDController;
 import frc.robot.util.Util;
 
 public class ScoreCommandFactory {
@@ -38,7 +39,8 @@ public class ScoreCommandFactory {
     private Supplier<ReefHeight> height;
     private ReefSide side;
 
-    private PIDController offsetController = new PIDController(0.01, 0, 0);
+    private PIDController offsetController =
+        new TunablePIDController("ScoreCoral/OffsetController", 0.01, 0, 0);
 
     private Pose2d approachTarget;
     private Rotation2d targetRotation;
@@ -46,14 +48,60 @@ public class ScoreCommandFactory {
     private BooleanSupplier laserCANTriggered;
     private Rotation2d offsetDirection;
 
+    private LoggedTunableNumber linearAlignOffset =
+        new LoggedTunableNumber("ScoreCoral/LinearAlignToleranceMeters", 0.5);
+    private LoggedTunableNumber linearAlignTolerance =
+        new LoggedTunableNumber("ScoreCoral/LinearAlignToleranceInches", 5);
+    private LoggedTunableNumber thetaAlignTolerance =
+        new LoggedTunableNumber("ScoreCoral/ThetaAlignToleranceDegrees", 3);
+    private LoggedTunableNumber linearApproachTolerance =
+        new LoggedTunableNumber("ScoreCoral/LinearApproachToleranceInches", 2);
+    private LoggedTunableNumber thetaApproachTolerance =
+        new LoggedTunableNumber("ScoreCoral/ThetaApproachToleranceDegrees", 0.04);
+    private LoggedTunableNumber linearRaiseElevatorTolerance =
+        new LoggedTunableNumber("ScoreCoral/LinearRaiseElevatorToleranceMeters",
+            1);
+    private LoggedTunableNumber thetaRaiseElevatorTolerance =
+        new LoggedTunableNumber("ScoreCoral/ThetaRaiseElevatorToleranceDegrees", 8);
+    private LoggedTunableNumber linearStartShiftingTolerance =
+        new LoggedTunableNumber("ScoreCoral/LinearStartShiftingToleranceInches", 12);
+    private LoggedTunableNumber scoreDebounce =
+        new LoggedTunableNumber("ScoreCoral/ScoreDebounceSeconds", 0.25);
+
+    public static Command scoreCommand(Drive drive,
+        Superstructure superstruct, ClawRoller roller, ClawRollerLaserCAN clawLaserCAN,
+        FrontLeftLaserCAN frontLeftLaserCAN, FrontRightLaserCAN frontRightLaserCAN,
+        Supplier<ReefHeight> height, ReefSide side)
+    {
+        return new ScoreCommandFactory(
+            drive,
+            drive::getPose,
+            superstruct,
+            roller,
+            clawLaserCAN,
+            frontLeftLaserCAN,
+            frontRightLaserCAN,
+            height,
+            side)
+                .get();
+    }
+
     public static Command scoreCommand(Drive drive, Supplier<Pose2d> robot,
         Superstructure superstruct, ClawRoller roller, ClawRollerLaserCAN clawLaserCAN,
         FrontLeftLaserCAN frontLeftLaserCAN, FrontRightLaserCAN frontRightLaserCAN,
         Supplier<ReefHeight> height, ReefSide side)
     {
-        return new ScoreCommandFactory(drive, robot, superstruct, roller, clawLaserCAN,
+        return new ScoreCommandFactory(
+            drive,
+            robot,
+            superstruct,
+            roller,
+            clawLaserCAN,
             frontLeftLaserCAN,
-            frontRightLaserCAN, height, side).get();
+            frontRightLaserCAN,
+            height,
+            side)
+                .get();
     }
 
     private ScoreCommandFactory(Drive drive, Supplier<Pose2d> robot,
@@ -95,10 +143,10 @@ public class ScoreCommandFactory {
                     FieldConstants.getNearestReefBranch(
                         robot.get(),
                         side),
-                    (Constants.bumperWidth / 2) + 0.5)
+                    (Constants.bumperWidth / 2) + linearAlignOffset.get())
                 .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg)))
-                    .withTolerance(Units.inchesToMeters(5.0),
-                        Rotation2d.fromDegrees(3));
+                    .withTolerance(Units.inchesToMeters(linearAlignTolerance.get()),
+                        Rotation2d.fromDegrees(thetaAlignTolerance.get()));
 
         Command updateTarget = Commands.run(() -> {
             double scalarOffset =
@@ -112,21 +160,27 @@ public class ScoreCommandFactory {
         DriveToPose driveApproach = new DriveToPose(
             drive,
             () -> approachTarget)
-                .withTolerance(Units.inchesToMeters(2.0),
-                    Rotation2d.fromDegrees(0.04))
+                .withTolerance(Units.inchesToMeters(linearApproachTolerance.get()),
+                    Rotation2d.fromDegrees(thetaApproachTolerance.get()))
                 .finishWithinTolerance(false);
         Command approach = Commands.parallel(
             driveApproach.until(() -> updateTarget.isFinished() && driveApproach.withinTolerance()),
-            updateTarget);
+            Commands.sequence(
+                Commands.waitUntil(
+                    () -> driveApproach.withinTolerance(
+                        Units.inchesToMeters(linearStartShiftingTolerance.get()),
+                        Rotation2d.fromDegrees(thetaApproachTolerance.get()))),
+                updateTarget));
 
         return Commands.sequence(
             Commands.parallel(
                 Commands.sequence(align, approach),
                 Commands.sequence(Commands
-                    .waitUntil(() -> align.withinTolerance(1, Rotation2d.fromDegrees(8))),
+                    .waitUntil(() -> align.withinTolerance(linearRaiseElevatorTolerance.get(),
+                        Rotation2d.fromDegrees(thetaRaiseElevatorTolerance.get()))),
                     superstructLevel())),
             roller.setStateCommand(ClawRoller.State.SCORE),
-            Commands.waitUntil(clawLaserCAN.triggered.debounce(0.25).negate()))
+            Commands.waitUntil(clawLaserCAN.triggered.debounce(scoreDebounce.get()).negate()))
             .finallyDo(
                 (interrupted) -> superstruct
                     .getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)

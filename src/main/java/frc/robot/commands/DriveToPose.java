@@ -11,13 +11,14 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.subsystems.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.TunablePIDController;
+import frc.robot.util.TuneableProfiledPID;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import lombok.Getter;
@@ -35,10 +36,11 @@ public class DriveToPose extends Command {
 
     private TrapezoidProfile driveProfile;
     private final PIDController driveController =
-        new PIDController(1.0, 0.0, 0.0, Constants.loopPeriodSecs);
+        new TunablePIDController("DriveToPose/DriveController", 1.0, 0.0, 0.0);
     private final ProfiledPIDController thetaController =
-        new ProfiledPIDController(
-            4.0, 0.0, 0.0, new TrapezoidProfile.Constraints(0.0, 0.0), Constants.loopPeriodSecs);
+        new TuneableProfiledPID(
+            "DriveToPose/ThetaController",
+            4.0, 0.0, 0.0, 0.0, 0.0);
 
     private Translation2d lastSetpointTranslation = Translation2d.kZero;
     private Translation2d lastSetpointVelocity = Translation2d.kZero;
