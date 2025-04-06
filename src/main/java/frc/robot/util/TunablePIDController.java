@@ -4,29 +4,28 @@
 
 package frc.robot.util;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.controller.PIDController;
 import frc.robot.Constants;
 
 /** Add your docs here. */
-public class TuneableProfiledPID extends ProfiledPIDController {
+public class TunablePIDController extends PIDController {
 
     // Instance name for tagging log values
     String m_name;
 
     // Tunable numbers
-    private LoggedTunableNumber m_kP, m_kI, m_kD, m_maxV, m_maxA;
+    private LoggedTunableNumber m_kP, m_kI, m_kD;
 
-    public TuneableProfiledPID(String name, double kP, double kI,
-        double kD, double maxV, double maxA)
+    public TunablePIDController(String name, double kP, double kI,
+        double kD)
     {
-        this(name, kP, kI, kD, maxV, maxA, Constants.loopPeriodSecs);
+        this(name, kP, kI, kD, Constants.loopPeriodSecs);
     }
 
-    public TuneableProfiledPID(String name, double kP, double kI,
-        double kD, double maxV, double maxA, double period)
+    public TunablePIDController(String name, double kP, double kI,
+        double kD, double period)
     {
-        super(kP, kI, kD, new TrapezoidProfile.Constraints(maxV, maxA), period);
+        super(kP, kI, kD, period);
 
         m_name = name;
 
@@ -34,9 +33,6 @@ public class TuneableProfiledPID extends ProfiledPIDController {
         m_kP = new LoggedTunableNumber(m_name + "/kP", kP);
         m_kI = new LoggedTunableNumber(m_name + "/kI", kI);
         m_kD = new LoggedTunableNumber(m_name + "/kD", kD);
-
-        m_maxV = new LoggedTunableNumber(m_name + "/maxV", maxV);
-        m_maxA = new LoggedTunableNumber(m_name + "/maxA", maxA);
     }
 
     public void updatePID()
@@ -46,11 +42,6 @@ public class TuneableProfiledPID extends ProfiledPIDController {
             || m_kI.hasChanged(hashCode())
             || m_kD.hasChanged(hashCode())) {
             this.setPID(m_kP.get(), m_kI.get(), m_kD.get());
-        }
-
-        if (m_maxV.hasChanged(hashCode())
-            || m_maxA.hasChanged(hashCode())) {
-            this.setConstraints(new TrapezoidProfile.Constraints(m_maxV.get(), m_maxA.get()));
         }
     }
 
