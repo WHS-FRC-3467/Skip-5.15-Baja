@@ -32,6 +32,7 @@ import frc.robot.commands.DriveToPose;
 import frc.robot.commands.DriveToStation;
 import frc.robot.commands.JoystickApproachCommand;
 import frc.robot.commands.JoystickStrafeCommand;
+import frc.robot.commands.ScoreCommandFactory;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Arm.*;
@@ -49,6 +50,14 @@ import frc.robot.subsystems.Climber.ClimberIO;
 import frc.robot.subsystems.Climber.ClimberIOSim;
 import frc.robot.subsystems.Climber.ClimberIOTalonFX;
 import frc.robot.subsystems.Elevator.*;
+import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCAN;
+import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCANIO;
+import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCANIOReal;
+import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCANIOSim;
+import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCAN;
+import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIO;
+import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIOReal;
+import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIOSim;
 import frc.robot.subsystems.LED.LEDSubsystem;
 import frc.robot.subsystems.LED.LEDSubsystemIO;
 import frc.robot.subsystems.LED.LEDSubsystemIOCANdle;
@@ -65,6 +74,7 @@ import frc.robot.util.WindupXboxController;
 import frc.robot.util.PPCalcEndpoint.PPCalcEndpoint;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import static frc.robot.commands.ScoreCommandFactory.scoreCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -92,6 +102,8 @@ public class RobotContainer {
     private final ClawRoller m_clawRoller;
     private final Tongue m_tongue;
     private final ClawRollerLaserCAN m_clawRollerLaserCAN;
+    private final FrontLeftLaserCAN m_frontLeftLaserCAN;
+    private final FrontRightLaserCAN m_frontRightLaserCAN;
     private final Superstructure m_superStruct;
 
     public final Vision m_vision;
@@ -145,6 +157,8 @@ public class RobotContainer {
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
+                m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIOReal());
+                m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIOReal());
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
                 m_vision =
                     new Vision(
@@ -182,6 +196,8 @@ public class RobotContainer {
                 m_clawRoller = new ClawRoller(new ClawRollerIOSim(), true);
                 m_tongue = new Tongue(new TongueIOSim(), true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOSim());
+                m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIOSim());
+                m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIOSim());
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
 
                 // m_vision =
@@ -214,6 +230,8 @@ public class RobotContainer {
                 m_clawRoller = new ClawRoller(new ClawRollerIO() {}, true);
                 m_tongue = new Tongue(new TongueIO() {}, true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIO() {});
+                m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIO() {});
+                m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIO() {});
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
                 m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
                 m_LED = new LEDSubsystem(new LEDSubsystemIO() {},
@@ -351,51 +369,12 @@ public class RobotContainer {
                 Elevator.State.STOW, Units.degreesToRotations(10), 0.1));
     }
 
-    private Command superstructLevel()
-    {
-        return Commands.select(Map.of(
-            ReefHeight.L1,
-            m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_1, Elevator.State.LEVEL_1),
-            ReefHeight.L2,
-            m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_2, Elevator.State.LEVEL_2),
-            ReefHeight.L3,
-            m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_3, Elevator.State.LEVEL_3),
-            ReefHeight.L4,
-            m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_4, Elevator.State.LEVEL_4)),
-            () -> scoreHeight);
-    }
-
     private Command scoreCoral(ReefSide side)
     {
-        DriveToPose firstDrive = new DriveToPose(
-            m_drive,
-            () -> Util
-                .moveForward(
-                    FieldConstants.getNearestReefBranch(
-                        getFuturePose(alignPredictionSeconds.get()),
-                        side),
-                    (Constants.bumperWidth / 2) + 0.5)
-                .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg)))
-                    .withTolerance(Units.inchesToMeters(5.0),
-                        Rotation2d.fromDegrees(3));
-
-        return Commands.sequence(
-            Commands.parallel(
-                Commands.sequence(firstDrive, new DriveToPose(
-                    m_drive,
-                    () -> Util
-                        .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
-                            side),
-                            (Constants.bumperWidth / 2))
-                        .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg)))
-                            .withTolerance(Units.inchesToMeters(2.0),
-                                Rotation2d.fromDegrees(0.04))),
-                Commands.sequence(Commands
-                    .waitUntil(() -> firstDrive.withinTolerance(1, Rotation2d.fromDegrees(8))),
-                    superstructLevel())),
-            m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
-            Commands.waitUntil(isCoralMode.negate()),
-            m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW));
+        return scoreCommand(m_drive,
+            () -> getFuturePose(alignPredictionSeconds.get()), m_superStruct, m_clawRoller,
+            m_clawRollerLaserCAN, m_frontLeftLaserCAN, m_frontRightLaserCAN, () -> scoreHeight,
+            side);
     }
 
     private Command driveTest(double speed)
