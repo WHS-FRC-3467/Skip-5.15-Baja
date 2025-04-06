@@ -21,6 +21,5 @@ public class JoystickStrafeCommand extends DriveToPose {
             () -> new Translation2d(0.0, -xSupplier.getAsDouble())
                 .rotateBy(target.get().getRotation()),
             () -> 0.0);
-        super.resetProfilesOnLargeFF(false);
     }
 }

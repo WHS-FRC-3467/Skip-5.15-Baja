@@ -21,6 +21,5 @@ public class JoystickApproachCommand extends DriveToPose {
             () -> new Translation2d(ySupplier.getAsDouble(), 0.0)
                 .rotateBy(target.get().getRotation()),
             () -> 0.0);
-        super.resetProfilesOnLargeFF(false);
     }
 }

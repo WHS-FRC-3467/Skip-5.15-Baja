@@ -48,8 +48,6 @@ public class DriveToPose extends Command {
     private Supplier<Translation2d> linearFF = () -> Translation2d.kZero;
     private DoubleSupplier omegaFF = () -> 0.0;
 
-    private boolean resetProfilesOnLargeFF = true;
-
     public DriveToPose(Drive drive, Supplier<Pose2d> target)
     {
         this.drive = drive;
@@ -85,12 +83,6 @@ public class DriveToPose extends Command {
         return this;
     }
 
-    public DriveToPose resetProfilesOnLargeFF(boolean reset)
-    {
-        this.resetProfilesOnLargeFF = reset;
-        return this;
-    }
-
     @Override
     public void initialize()
     {
@@ -106,8 +98,8 @@ public class DriveToPose extends Command {
 
         this.driveController.setTolerance(driveTolerance);
         this.thetaController.setTolerance(thetaTolerance.getRadians());
-        driveController.reset();
-        thetaController.reset(
+        this.driveController.reset();
+        this.thetaController.reset(
             currentPose.getRotation().getRadians(), fieldVelocity.omegaRadiansPerSecond);
         lastSetpointTranslation = currentPose.getTranslation();
         lastSetpointVelocity = linearFieldVelocity;
@@ -144,7 +136,7 @@ public class DriveToPose extends Command {
         double setpointVelocity =
             direction.norm() <= 0.01 // Don't calculate velocity in direction when really close
                 ? lastSetpointVelocity.getNorm()
-                : lastSetpointVelocity.toVector().dot(direction) / direction.norm();
+                : Math.abs(lastSetpointVelocity.toVector().dot(direction)) / direction.norm();
 
         State driveSetpoint =
             driveProfile.calculate(
