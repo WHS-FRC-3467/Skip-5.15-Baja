@@ -28,7 +28,7 @@ import org.littletonrobotics.junction.Logger;
 public class DriveToStation extends DriveToPose {
     private static final LoggedTunableNumber stationAlignDistance =
         new LoggedTunableNumber(
-            "DriveToStation/StationAlignDistanceInches", 1);
+            "DriveToStation/StationAlignDistanceInches", -3);
     private static final LoggedTunableNumber horizontalMaxOffset =
         new LoggedTunableNumber(
             "DriveToStation/HorizontalMaxOffsetInches", 25);
