@@ -17,9 +17,9 @@ public class JoystickStrafeCommand extends DriveToPose {
             () -> target.get().transformBy(
                 new Transform2d(0.0, drive.getPose().relativeTo(target.get()).getY(),
                     Rotation2d.k180deg)),
-            drive::getPose,
-            () -> new Translation2d(0.0, -xSupplier.getAsDouble())
-                .rotateBy(target.get().getRotation()),
+            drive::getPose);
+        super.withFeedforward(() -> new Translation2d(0.0, -xSupplier.getAsDouble())
+            .rotateBy(target.get().getRotation()),
             () -> 0.0);
     }
 }

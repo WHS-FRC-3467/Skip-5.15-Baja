@@ -29,6 +29,7 @@ import frc.robot.FieldConstants.ReefHeight;
 import frc.robot.FieldConstants.ReefSide;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
+import frc.robot.commands.DriveToStation;
 import frc.robot.commands.JoystickApproachCommand;
 import frc.robot.commands.JoystickStrafeCommand;
 import frc.robot.generated.TunerConstants;
@@ -597,22 +598,25 @@ public class RobotContainer {
         m_driver
             .leftTrigger()
             .whileTrue(
-                Commands.sequence(
-                    m_tongue.setStateCommand(Tongue.State.RAISED),
-                    m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
-                    m_superStruct.getDefaultTransitionCommand(Arm.State.CORAL_INTAKE,
-                        Elevator.State.CORAL_INTAKE),
-                    Commands.either(
-                        Commands.waitUntil(
-                            m_clawRollerLaserCAN.triggered
-                                .and(m_tongue.coralContactTrigger) // TODO: CHECK IF NEEDED
-                                .and(m_clawRoller.stopped)),
-                        Commands.waitUntil(
-                            m_tongue.coralContactTrigger
-                                .and(m_clawRoller.stopped)),
-                        hasLaserCAN), // If lasercan is not valid, don't check it while intaking
-                    m_clawRoller.shuffleCommand(),
-                    m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL)))
+                Commands.parallel(
+                    Commands.sequence(
+                        m_tongue.setStateCommand(Tongue.State.RAISED),
+                        m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                        m_superStruct.getDefaultTransitionCommand(Arm.State.CORAL_INTAKE,
+                            Elevator.State.CORAL_INTAKE),
+                        Commands.either(
+                            Commands.waitUntil(
+                                m_clawRollerLaserCAN.triggered
+                                    .and(m_tongue.coralContactTrigger) // TODO: CHECK IF NEEDED
+                                    .and(m_clawRoller.stopped)),
+                            Commands.waitUntil(
+                                m_tongue.coralContactTrigger
+                                    .and(m_clawRoller.stopped)),
+                            hasLaserCAN), // If lasercan is not valid, don't check it while intaking
+                        m_clawRoller.shuffleCommand(),
+                        m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL)),
+                    new DriveToStation(m_drive, () -> -m_driver.getLeftY(),
+                        () -> -m_driver.getLeftX(), () -> -m_driver.getRightX())))
             .onFalse(
                 Commands.sequence(
                     m_clawRoller.setStateCommand(ClawRoller.State.OFF),
@@ -702,6 +706,10 @@ public class RobotContainer {
                 ReefSide.LEFT), (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
                 .transformBy(new Transform2d(Translation2d.kZero, Rotation2d.k180deg)))
                     .withTolerance(Units.inchesToMeters(1), Rotation2d.fromDegrees(1)));
+
+        SmartDashboard.putData("Drive to Station",
+            new DriveToStation(m_drive, () -> -m_driver.getLeftY(),
+                () -> -m_driver.getLeftX(), () -> -m_driver.getRightX()));
     }
 
     /**

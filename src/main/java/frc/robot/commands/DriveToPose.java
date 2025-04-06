@@ -53,6 +53,9 @@ public class DriveToPose extends Command {
     private Supplier<Translation2d> linearFF = () -> Translation2d.kZero;
     private DoubleSupplier omegaFF = () -> 0.0;
 
+    private Supplier<Translation2d> linearOverride = () -> Translation2d.kZero;
+    private DoubleSupplier omegaOverride = () -> 0.0;
+
     private LoggedTunableNumber driveMaxVelocity =
         new LoggedTunableNumber("DriveToPose/DriveMaxVelocity", 3.79);
     private LoggedTunableNumber driveMaxVelocityTop =
@@ -88,12 +91,19 @@ public class DriveToPose extends Command {
         this.robot = robot;
     }
 
-    public DriveToPose(Drive drive, Supplier<Pose2d> target, Supplier<Pose2d> robot,
-        Supplier<Translation2d> linearFF, DoubleSupplier omegaFF)
+    public DriveToPose withFeedforward(Supplier<Translation2d> linearFF, DoubleSupplier omegaFF)
     {
-        this(drive, target, robot);
         this.linearFF = linearFF;
         this.omegaFF = omegaFF;
+        return this;
+    }
+
+    public DriveToPose withOverride(Supplier<Translation2d> linearOverride,
+        DoubleSupplier omegaOverride)
+    {
+        this.linearOverride = linearOverride;
+        this.omegaOverride = omegaOverride;
+        return this;
     }
 
     public DriveToPose withTolerance(double driveTolerance, Rotation2d thetaTolerance)
@@ -226,10 +236,42 @@ public class DriveToPose extends Command {
         lastGoalRotation = targetPose.getRotation();
         lastTime = Timer.getTimestamp();
 
+        // Scale feedback velocities by override
+        if (linearOverride.get() != Translation2d.kZero) {
+            final double linearS = MathUtil.clamp(linearOverride.get().getNorm() * 3.0, 0.0, 1.0);
+            driveVelocity =
+                driveVelocity.interpolate(linearOverride.get().times(driveMaxVelocity.get()),
+                    linearS);
+
+            // Reset profiles if enough input
+            if (linearS >= 0.2) {
+                ChassisSpeeds fieldVelocity = drive.getChassisSpeeds();
+                Translation2d linearFieldVelocity =
+                    new Translation2d(fieldVelocity.vxMetersPerSecond,
+                        fieldVelocity.vyMetersPerSecond);
+                lastSetpointTranslation = currentPose.getTranslation();
+                lastSetpointVelocity = linearFieldVelocity;
+            }
+        }
+        if (omegaOverride.getAsDouble() != 0.0) {
+            final double thetaS =
+                MathUtil.clamp(Math.abs(omegaOverride.getAsDouble()) * 3.0, 0.0, 1.0);
+
+            thetaVelocity =
+                MathUtil.interpolate(
+                    thetaVelocity, omegaOverride.getAsDouble() * thetaMaxVelocity.get(), thetaS);
+            // Reset profiles if enough input
+            if (thetaS >= 0.1) {
+                ChassisSpeeds fieldVelocity = drive.getChassisSpeeds();
+                thetaController.reset(
+                    currentPose.getRotation().getRadians(), fieldVelocity.omegaRadiansPerSecond);
+            }
+        }
+
         // Add input ff
         driveVelocity =
             driveVelocity.plus(linearFF.get().times(driveMaxVelocity.get()));
-        thetaVelocity = thetaVelocity + omegaFF.getAsDouble() * 2.7;
+        thetaVelocity = thetaVelocity + omegaFF.getAsDouble() * thetaMaxVelocity.get();
 
         // Command speeds
         drive.runVelocity(
