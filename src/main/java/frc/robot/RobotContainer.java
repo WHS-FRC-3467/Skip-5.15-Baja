@@ -46,6 +46,14 @@ import frc.robot.subsystems.Climber.ClimberIO;
 import frc.robot.subsystems.Climber.ClimberIOSim;
 import frc.robot.subsystems.Climber.ClimberIOTalonFX;
 import frc.robot.subsystems.Elevator.*;
+import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCAN;
+import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCANIO;
+import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCANIOReal;
+import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCANIOSim;
+import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCAN;
+import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIO;
+import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIOReal;
+import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIOSim;
 import frc.robot.subsystems.LED.LEDSubsystem;
 import frc.robot.subsystems.LED.LEDSubsystemIO;
 import frc.robot.subsystems.LED.LEDSubsystemIOCANdle;
@@ -88,6 +96,8 @@ public class RobotContainer {
     private final ClawRoller m_clawRoller;
     private final Tongue m_tongue;
     private final ClawRollerLaserCAN m_clawRollerLaserCAN;
+    private final FrontLeftLaserCAN m_frontLeftLaserCAN;
+    private final FrontRightLaserCAN m_frontRightLaserCAN;
     private final Superstructure m_superStruct;
 
     public final Vision m_vision;
@@ -132,6 +142,8 @@ public class RobotContainer {
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
+                m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIOReal());
+                m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIOReal());
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
                 m_vision =
                     new Vision(
@@ -167,6 +179,8 @@ public class RobotContainer {
                 m_clawRoller = new ClawRoller(new ClawRollerIOSim(), true);
                 m_tongue = new Tongue(new TongueIOSim(), true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOSim());
+                m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIOSim());
+                m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIOSim());
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
 
                 // m_vision =
@@ -198,6 +212,8 @@ public class RobotContainer {
                 m_clawRoller = new ClawRoller(new ClawRollerIO() {}, true);
                 m_tongue = new Tongue(new TongueIO() {}, true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIO() {});
+                m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIO() {});
+                m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIO() {});
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
                 m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
                 m_LED = new LEDSubsystem(new LEDSubsystemIO() {},
