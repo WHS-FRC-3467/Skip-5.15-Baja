@@ -49,15 +49,17 @@ public class ScoreCommandFactory {
     private Rotation2d offsetDirection;
 
     private LoggedTunableNumber linearAlignOffset =
-        new LoggedTunableNumber("ScoreCoral/LinearAlignToleranceMeters", 0.5);
+        new LoggedTunableNumber("ScoreCoral/LinearAlignOffsetMeters", 0.5);
     private LoggedTunableNumber linearAlignTolerance =
         new LoggedTunableNumber("ScoreCoral/LinearAlignToleranceInches", 5);
     private LoggedTunableNumber thetaAlignTolerance =
-        new LoggedTunableNumber("ScoreCoral/ThetaAlignToleranceDegrees", 3);
+        new LoggedTunableNumber("ScoreCoral/ThetaAlignToleranceDegrees", 20);
+    private LoggedTunableNumber linearApproachDistanceInches =
+        new LoggedTunableNumber("ScoreCoral/LinearApproachDistanceInches", 0);
     private LoggedTunableNumber linearApproachTolerance =
         new LoggedTunableNumber("ScoreCoral/LinearApproachToleranceInches", 2);
     private LoggedTunableNumber thetaApproachTolerance =
-        new LoggedTunableNumber("ScoreCoral/ThetaApproachToleranceDegrees", 0.04);
+        new LoggedTunableNumber("ScoreCoral/ThetaApproachToleranceDegrees", 1);
     private LoggedTunableNumber linearRaiseElevatorTolerance =
         new LoggedTunableNumber("ScoreCoral/LinearRaiseElevatorToleranceMeters",
             1);
@@ -176,8 +178,11 @@ public class ScoreCommandFactory {
             Commands.parallel(
                 Commands.sequence(align, approach),
                 Commands.sequence(Commands
-                    .waitUntil(() -> align.withinTolerance(linearRaiseElevatorTolerance.get(),
-                        Rotation2d.fromDegrees(thetaRaiseElevatorTolerance.get()))),
+                    .waitUntil(
+                        () -> driveApproach.withinTolerance(linearRaiseElevatorTolerance.get(),
+                            Rotation2d.fromDegrees(thetaRaiseElevatorTolerance.get()))
+                            || align.withinTolerance(linearRaiseElevatorTolerance.get(),
+                                Rotation2d.fromDegrees(thetaRaiseElevatorTolerance.get()))),
                     superstructLevel())),
             roller.setStateCommand(ClawRoller.State.SCORE),
             Commands.waitUntil(clawLaserCAN.triggered.debounce(scoreDebounce.get()).negate()))
@@ -189,7 +194,7 @@ public class ScoreCommandFactory {
                 approachTarget = Util
                     .moveForward(FieldConstants.getNearestReefBranch(robot.get(),
                         side),
-                        (Constants.bumperWidth / 2))
+                        (Constants.bumperWidth / 2) + linearApproachDistanceInches.get())
                     .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg));
                 targetRotation = approachTarget.getRotation();
                 offsetDirection =
