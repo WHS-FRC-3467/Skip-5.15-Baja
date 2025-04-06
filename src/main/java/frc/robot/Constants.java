@@ -20,7 +20,7 @@ public class Constants {
         return robotType;
     }
 
-    public static double bumperWidth = 0.99;
+    public static double bumperWidth = 0.9;
 
     /**
      * This enum defines the runtime mode used by AdvantageKit. The mode is always "real" when

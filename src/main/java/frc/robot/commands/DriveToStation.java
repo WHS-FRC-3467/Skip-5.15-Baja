@@ -28,12 +28,10 @@ import org.littletonrobotics.junction.Logger;
 public class DriveToStation extends DriveToPose {
     private static final LoggedTunableNumber stationAlignDistance =
         new LoggedTunableNumber(
-            "DriveToStation/StationAlignDistance",
-            Constants.bumperWidth / 2.0 + Units.inchesToMeters(6.5));
+            "DriveToStation/StationAlignDistanceInches", 1);
     private static final LoggedTunableNumber horizontalMaxOffset =
         new LoggedTunableNumber(
-            "DriveToStation/HorizontalMaxOffset",
-            FieldConstants.CoralStation.stationLength / 2 - Units.inchesToMeters(32));
+            "DriveToStation/HorizontalMaxOffsetInches", 25);
 
     public DriveToStation(Drive drive)
     {
@@ -72,9 +70,11 @@ public class DriveToStation extends DriveToPose {
                     Transform2d offset = new Transform2d(stationCenter, robot);
                     offset =
                         new Transform2d(
-                            stationAlignDistance.get(), MathUtil.clamp(
-                                offset.getY(), -horizontalMaxOffset.get(),
-                                horizontalMaxOffset.get()),
+                            Constants.bumperWidth / 2.0
+                                + Units.inchesToMeters(stationAlignDistance.get()),
+                            MathUtil.clamp(
+                                offset.getY(), -Units.inchesToMeters(horizontalMaxOffset.get()),
+                                Units.inchesToMeters(horizontalMaxOffset.get())),
                             Rotation2d.kZero);
 
                     finalPoses.add(stationCenter.transformBy(offset));
