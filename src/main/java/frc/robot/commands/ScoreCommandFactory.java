@@ -3,6 +3,7 @@ package frc.robot.commands;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -33,26 +34,17 @@ public class ScoreCommandFactory {
     private ClawRoller roller;
 
     private ClawRollerLaserCAN clawLaserCAN;
-    private FrontLeftLaserCAN frontLeftLaserCAN;
-    private FrontRightLaserCAN frontRightLaserCAN;
 
     private Supplier<ReefHeight> height;
     private ReefSide side;
 
-    private PIDController offsetController = new PIDController(1, 0, 0);
+    private PIDController offsetController = new PIDController(0.01, 0, 0);
 
-    private Pose2d secondTarget = Util
-        .moveForward(FieldConstants.getNearestReefBranch(robot.get(),
-            side),
-            (Constants.bumperWidth / 2))
-        .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg));
-    private Rotation2d targetRotation = secondTarget.getRotation();
+    private Pose2d approachTarget;
+    private Rotation2d targetRotation;
 
-    private BooleanSupplier laserCANTriggered =
-        side == ReefSide.LEFT ? frontLeftLaserCAN.triggered : frontRightLaserCAN.triggered;
-    private Rotation2d offsetDirection =
-        (side == ReefSide.LEFT ? Rotation2d.kCCW_90deg : Rotation2d.kCW_90deg)
-            .rotateBy(targetRotation);
+    private BooleanSupplier laserCANTriggered;
+    private Rotation2d offsetDirection;
 
     public static Command scoreCommand(Drive drive, Supplier<Pose2d> robot,
         Superstructure superstruct, ClawRoller roller, ClawRollerLaserCAN clawLaserCAN,
@@ -74,10 +66,10 @@ public class ScoreCommandFactory {
         this.superstruct = superstruct;
         this.roller = roller;
         this.clawLaserCAN = clawLaserCAN;
-        this.frontLeftLaserCAN = frontLeftLaserCAN;
-        this.frontRightLaserCAN = frontRightLaserCAN;
         this.height = height;
         this.side = side;
+        this.laserCANTriggered =
+            side == ReefSide.LEFT ? frontLeftLaserCAN.triggered : frontRightLaserCAN.triggered;
     }
 
     private Command superstructLevel()
@@ -113,16 +105,18 @@ public class ScoreCommandFactory {
                 offsetController.calculate(laserCANTriggered.getAsBoolean() ? 0.0 : 1.0, 0.0);
             Translation2d offsetTranslation = new Translation2d(scalarOffset, offsetDirection);
 
-            secondTarget =
-                secondTarget.transformBy(new Transform2d(offsetTranslation, Rotation2d.kZero));
+            approachTarget =
+                new Pose2d(approachTarget.getTranslation().plus(offsetTranslation), targetRotation);
         }).beforeStarting(() -> offsetController.reset()).until(offsetController::atSetpoint);
 
+        DriveToPose driveApproach = new DriveToPose(
+            drive,
+            () -> approachTarget)
+                .withTolerance(Units.inchesToMeters(2.0),
+                    Rotation2d.fromDegrees(0.04))
+                .finishWithinTolerance(false);
         Command approach = Commands.parallel(
-            new DriveToPose(
-                drive,
-                () -> secondTarget)
-                    .withTolerance(Units.inchesToMeters(2.0),
-                        Rotation2d.fromDegrees(0.04)),
+            driveApproach.until(() -> updateTarget.isFinished() && driveApproach.withinTolerance()),
             updateTarget);
 
         return Commands.sequence(
@@ -136,6 +130,18 @@ public class ScoreCommandFactory {
             .finallyDo(
                 (interrupted) -> superstruct
                     .getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)
-                    .onlyIf(() -> !interrupted).schedule());
+                    .onlyIf(() -> !interrupted).schedule())
+            .beforeStarting(() -> {
+                approachTarget = Util
+                    .moveForward(FieldConstants.getNearestReefBranch(robot.get(),
+                        side),
+                        (Constants.bumperWidth / 2))
+                    .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg));
+                targetRotation = approachTarget.getRotation();
+                offsetDirection =
+                    targetRotation
+                        .rotateBy(
+                            (side == ReefSide.LEFT ? Rotation2d.kCCW_90deg : Rotation2d.kCW_90deg));
+            });
     }
 }
