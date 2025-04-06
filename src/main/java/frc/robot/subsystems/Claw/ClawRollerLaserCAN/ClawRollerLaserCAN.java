@@ -1,40 +1,22 @@
 package frc.robot.subsystems.Claw.ClawRollerLaserCAN;
 
-import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.Meters;
 import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.GenericLaserCANSubsystem.GenericLaserCANSubsystem;
-import frc.robot.subsystems.GenericLaserCANSubsystem.GenericLaserCANSubsystem.DistanceState;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
-public class ClawRollerLaserCAN extends GenericLaserCANSubsystem<ClawRollerLaserCAN.State> {
+public class ClawRollerLaserCAN extends GenericLaserCANSubsystem {
 
-    public Trigger triggered = new Trigger(() -> super.isTriggered());
+    public Trigger triggered = new Trigger(() -> super.inputs.distance.in(Meters) <= 0.05);
 
     private Debouncer validDebouncer = new Debouncer(2, DebounceType.kRising);
 
     public Trigger validMeasurement =
         new Trigger(
             () -> validDebouncer.calculate(io.getValidStatus()));
-            
-    @RequiredArgsConstructor
-    @Getter
-    public enum State implements DistanceState {
-        DEFAULT(Distance.ofBaseUnits(0.05, Meter));
-
-        @Getter
-        private final Distance distance;
-    }
-
-    @Getter
-    @Setter
-    private State state = State.DEFAULT;
 
     public ClawRollerLaserCAN(ClawRollerLaserCANIO io)
     {
@@ -42,9 +24,11 @@ public class ClawRollerLaserCAN extends GenericLaserCANSubsystem<ClawRollerLaser
     }
 
     @Override
-    public void periodic() {
+    public void periodic()
+    {
         super.periodic();
         SmartDashboard.putBoolean("Intake Fallback Active", !validMeasurement.getAsBoolean());
-        Logger.recordOutput("ClawRollerLaserCAN/Fallback Active", validMeasurement.getAsBoolean());
+        Logger.recordOutput(super.getName() + "/Fallback Active",
+            !validMeasurement.getAsBoolean());
     }
 }
