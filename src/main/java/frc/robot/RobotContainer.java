@@ -366,20 +366,21 @@ public class RobotContainer {
 
     private Command scoreCoral(ReefSide side)
     {
+        DriveToPose firstDrive = new DriveToPose(
+            m_drive,
+            () -> Util
+                .moveForward(
+                    FieldConstants.getNearestReefBranch(
+                        getFuturePose(alignPredictionSeconds.get()),
+                        side),
+                    (Constants.bumperWidth / 2) + 0.5)
+                .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg)))
+                    .withTolerance(Units.inchesToMeters(5.0),
+                        Rotation2d.fromDegrees(3));
+
         return Commands.sequence(
-            new DriveToPose(
-                m_drive,
-                () -> Util
-                    .moveForward(
-                        FieldConstants.getNearestReefBranch(
-                            getFuturePose(alignPredictionSeconds.get()),
-                            side),
-                        (Constants.bumperWidth / 2) + 0.5)
-                    .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg)))
-                        .withTolerance(Units.inchesToMeters(5.0),
-                            Rotation2d.fromDegrees(3)),
             Commands.parallel(
-                new DriveToPose(
+                Commands.sequence(firstDrive, new DriveToPose(
                     m_drive,
                     () -> Util
                         .moveForward(FieldConstants.getNearestReefBranch(m_drive.getPose(),
@@ -387,8 +388,10 @@ public class RobotContainer {
                             (Constants.bumperWidth / 2))
                         .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg)))
                             .withTolerance(Units.inchesToMeters(2.0),
-                                Rotation2d.fromDegrees(0.04)),
-                superstructLevel()),
+                                Rotation2d.fromDegrees(0.04))),
+                Commands.sequence(Commands
+                    .waitUntil(() -> firstDrive.withinTolerance(1, Rotation2d.fromDegrees(8))),
+                    superstructLevel())),
             m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
             Commands.waitUntil(isCoralMode.negate()),
             m_superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW));

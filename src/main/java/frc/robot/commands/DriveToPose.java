@@ -11,10 +11,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
+import frc.robot.subsystems.RobotState;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.LoggedTunableNumber;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import lombok.Getter;
@@ -27,6 +30,8 @@ public class DriveToPose extends Command {
 
     private double driveTolerance = 0.0;
     private Rotation2d thetaTolerance = Rotation2d.kZero;
+
+    private boolean finishWithinTolerance = true;
 
     private TrapezoidProfile driveProfile;
     private final PIDController driveController =
@@ -47,6 +52,23 @@ public class DriveToPose extends Command {
 
     private Supplier<Translation2d> linearFF = () -> Translation2d.kZero;
     private DoubleSupplier omegaFF = () -> 0.0;
+
+    private LoggedTunableNumber driveMaxVelocity =
+        new LoggedTunableNumber("DriveToPose/DriveMaxVelocity", 3.79);
+    private LoggedTunableNumber driveMaxVelocityTop =
+        new LoggedTunableNumber("DriveToPose/DriveMaxVelocityTop", 1);
+    private LoggedTunableNumber driveMaxAcceleration =
+        new LoggedTunableNumber("DriveToPose/DriveMaxAcceleration", 4);
+    private LoggedTunableNumber driveMaxAccelerationTop =
+        new LoggedTunableNumber("DriveToPose/DriveMaxAccelerationTop", 1);
+    private LoggedTunableNumber thetaMaxVelocity =
+        new LoggedTunableNumber("DriveToPose/ThetaMaxVelocity", 3.79);
+    private LoggedTunableNumber thetaMaxVelocityTop =
+        new LoggedTunableNumber("DriveToPose/ThetaMaxVelocityTop", 1);
+    private LoggedTunableNumber thetaMaxAcceleration =
+        new LoggedTunableNumber("DriveToPose/ThetaMaxAcceleration", 4);
+    private LoggedTunableNumber thetaMaxAccelerationTop =
+        new LoggedTunableNumber("DriveToPose/ThetaMaxAccelerationTop", 1);
 
     public DriveToPose(Drive drive, Supplier<Pose2d> target)
     {
@@ -83,6 +105,12 @@ public class DriveToPose extends Command {
         return this;
     }
 
+    public DriveToPose finishWithinTolerance(boolean finish)
+    {
+        this.finishWithinTolerance = finish;
+        return this;
+    }
+
     @Override
     public void initialize()
     {
@@ -94,7 +122,7 @@ public class DriveToPose extends Command {
 
         driveProfile =
             new TrapezoidProfile(new TrapezoidProfile.Constraints(
-                3.7, 4));
+                driveMaxVelocity.get(), 4));
 
         this.driveController.setTolerance(driveTolerance);
         this.thetaController.setTolerance(thetaTolerance.getRadians());
@@ -111,6 +139,27 @@ public class DriveToPose extends Command {
     public void execute()
     {
         running = true;
+
+        // Update constraints
+        double extensionS =
+            MathUtil.clamp(
+                RobotState.getInstance().getElevatorHeight() / 5.4,
+                0.0,
+                1.0);
+        driveProfile =
+            new TrapezoidProfile(
+                new TrapezoidProfile.Constraints(
+                    MathUtil.interpolate(
+                        driveMaxVelocity.get(), driveMaxVelocityTop.get(), extensionS),
+                    MathUtil.interpolate(
+                        driveMaxAcceleration.get(), driveMaxAccelerationTop.get(),
+                        extensionS)));
+        thetaController.setConstraints(
+            new TrapezoidProfile.Constraints(
+                MathUtil.interpolate(
+                    thetaMaxVelocity.get(), thetaMaxVelocityTop.get(), extensionS),
+                MathUtil.interpolate(
+                    thetaMaxAcceleration.get(), thetaMaxAccelerationTop.get(), extensionS)));
 
         // Get current pose and target pose
         Pose2d currentPose = robot.get();
@@ -179,7 +228,7 @@ public class DriveToPose extends Command {
 
         // Add input ff
         driveVelocity =
-            driveVelocity.plus(linearFF.get().times(3.79));
+            driveVelocity.plus(linearFF.get().times(driveMaxVelocity.get()));
         thetaVelocity = thetaVelocity + omegaFF.getAsDouble() * 2.7;
 
         // Command speeds
@@ -205,12 +254,24 @@ public class DriveToPose extends Command {
     }
 
     /** Checks if the robot pose is within the allowed drive and theta tolerances. */
-    @Override
-    public boolean isFinished()
+    public boolean withinTolerance()
     {
         return running
             && Math.abs(driveErrorAbs) <= driveTolerance
             && Math.abs(thetaErrorAbs) <= thetaTolerance.getRadians();
+    }
+
+    public boolean withinTolerance(double driveTolerance, Rotation2d thetaTolerance)
+    {
+        return running
+            && Math.abs(driveErrorAbs) <= driveTolerance
+            && Math.abs(thetaErrorAbs) <= thetaTolerance.getRadians();
+    }
+
+    @Override
+    public boolean isFinished()
+    {
+        return finishWithinTolerance && withinTolerance();
     }
 
     @Override
