@@ -32,7 +32,7 @@ import frc.robot.commands.DriveToPose;
 import frc.robot.commands.DriveToStation;
 import frc.robot.commands.JoystickApproachCommand;
 import frc.robot.commands.JoystickStrafeCommand;
-import frc.robot.commands.ScoreCommandFactory;
+import frc.robot.commands.ScoreCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Arm.*;
@@ -74,7 +74,6 @@ import frc.robot.util.WindupXboxController;
 import frc.robot.util.PPCalcEndpoint.PPCalcEndpoint;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import static frc.robot.commands.ScoreCommandFactory.scoreCommand;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -371,7 +370,7 @@ public class RobotContainer {
 
     private Command scoreCoral(ReefSide side)
     {
-        return scoreCommand(m_drive,
+        return ScoreCommands.scoreCoral(m_drive,
             () -> getFuturePose(alignPredictionSeconds.get()), m_superStruct, m_clawRoller,
             m_clawRollerLaserCAN, m_frontLeftLaserCAN, m_frontRightLaserCAN, () -> scoreHeight,
             side);
