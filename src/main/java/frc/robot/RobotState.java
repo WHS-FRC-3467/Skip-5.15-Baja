@@ -11,30 +11,6 @@ import lombok.Setter;
 public class RobotState {
     private static RobotState instance;
 
-    // public enum TARGET {
-    // NONE,
-    // CORAL_STATION,
-    // REEF,
-    // PROCESSOR,
-    // BARGE,
-    // CAGES,
-    // GROUND_ALGAE;
-    // }
-
-    // @Getter
-    // private TARGET currentTarget = TARGET.NONE;
-
-    // public enum GAMEPIECE {
-    // NONE,
-    // CORAL,
-    // LOWER_ALGAE,
-    // UPPER_ALGAE;
-    // }
-
-    // @Getter
-    // @Setter
-    // private GAMEPIECE heldGamepiece = GAMEPIECE.NONE;
-
     @Getter
     @Setter
     @AutoLogOutput(key = "RobotState/ElevatorHeight")
@@ -46,11 +22,4 @@ public class RobotState {
             instance = new RobotState();
         return instance;
     }
-
-    // public Command setTargetCommand(TARGET newTarget)
-    // {
-    // return Commands.runOnce(() -> this.currentTarget = newTarget);
-    // }
-
-
 }
