@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
 import frc.robot.FieldConstants;
 import frc.robot.FieldConstants.ReefHeight;
@@ -121,7 +122,7 @@ public class ScoreCommandFactory {
             side == ReefSide.LEFT ? frontLeftLaserCAN.triggered : frontRightLaserCAN.triggered;
     }
 
-    private Command superstructLevel()
+    private Command raiseSuperstruct()
     {
         return Commands.select(Map.of(
             ReefHeight.L1,
@@ -137,6 +138,7 @@ public class ScoreCommandFactory {
 
     private Command get()
     {
+        // Align with the nearest reef branch
         DriveToPose align = new DriveToPose(
             drive,
             () -> Util
@@ -149,6 +151,7 @@ public class ScoreCommandFactory {
                     .withTolerance(Units.inchesToMeters(linearAlignTolerance.get()),
                         Rotation2d.fromDegrees(thetaAlignTolerance.get()));
 
+        // Offset target pose until both LaserCANs are triggered
         Command updateTarget = Commands.run(() -> {
             double scalarOffset =
                 offsetController.calculate(laserCANTriggered.getAsBoolean() ? 0.0 : 1.0, 0.0);
@@ -158,38 +161,46 @@ public class ScoreCommandFactory {
                 new Pose2d(approachTarget.getTranslation().plus(offsetTranslation), targetRotation);
         }).beforeStarting(() -> offsetController.reset()).until(offsetController::atSetpoint);
 
+        // Approach the branch
         DriveToPose driveApproach = new DriveToPose(
             drive,
             () -> approachTarget)
                 .withTolerance(Units.inchesToMeters(linearApproachTolerance.get()),
                     Rotation2d.fromDegrees(thetaApproachTolerance.get()))
                 .finishWithinTolerance(false);
+
         Command approach = Commands.parallel(
+            // Stop approaching when at position and both LaserCANs are triggered
             driveApproach.until(() -> updateTarget.isFinished() && driveApproach.withinTolerance()),
             Commands.sequence(
+                // Wait until closer to the reef before shifting the target
                 Commands.waitUntil(
                     () -> driveApproach.withinTolerance(
                         Units.inchesToMeters(linearStartShiftingTolerance.get()),
                         Rotation2d.fromDegrees(thetaApproachTolerance.get()))),
                 updateTarget));
 
+        // Wait until within a tolerance to raise the superstructure
+        BooleanSupplier superstructRaiseTrigger =
+            () -> driveApproach.withinTolerance(linearRaiseElevatorTolerance.get(),
+                Rotation2d.fromDegrees(thetaRaiseElevatorTolerance.get()))
+                || align.withinTolerance(linearRaiseElevatorTolerance.get(),
+                    Rotation2d.fromDegrees(thetaRaiseElevatorTolerance.get()));
+
         return Commands.sequence(
             Commands.parallel(
                 Commands.sequence(align, approach),
-                Commands.sequence(Commands
-                    .waitUntil(
-                        () -> driveApproach.withinTolerance(linearRaiseElevatorTolerance.get(),
-                            Rotation2d.fromDegrees(thetaRaiseElevatorTolerance.get()))
-                            || align.withinTolerance(linearRaiseElevatorTolerance.get(),
-                                Rotation2d.fromDegrees(thetaRaiseElevatorTolerance.get()))),
-                    superstructLevel())),
+                Commands.sequence(Commands.waitUntil(superstructRaiseTrigger), raiseSuperstruct())),
             roller.setStateCommand(ClawRoller.State.SCORE),
-            Commands.waitUntil(clawLaserCAN.triggered.debounce(scoreDebounce.get()).negate()))
+            Commands.waitUntil(clawLaserCAN.triggered.debounce(scoreDebounce.get()).negate()),
+            roller.setStateCommand(ClawRoller.State.OFF))
             .finallyDo(
+                // Don't wait for transition command to end before finishing
                 (interrupted) -> superstruct
                     .getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)
                     .onlyIf(() -> !interrupted).schedule())
             .beforeStarting(() -> {
+                // Set initial approach target
                 approachTarget = Util
                     .moveForward(FieldConstants.getNearestReefBranch(robot.get(),
                         side),
