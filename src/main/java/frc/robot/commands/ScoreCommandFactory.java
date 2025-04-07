@@ -75,7 +75,7 @@ public class ScoreCommandFactory {
         FrontLeftLaserCAN frontLeftLaserCAN, FrontRightLaserCAN frontRightLaserCAN,
         Supplier<ReefHeight> height, ReefSide side)
     {
-        return new ScoreCommandFactory(
+        return scoreCommand(
             drive,
             drive::getPose,
             superstruct,
@@ -84,8 +84,7 @@ public class ScoreCommandFactory {
             frontLeftLaserCAN,
             frontRightLaserCAN,
             height,
-            side)
-                .get();
+            side);
     }
 
     public static Command scoreCommand(Drive drive, Supplier<Pose2d> robot,
