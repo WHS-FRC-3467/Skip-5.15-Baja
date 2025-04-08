@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.TargetState;
+import frc.robot.util.LoggedTunableNumber;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -14,6 +15,9 @@ import lombok.Setter;
 public class ClawRoller
     extends GenericMotionProfiledSubsystem<ClawRoller.State> {
 
+    private static final LoggedTunableNumber L1_SPEED =
+        new LoggedTunableNumber("ClawRoller/L1 Speed", 0.8);
+
     public final Trigger stalled =
         new Trigger(
             () -> (Math.abs(super.inputs.velocityRps) <= 0.02
@@ -21,6 +25,9 @@ public class ClawRoller
 
     public final Trigger stopped =
         new Trigger(() -> (Math.abs(super.inputs.velocityRps) <= 0.02));
+
+    public final Trigger freeSpin =
+        new Trigger(() -> (Math.abs(super.inputs.velocityRps) >= 10));
 
     @RequiredArgsConstructor
     @Getter
@@ -31,7 +38,7 @@ public class ClawRoller
         SHUFFLE(new ProfileType.POSITION(() -> -0.1, 0)),
         L4_RETRACT(new ProfileType.POSITION(() -> -0.5, 0)),
         SCORE(new ProfileType.OPEN_VOLTAGE(() -> 2.0)),
-        L1_SCORE(new ProfileType.OPEN_CURRENT(() -> -60, () -> 0.35)),
+        L1_SCORE(new ProfileType.OPEN_CURRENT(() -> -60, L1_SPEED)),
         HOLDCORAL(new ProfileType.POSITION(() -> -0.1, 0)),
         ALGAE_FORWARD(new ProfileType.OPEN_CURRENT(() -> 100, () -> 1.0)),
         ALGAE_REVERSE(new ProfileType.OPEN_CURRENT(() -> -90, () -> 1.0));

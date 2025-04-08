@@ -137,6 +137,7 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
         // Process and make changes for changed GPMode
         switch (m_currentState) {
             case DISABLED:
+            case DISABLED_FAR:
             case DISABLED_TRANSLATION_OK:
             case DISABLED_ROTATION_OK:
             case DISABLED_BOTH_OK:
@@ -208,6 +209,11 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
                 m_FullRight.setColor(m_allianceColor);
                 m_tipColor = m_allianceColor.toHexString();
                 m_stateColor = m_allianceColor.toHexString();
+                break;
+
+            case DISABLED_FAR:
+                m_FullLeft.setAnimation(a_StrobeRedLeft);
+                m_FullRight.setAnimation(a_StrobeRedRight);
                 break;
 
             case DISABLED_TRANSLATION_OK:
@@ -383,6 +389,12 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
     }
 
     // Disabled Animations
+    Animation a_StrobeRedLeft =
+        new StrobeAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed),
+            0, 0.2, m_FullLeft.segmentSize, m_FullLeft.startIndex);
+    Animation a_StrobeRedRight =
+        new StrobeAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed),
+            0, 0.2, m_FullRight.segmentSize, m_FullRight.startIndex);
     Animation a_RightRedLarson =
         new LarsonAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed), 0, 0.2,
             m_FullRight.segmentSize, BounceMode.Front, 10, m_FullRight.startIndex);

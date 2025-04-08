@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -70,6 +71,8 @@ public class JoystickApproachCommand extends Command {
         alignController.reset(0);
         angleController.reset(drive.getPose().getRotation().getRadians());
         targetPose2d = targetSupplier.get();
+
+        Logger.recordOutput("AutoAlign/Approach/Target", targetPose2d);
     }
 
     // Called every time the scheduler runs while the command is scheduled.

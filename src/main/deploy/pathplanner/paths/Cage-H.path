@@ -8,49 +8,30 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.126451087159543,
-        "y": 4.149906392546428
+        "x": 6.463426678886012,
+        "y": 4.126819440747201
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.838579545454545,
-        "y": 4.18965909090909
+        "x": 6.149692622950819,
+        "y": 4.1748463114754095
       },
       "prevControl": {
-        "x": 5.590834707968682,
-        "y": 4.223162754874447
+        "x": 6.659677267886952,
+        "y": 4.090703031243439
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "ReefH"
+      "linkedName": null
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [
-    {
-      "name": "PrepScore",
-      "waypointRelativePos": 0.0,
-      "endWaypointRelativePos": null,
-      "command": {
-        "type": "deadline",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "L2"
-              }
-            }
-          ]
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 3.7,
     "maxAcceleration": 4.5,
@@ -61,7 +42,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -178.7269699799434
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": "Normal",
