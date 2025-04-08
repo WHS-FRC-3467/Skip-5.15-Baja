@@ -3,7 +3,6 @@ package frc.robot.commands;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -25,10 +24,9 @@ import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCAN;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.TunablePIDController;
-import frc.robot.util.Util;
 
 public class ScoreCommands {
-    public ScoreCommands()
+    private ScoreCommands()
     {}
 
     private class ScoreCoralCommandFactory {
@@ -43,7 +41,7 @@ public class ScoreCommands {
         private Supplier<ReefHeight> height;
         private ReefSide side;
 
-        private PIDController offsetController =
+        private TunablePIDController offsetController =
             new TunablePIDController("ScoreCoral/OffsetController", 0.01, 0, 0);
 
         private Pose2d approachTarget;
@@ -109,15 +107,14 @@ public class ScoreCommands {
             // Align with the nearest reef branch
             DriveToPose align = new DriveToPose(
                 drive,
-                () -> Util
-                    .moveForward(
-                        FieldConstants.getNearestReefBranch(
-                            robot.get(),
-                            side),
-                        (Constants.bumperWidth / 2) + linearAlignOffset.get())
-                    .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg)))
-                        .withTolerance(Units.inchesToMeters(linearAlignTolerance.get()),
-                            Rotation2d.fromDegrees(thetaAlignTolerance.get()));
+                () -> FieldConstants.getNearestReefBranch(
+                    robot.get(),
+                    side)
+                    .transformBy(
+                        new Transform2d(Constants.bumperWidth / 2 + linearAlignOffset.get(), 0.0,
+                            Rotation2d.k180deg)))
+                                .withTolerance(Units.inchesToMeters(linearAlignTolerance.get()),
+                                    Rotation2d.fromDegrees(thetaAlignTolerance.get()));
 
             // Offset target pose until both LaserCANs are triggered
             Command updateTarget = Commands.run(() -> {
@@ -172,17 +169,19 @@ public class ScoreCommands {
                         .onlyIf(() -> !interrupted).schedule())
                 .beforeStarting(() -> {
                     // Set initial approach target
-                    approachTarget = Util
-                        .moveForward(FieldConstants.getNearestReefBranch(robot.get(),
-                            side),
-                            (Constants.bumperWidth / 2) + linearApproachDistanceInches.get())
-                        .transformBy(new Transform2d(0.0, 0.0, Rotation2d.k180deg));
+                    approachTarget = FieldConstants.getNearestReefBranch(robot.get(),
+                        side)
+                        .transformBy(new Transform2d(
+                            Constants.bumperWidth / 2 + linearApproachDistanceInches.get(), 0.0,
+                            Rotation2d.k180deg));
                     targetRotation = approachTarget.getRotation();
                     offsetDirection =
                         targetRotation
                             .rotateBy(
                                 (side == ReefSide.LEFT ? Rotation2d.kCCW_90deg
                                     : Rotation2d.kCW_90deg));
+                    // Update offset PID
+                    offsetController.updatePID();
                 });
         }
     }
