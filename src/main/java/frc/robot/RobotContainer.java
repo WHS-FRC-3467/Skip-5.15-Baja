@@ -745,10 +745,13 @@ public class RobotContainer {
 
                 NamedCommands.registerCommand(
                     "PrepScore",
-                    Commands.sequence(
-                        m_tongue.setStateCommand(Tongue.State.DOWN),
-                        m_superStruct.getTransitionCommand(Arm.State.STOW,
-                            Elevator.State.LEVEL_3, Units.degreesToRotations(10), .2)));
+                    Commands.either(
+                        Commands.sequence(
+                            m_tongue.setStateCommand(Tongue.State.DOWN),
+                            m_superStruct.getTransitionCommand(Arm.State.STOW,
+                                Elevator.State.LEVEL_3, Units.degreesToRotations(10), .2)),
+                        Commands.none(),
+                        hasLaserCAN));
                 break;
             case REPLAY:
 

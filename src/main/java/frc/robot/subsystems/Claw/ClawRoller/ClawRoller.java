@@ -26,6 +26,9 @@ public class ClawRoller
     public final Trigger stopped =
         new Trigger(() -> (Math.abs(super.inputs.velocityRps) <= 0.02));
 
+    public final Trigger freeSpin =
+        new Trigger(() -> (Math.abs(super.inputs.velocityRps) >= 10));
+
     @RequiredArgsConstructor
     @Getter
     public enum State implements TargetState {

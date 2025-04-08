@@ -30,7 +30,6 @@ public class ClawRollerLaserCAN extends GenericLaserCANSubsystem {
     {
         super.periodic();
         SmartDashboard.putBoolean("Intake Fallback Active", !validMeasurement.getAsBoolean());
-        Logger.recordOutput(super.getName() + "/Fallback Active",
-            !validMeasurement.getAsBoolean());
+        Logger.recordOutput("ClawRollerLaserCAN/Fallback Active", validMeasurement.getAsBoolean());
     }
 }

@@ -161,6 +161,7 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
         // Process and make changes for changed GPMode
         switch (m_currentState) {
             case DISABLED:
+            case DISABLED_FAR:
             case DISABLED_TRANSLATION_OK:
             case DISABLED_ROTATION_OK:
             case DISABLED_BOTH_OK:
@@ -226,6 +227,11 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
                 m_scrollingRainbow.applyTo(m_FullRight);
                 m_tipColor = m_allianceColor.toHexString();
                 m_stateColor = m_allianceColor.toHexString();
+                break;
+
+            case DISABLED_FAR:
+                m_fastFlashRed.applyTo(m_FullLeft);
+                m_stateColor = Color.kRed.toHexString();
                 break;
 
             case DISABLED_TRANSLATION_OK:
