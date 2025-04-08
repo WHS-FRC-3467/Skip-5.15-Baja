@@ -52,7 +52,7 @@ public final class ArmConstants {
             FeedbackSensorSourceValue.FusedCANcoder;
         kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio = 1;
         kSubSysConstants.kMotorConfig.Feedback.RotorToSensorRatio =
-            (9.0 / 1.0) * (48.0 / 22.0) * (70.0 / 22.0);
+            (4.0 / 1.0) * (3.0 / 1.0) * (48.0 / 22.0) * (70.0 / 22.0);
         // Different encoder offsets for each robot
         double kGortCANcoderOffset = 0.826416015625;
         double kBajaCANcoderOffset = -0.575439453125;
