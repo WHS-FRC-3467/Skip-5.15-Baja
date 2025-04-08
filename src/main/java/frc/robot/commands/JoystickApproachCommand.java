@@ -17,9 +17,9 @@ public class JoystickApproachCommand extends DriveToPose {
             () -> target.get().transformBy(
                 new Transform2d(drive.getPose().relativeTo(target.get()).getX(), 0.0,
                     Rotation2d.k180deg)),
-            drive::getPose,
-            () -> new Translation2d(ySupplier.getAsDouble(), 0.0)
-                .rotateBy(target.get().getRotation()),
+            drive::getPose);
+        super.withFeedforward(() -> new Translation2d(ySupplier.getAsDouble(), 0.0)
+            .rotateBy(target.get().getRotation()),
             () -> 0.0);
     }
 }

@@ -64,7 +64,7 @@ public class DriveCommands {
     private DriveCommands()
     {}
 
-    private static Translation2d getLinearVelocityFromJoysticks(double x, double y)
+    public static Translation2d getLinearVelocityFromJoysticks(double x, double y)
     {
         // Apply deadband
         double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
@@ -325,7 +325,8 @@ public class DriveCommands {
         double gyroDelta = 0.0;
     }
 
-    public static Command driveTest(Drive drive, double speed) {
+    public static Command driveTest(Drive drive, double speed)
+    {
         return Commands.sequence(
             Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(speed, speed, 0))),
             Commands.waitUntil(() -> drive.isAtDriveSpeed(Math.hypot(speed, speed))),
@@ -336,7 +337,8 @@ public class DriveCommands {
             Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(0, 0, 0))));
     }
 
-    public static Command steerTest(Drive drive, double speed) {
+    public static Command steerTest(Drive drive, double speed)
+    {
         return Commands.sequence(
             Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(0, 0, speed))),
             Commands.waitUntil(() -> drive.isAtSteerSpeed(speed)),
