@@ -15,8 +15,9 @@ public class FrontRightLaserCAN extends GenericLaserCANSubsystem {
             () -> validDebouncer.calculate(io.getValidStatus()));
 
     public Trigger triggered =
-        new Trigger(() -> this.inputs.distance != null ? super.inputs.distance.in(Meters) <= 0.05
-            : false);
+        new Trigger(() -> this.io.getConnectedStatus() ? (this.inputs.distance != null
+            ? super.inputs.distance.in(Meters) <= 0.05
+            : true) : true); // Return TRUE if not connected
 
     public FrontRightLaserCAN(FrontRightLaserCANIO io)
     {

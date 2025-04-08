@@ -29,6 +29,7 @@ public class GenericLaserCANSubsystemIOImpl implements GenericLaserCANSubsystemI
         new Alert("Failed to get LaserCAN measurement", Alert.AlertType.kWarning);
 
     private boolean validStatus = true;
+    private boolean connected = false;
 
     /*
      * Constructor
@@ -67,18 +68,22 @@ public class GenericLaserCANSubsystemIOImpl implements GenericLaserCANSubsystemI
                 sensorAlert.set(false);
                 currentDistance = Millimeters.of(measurement.distance_mm);
                 validStatus = true;
+                connected = true;
             } else {
                 sensorAlert.setText("Failed to get LaserCAN ID: " + name
                     + ", no valid measurement");
                 sensorAlert.set(true);
                 currentDistance = Millimeters.of(Double.POSITIVE_INFINITY);
                 validStatus = false;
+                connected = true;
             }
         } else {
             sensorAlert.setText("Failed to get LaserCAN ID: " + name
                 + ", measurement null");
             sensorAlert.set(true);
             currentDistance = Millimeters.of(Double.POSITIVE_INFINITY);
+            validStatus = false;
+            connected = false;
         }
         Logger.recordOutput("LaserCANSensors/LaserCAN" + name,
             currentDistance.in(Inches));
@@ -90,7 +95,13 @@ public class GenericLaserCANSubsystemIOImpl implements GenericLaserCANSubsystemI
     {
         return validStatus;
     }
-    
+
+    @Override
+    public boolean getConnectedStatus()
+    {
+        return connected;
+    }
+
     @Override
     public void updateInputs(LaserCANIOInputs inputs)
     {

@@ -59,9 +59,9 @@ public class ScoreCommands {
         private LoggedTunableNumber linearApproachDistanceInches =
             new LoggedTunableNumber("ScoreCoral/LinearApproachDistanceInches", 0);
         private LoggedTunableNumber linearApproachTolerance =
-            new LoggedTunableNumber("ScoreCoral/LinearApproachToleranceInches", 2);
+            new LoggedTunableNumber("ScoreCoral/LinearApproachToleranceInches", 1);
         private LoggedTunableNumber thetaApproachTolerance =
-            new LoggedTunableNumber("ScoreCoral/ThetaApproachToleranceDegrees", 1);
+            new LoggedTunableNumber("ScoreCoral/ThetaApproachToleranceDegrees", 0.05);
         private LoggedTunableNumber linearRaiseElevatorTolerance =
             new LoggedTunableNumber("ScoreCoral/LinearRaiseElevatorToleranceMeters",
                 1);
