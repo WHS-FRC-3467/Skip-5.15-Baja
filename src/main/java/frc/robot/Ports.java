@@ -28,4 +28,5 @@ public class Ports {
 
     public static final CanDeviceId TONGUE = new CanDeviceId(30, "rio");
 
+    public static final CanDeviceId HOPPER = new CanDeviceId(31, "rio");
 }
