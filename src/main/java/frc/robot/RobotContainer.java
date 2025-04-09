@@ -555,7 +555,7 @@ public class RobotContainer {
                         m_clawRoller.shuffleCommand(),
                         m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL)),
                     new DriveToStation(m_drive, () -> -m_driver.getLeftY(),
-                        () -> -m_driver.getLeftX(), () -> -m_driver.getRightX())))
+                        () -> -m_driver.getLeftX(), () -> -m_driver.getRightX()).onlyIf(autoScore)))
             .onFalse(
                 Commands.sequence(
                     m_clawRoller.setStateCommand(ClawRoller.State.OFF),
