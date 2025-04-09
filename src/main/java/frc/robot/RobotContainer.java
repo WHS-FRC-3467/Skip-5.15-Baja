@@ -128,7 +128,7 @@ public class RobotContainer {
 
                 m_profiledArm = new Arm(new ArmIOTalonFX(), false);
                 m_profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
-                m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
+                m_profiledClimber = new Climber(new ClimberIO() {}, true);
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
@@ -385,6 +385,15 @@ public class RobotContainer {
                             Elevator.State.STOW)),
                     isCoralMode))
             .whileTrue(Commands.none());
+
+        m_driver
+            .start()
+            .onTrue(
+                Commands.sequence(
+                    m_clawRoller.L1ShuffleCommand(),
+                    m_tongue.setStateCommand(Tongue.State.L1),
+                    Commands.waitSeconds(0.25),
+                    m_clawRoller.setStateCommand(ClawRoller.State.L1_SCORE)));
 
         // Driver X Button: Send Arm and Elevator to LEVEL_2
         m_driver
