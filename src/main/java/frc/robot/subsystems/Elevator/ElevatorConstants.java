@@ -8,8 +8,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 // import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import frc.robot.Constants;
 import frc.robot.Ports;
 import frc.robot.Robot;
+import frc.robot.Constants.RobotType;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemConstants;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemConstants.simType;
 
@@ -38,7 +40,14 @@ public final class ElevatorConstants {
         kSubSysConstants.kCANcoder = null;
         kSubSysConstants.kMotorConfig.Feedback.FeedbackSensorSource =
             FeedbackSensorSourceValue.RotorSensor;
-        kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio = 9.6;
+        if (Constants.getRobot() == RobotType.BAJA) {
+            kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio =
+                (48.0 / 12.0) * (44.0 / 24.0);
+
+        } else {
+            kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio = 9.6;
+        }
+
         kSubSysConstants.kMotorConfig.Feedback.RotorToSensorRatio = 1.0;
 
         // Using a remote CANcoder
@@ -130,8 +139,10 @@ public final class ElevatorConstants {
         kSubSysConstants.kElevSimConfig.kMinElevatorHeight = 0.0; // Meters
         kSubSysConstants.kElevSimConfig.kMaxElevatorHeight = Units.inchesToMeters(31); // Meters
         kSubSysConstants.kElevSimConfig.kElevatorGearing =
-            9.6; // RotorToSensorRatio * SensorToMechanismRatio
-        kSubSysConstants.kElevSimConfig.kSensorReduction = 9.6; // SensorToMechanismRatio
+            kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio; // RotorToSensorRatio *
+                                                                           // SensorToMechanismRatio
+        kSubSysConstants.kElevSimConfig.kSensorReduction =
+            kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio; // SensorToMechanismRatio
 
         // Calculate ratio of motor rotation to distance the top of the elevator moves
         // 5:1 and then x3. Each rotation is 1.75in diameter x pi = 5.498in per rotation
