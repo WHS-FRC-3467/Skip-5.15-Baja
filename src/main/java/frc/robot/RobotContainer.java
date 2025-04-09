@@ -58,6 +58,10 @@ import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCAN;
 import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIO;
 import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIOReal;
 import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIOSim;
+import frc.robot.subsystems.Hopper.Hopper.Hopper;
+import frc.robot.subsystems.Hopper.Hopper.HopperIO;
+import frc.robot.subsystems.Hopper.Hopper.HopperIOSim;
+import frc.robot.subsystems.Hopper.Hopper.HopperIOTalonFX;
 import frc.robot.subsystems.LED.LEDSubsystem;
 import frc.robot.subsystems.LED.LEDSubsystemIO;
 import frc.robot.subsystems.LED.LEDSubsystemIOCANdle;
@@ -95,6 +99,7 @@ public class RobotContainer {
     private final Climber m_profiledClimber;
     private final ClawRoller m_clawRoller;
     private final Tongue m_tongue;
+    private final Hopper m_hopper;
     private final ClawRollerLaserCAN m_clawRollerLaserCAN;
     private final FrontLeftLaserCAN m_frontLeftLaserCAN;
     private final FrontRightLaserCAN m_frontRightLaserCAN;
@@ -146,8 +151,10 @@ public class RobotContainer {
                 m_profiledArm = new Arm(new ArmIOTalonFX(), false);
                 m_profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
                 m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
+                // m_profiledClimber = new Climber(new ClimberIO() {}, false);
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
+                m_hopper = new Hopper(new HopperIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
                 m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIOReal());
                 m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIOReal());
@@ -187,6 +194,7 @@ public class RobotContainer {
                 m_profiledClimber = new Climber(new ClimberIOSim(), true);
                 m_clawRoller = new ClawRoller(new ClawRollerIOSim(), true);
                 m_tongue = new Tongue(new TongueIOSim(), true);
+                m_hopper = new Hopper(new HopperIOSim(), true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOSim());
                 m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIOSim());
                 m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIOSim());
@@ -221,6 +229,7 @@ public class RobotContainer {
                 m_profiledClimber = new Climber(new ClimberIO() {}, true);
                 m_clawRoller = new ClawRoller(new ClawRollerIO() {}, true);
                 m_tongue = new Tongue(new TongueIO() {}, true);
+                m_hopper = new Hopper(new HopperIO() {}, true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIO() {});
                 m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIO() {});
                 m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIO() {});
@@ -543,6 +552,7 @@ public class RobotContainer {
                         m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
                         m_superStruct.getDefaultTransitionCommand(Arm.State.CORAL_INTAKE,
                             Elevator.State.CORAL_INTAKE),
+                        m_hopper.setStateCommand(Hopper.State.INTAKE),
                         Commands.either(
                             Commands.waitUntil(
                                 m_clawRollerLaserCAN.triggered
@@ -553,12 +563,14 @@ public class RobotContainer {
                                     .and(m_clawRoller.stopped)),
                             hasLaserCAN), // If lasercan is not valid, don't check it while intaking
                         m_clawRoller.shuffleCommand(),
-                        m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL)),
+                        m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
+                        m_hopper.setStateCommand(Hopper.State.OFF)),
                     new DriveToStation(m_drive, () -> -m_driver.getLeftY(),
                         () -> -m_driver.getLeftX(), () -> -m_driver.getRightX()).onlyIf(autoScore)))
             .onFalse(
                 Commands.sequence(
                     m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                    m_hopper.setStateCommand(Hopper.State.OFF),
                     m_superStruct.getDefaultTransitionCommand(Arm.State.STOW, Elevator.State.STOW),
                     m_tongue.lowerTongueCommand(),
                     m_driver.rumbleForTime(0.25, 1)));
@@ -677,18 +689,16 @@ public class RobotContainer {
 
                 NamedCommands.registerCommand("AutoAlignLeft",
                     new DriveToPose(m_drive,
-                        () -> FieldConstants.getNearestReefBranch(
-                            getFuturePose(alignPredictionSeconds.get()),
-                            ReefSide.LEFT)
+                        () -> FieldConstants.getNearestReefBranch(m_drive.getPose(),
+                            ReefSide.RIGHT)
                             .transformBy(new Transform2d(Constants.bumperWidth, 0.0,
                                 Rotation2d.k180deg)))
                                     .withTolerance(Units.inchesToMeters(1),
                                         Rotation2d.fromDegrees(0.04)));
 
-                NamedCommands.registerCommand("AutoAlignLeft",
+                NamedCommands.registerCommand("AutoAlignRight",
                     new DriveToPose(m_drive,
-                        () -> FieldConstants.getNearestReefBranch(
-                            getFuturePose(alignPredictionSeconds.get()),
+                        () -> FieldConstants.getNearestReefBranch(m_drive.getPose(),
                             ReefSide.RIGHT)
                             .transformBy(new Transform2d(Constants.bumperWidth / 2, 0.0,
                                 Rotation2d.k180deg)))
@@ -703,6 +713,7 @@ public class RobotContainer {
                             m_tongue.setStateCommand(Tongue.State.RAISED),
                             m_superStruct.getTransitionCommand(Arm.State.CORAL_INTAKE,
                                 Elevator.State.CORAL_INTAKE, Units.degreesToRotations(10), .2),
+                            m_hopper.setStateCommand(Hopper.State.INTAKE),
                             Commands.repeatingSequence(
                                 m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
                                 Commands.waitUntil(m_clawRoller.stalled.debounce(0.1)),
@@ -710,11 +721,13 @@ public class RobotContainer {
                                 .until(m_clawRollerLaserCAN.triggered
                                     .and(m_clawRoller.stopped.debounce(0.15))),
                             m_clawRoller.shuffleCommand(),
+                            m_hopper.setStateCommand(Hopper.State.OFF),
                             m_tongue.lowerTongueCommand()),
                         Commands.sequence(
                             m_clawRoller.shuffleCommand(),
                             m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
-                            m_tongue.setStateCommand(Tongue.State.DOWN)),
+                            m_hopper.setStateCommand(Hopper.State.OFF),
+                            m_tongue.lowerTongueCommand()),
                         m_clawRollerLaserCAN.triggered.negate()));
 
                 // Prepare Necessary Subsystems Before Intaking
@@ -767,18 +780,16 @@ public class RobotContainer {
 
                 NamedCommands.registerCommand("AutoAlignLeft",
                     new DriveToPose(m_drive,
-                        () -> FieldConstants.getNearestReefBranch(
-                            getFuturePose(alignPredictionSeconds.get()),
-                            ReefSide.LEFT)
+                        () -> FieldConstants.getNearestReefBranch(m_drive.getPose(),
+                            ReefSide.RIGHT)
                             .transformBy(new Transform2d(Constants.bumperWidth, 0.0,
                                 Rotation2d.k180deg)))
                                     .withTolerance(Units.inchesToMeters(1),
                                         Rotation2d.fromDegrees(0.04)));
 
-                NamedCommands.registerCommand("AutoAlignLeft",
+                NamedCommands.registerCommand("AutoAlignRight",
                     new DriveToPose(m_drive,
-                        () -> FieldConstants.getNearestReefBranch(
-                            getFuturePose(alignPredictionSeconds.get()),
+                        () -> FieldConstants.getNearestReefBranch(m_drive.getPose(),
                             ReefSide.RIGHT)
                             .transformBy(new Transform2d(Constants.bumperWidth / 2, 0.0,
                                 Rotation2d.k180deg)))
