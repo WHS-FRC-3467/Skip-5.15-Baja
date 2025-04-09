@@ -29,7 +29,7 @@ public class ScoreCommands {
     private ScoreCommands()
     {}
 
-    private class ScoreCoralCommandFactory {
+    private static class ScoreCoralCommandFactory {
         private Drive drive;
         private Supplier<Pose2d> robot;
 
@@ -208,7 +208,7 @@ public class ScoreCommands {
         FrontLeftLaserCAN frontLeftLaserCAN, FrontRightLaserCAN frontRightLaserCAN,
         Supplier<ReefHeight> height, ReefSide side)
     {
-        return new ScoreCommands().new ScoreCoralCommandFactory(
+        return new ScoreCoralCommandFactory(
             drive,
             robot,
             superstruct,
@@ -221,4 +221,122 @@ public class ScoreCommands {
                 .get();
     }
 
+    private static class DescoreAlgaeCommandFactory {
+
+        private Drive drive;
+        private Supplier<Pose2d> robot;
+
+        private Superstructure superstruct;
+        private ClawRoller roller;
+
+        private LoggedTunableNumber linearAlignOffset =
+            new LoggedTunableNumber("DescoreAlgae/LinearAlignOffsetMeters", 0.5);
+        private LoggedTunableNumber linearAlignTolerance =
+            new LoggedTunableNumber("DescoreAlgae/LinearAlignToleranceInches", 5);
+        private LoggedTunableNumber thetaAlignTolerance =
+            new LoggedTunableNumber("DescoreAlgae/ThetaAlignToleranceDegrees", 20);
+        private LoggedTunableNumber linearApproachDistanceInches =
+            new LoggedTunableNumber("DescoreAlgae/LinearApproachDistanceInches", 0);
+        private LoggedTunableNumber linearApproachTolerance =
+            new LoggedTunableNumber("DescoreAlgae/LinearApproachToleranceInches", 2);
+        private LoggedTunableNumber thetaApproachTolerance =
+            new LoggedTunableNumber("DescoreAlgae/ThetaApproachToleranceDegrees", 1);
+        private LoggedTunableNumber linearRaiseElevatorTolerance =
+            new LoggedTunableNumber("DescoreAlgae/LinearRaiseElevatorToleranceMeters",
+                1);
+        private LoggedTunableNumber thetaRaiseElevatorTolerance =
+            new LoggedTunableNumber("DescoreAlgae/ThetaRaiseElevatorToleranceDegrees", 8);
+        private LoggedTunableNumber grabDebounce =
+            new LoggedTunableNumber("DescoreAlgae/GrabDebounceSeconds", 0.5);
+
+        private DescoreAlgaeCommandFactory(Drive drive, Supplier<Pose2d> robot,
+            Superstructure superstruct, ClawRoller roller)
+        {
+            this.drive = drive;
+            this.robot = robot;
+            this.superstruct = superstruct;
+            this.roller = roller;
+        }
+
+        private Command raiseSuperstruct()
+        {
+            return Commands.either(
+                superstruct.getDefaultTransitionCommand(Arm.State.ALGAE_HIGH,
+                    Elevator.State.ALGAE_HIGH),
+                superstruct.getDefaultTransitionCommand(Arm.State.ALGAE_LOW,
+                    Elevator.State.ALGAE_LOW),
+                () -> FieldConstants.isAlgaeHigh(robot.get()));
+        }
+
+        private Command get()
+        {
+            // Align with the nearest reef face
+            DriveToPose align = new DriveToPose(
+                drive,
+                () -> FieldConstants.getNearestReefFace(
+                    robot.get())
+                    .transformBy(
+                        new Transform2d(Constants.bumperWidth / 2 + linearAlignOffset.get(), 0.0,
+                            Rotation2d.k180deg)))
+                                .withTolerance(Units.inchesToMeters(linearAlignTolerance.get()),
+                                    Rotation2d.fromDegrees(thetaAlignTolerance.get()));
+
+            // Approach the face
+            DriveToPose approach = new DriveToPose(
+                drive,
+                () -> FieldConstants.getNearestReefFace(
+                    robot.get())
+                    .transformBy(new Transform2d(
+                        Constants.bumperWidth / 2 + linearApproachDistanceInches.get(), 0.0,
+                        Rotation2d.k180deg)))
+                            .withTolerance(Units.inchesToMeters(linearApproachTolerance.get()),
+                                Rotation2d.fromDegrees(thetaApproachTolerance.get()));
+
+            // Reverse to hold algae safely
+            DriveToPose reverse = new DriveToPose(
+                drive,
+                () -> FieldConstants.getNearestReefFace(
+                    robot.get())
+                    .transformBy(
+                        new Transform2d(Constants.bumperWidth / 2 + linearAlignOffset.get(), 0.0,
+                            Rotation2d.k180deg)))
+                                .withTolerance(Units.inchesToMeters(linearApproachTolerance.get()),
+                                    Rotation2d.fromDegrees(thetaApproachTolerance.get()));
+
+            // Wait until within a tolerance to raise the superstructure
+            BooleanSupplier superstructRaiseTrigger =
+                () -> approach.withinTolerance(linearRaiseElevatorTolerance.get(),
+                    Rotation2d.fromDegrees(thetaRaiseElevatorTolerance.get()))
+                    || align.withinTolerance(linearRaiseElevatorTolerance.get(),
+                        Rotation2d.fromDegrees(thetaRaiseElevatorTolerance.get()));
+
+            return Commands.sequence(
+                Commands.parallel(
+                    Commands.sequence(align, approach),
+                    Commands.sequence(Commands.waitUntil(superstructRaiseTrigger),
+                        Commands.parallel(
+                            raiseSuperstruct(),
+                            roller.setStateCommand(ClawRoller.State.ALGAE_FORWARD)))),
+                roller.setStateCommand(ClawRoller.State.SCORE),
+                Commands.waitUntil(roller.stalled.debounce(grabDebounce.get())),
+                reverse)
+                .finallyDo(
+                    // Don't wait for transition command to end before finishing
+                    (interrupted) -> superstruct
+                        .getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)
+                        .onlyIf(() -> !interrupted).schedule());
+        }
+    }
+
+    public static Command descoreAlgae(Drive drive, Superstructure superstruct, ClawRoller roller)
+    {
+        return descoreAlgae(drive, drive::getPose,
+            superstruct, roller);
+    }
+
+    public static Command descoreAlgae(Drive drive, Supplier<Pose2d> robot,
+        Superstructure superstruct, ClawRoller roller)
+    {
+        return new DescoreAlgaeCommandFactory(drive, robot, superstruct, roller).get();
+    }
 }

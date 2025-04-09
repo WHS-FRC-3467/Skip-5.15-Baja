@@ -49,10 +49,6 @@ public class Robot extends LoggedRobot {
     public static final Translation2d fieldCenter =
         new Translation2d(fieldLength / 2, fieldWidth / 2);
 
-    private boolean withinStartingXYTol = false;
-    private boolean withinStartingRotTol = false;
-
-
     public Robot()
     {
         CanBridge.runTCP(); // Used for configuring LaserCANs

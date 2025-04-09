@@ -283,7 +283,7 @@ public class RobotContainer {
             approachPose);
     }
 
-    private Command DescoreAlgae()
+    private Command manualDescoreAlgae()
     {
         var approachCommand = new JoystickApproachCommand(
             m_drive,
@@ -305,34 +305,10 @@ public class RobotContainer {
             (hasVision.getAsBoolean()) ? approachCommand : Commands.none());
     }
 
-    private Command DescoreAlgaeAuto()
+    private Command descoreAlgae()
     {
-        return Commands.sequence(
-            m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
-            new DriveToPose(
-                m_drive,
-                () -> FieldConstants.getNearestReefFace(
-                    getFuturePose(alignPredictionSeconds.get()))
-                    .transformBy(new Transform2d(Constants.bumperWidth / 2 + 0.5, 0.0,
-                        Rotation2d.k180deg)))
-                            .withTolerance(Units.inchesToMeters(5.0),
-                                Rotation2d.fromDegrees(3)),
-            Commands.parallel(
-                new DriveToPose(
-                    m_drive,
-                    () -> FieldConstants.getNearestReefFace(
-                        getFuturePose(alignPredictionSeconds.get()))
-                        .transformBy(new Transform2d(Constants.bumperWidth / 2 + 0.5, 0.0,
-                            Rotation2d.k180deg)))
-                                .withTolerance(Units.inchesToMeters(1.0),
-                                    Rotation2d.fromDegrees(0.04)),
-                Commands.either(
-                    m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_HIGH,
-                        Elevator.State.ALGAE_HIGH),
-                    m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_LOW,
-                        Elevator.State.ALGAE_LOW),
-                    () -> FieldConstants.isAlgaeHigh(m_drive.getPose())),
-                Commands.waitUntil(m_clawRoller.stalled)));
+        return ScoreCommands.descoreAlgae(m_drive,
+            () -> getFuturePose(alignPredictionSeconds.get()), m_superStruct, m_clawRoller);
     }
 
     private Command BargeAlgae()
@@ -419,11 +395,7 @@ public class RobotContainer {
         // Driver Left and Right Bumpers and Algae mode: Descore to horns on nearest reef face
         m_driver
             .leftBumper().and(m_driver.rightBumper()).and(isCoralMode.negate())
-            .whileTrue(
-                Commands.either(
-                    DescoreAlgaeAuto(),
-                    DescoreAlgae(),
-                    autoScore));
+            .whileTrue(Commands.either(descoreAlgae(), manualDescoreAlgae(), autoScore));
 
         m_driver
             .a()
