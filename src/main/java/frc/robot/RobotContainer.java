@@ -332,7 +332,7 @@ public class RobotContainer {
 
         // Driver Left Bumper and Coral Mode: Approach Nearest Left-Side Reef Branch
         m_driver
-            .rightBumper().and(hasVision)
+            .leftBumper().and(hasVision)
             .whileTrue(
                 Commands.either(
                     joystickApproach(
