@@ -6,7 +6,6 @@ package frc.robot;
 
 import static frc.robot.subsystems.Vision.VisionConstants.*;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -16,7 +15,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -25,14 +23,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.RobotType;
-import frc.robot.FieldConstants.ReefHeight;
 import frc.robot.FieldConstants.ReefSide;
 import frc.robot.commands.DriveCommands;
 import frc.robot.commands.DriveToPose;
-import frc.robot.commands.DriveToStation;
 import frc.robot.commands.JoystickApproachCommand;
 import frc.robot.commands.JoystickStrafeCommand;
-import frc.robot.commands.ScoreCommands;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Superstructure;
 import frc.robot.subsystems.Arm.*;
@@ -50,14 +45,6 @@ import frc.robot.subsystems.Climber.ClimberIO;
 import frc.robot.subsystems.Climber.ClimberIOSim;
 import frc.robot.subsystems.Climber.ClimberIOTalonFX;
 import frc.robot.subsystems.Elevator.*;
-import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCAN;
-import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCANIO;
-import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCANIOReal;
-import frc.robot.subsystems.FrontLeftLaserCAN.FrontLeftLaserCANIOSim;
-import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCAN;
-import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIO;
-import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIOReal;
-import frc.robot.subsystems.FrontRightLaserCAN.FrontRightLaserCANIOSim;
 import frc.robot.subsystems.Hopper.Hopper.Hopper;
 import frc.robot.subsystems.Hopper.Hopper.HopperIO;
 import frc.robot.subsystems.Hopper.Hopper.HopperIOSim;
@@ -101,8 +88,6 @@ public class RobotContainer {
     private final Tongue m_tongue;
     private final Hopper m_hopper;
     private final ClawRollerLaserCAN m_clawRollerLaserCAN;
-    private final FrontLeftLaserCAN m_frontLeftLaserCAN;
-    private final FrontRightLaserCAN m_frontRightLaserCAN;
     private final Superstructure m_superStruct;
 
     public final Vision m_vision;
@@ -116,16 +101,8 @@ public class RobotContainer {
     private Trigger isCoralMode;
 
     // Override Triggers
-    @AutoLogOutput
-    private boolean autoScoreOverride = false;
     public Trigger hasVision;
     public Trigger hasLaserCAN;
-
-    private Trigger autoScore;
-
-    // Auto Score Height
-    @AutoLogOutput
-    private ReefHeight scoreHeight = ReefHeight.L2;
 
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
@@ -156,8 +133,6 @@ public class RobotContainer {
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_hopper = new Hopper(new HopperIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
-                m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIOReal());
-                m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIOReal());
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
                 m_vision =
                     new Vision(
@@ -196,8 +171,6 @@ public class RobotContainer {
                 m_tongue = new Tongue(new TongueIOSim(), true);
                 m_hopper = new Hopper(new HopperIOSim(), true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOSim());
-                m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIOSim());
-                m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIOSim());
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
 
                 // m_vision =
@@ -231,8 +204,6 @@ public class RobotContainer {
                 m_tongue = new Tongue(new TongueIO() {}, true);
                 m_hopper = new Hopper(new HopperIO() {}, true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIO() {});
-                m_frontLeftLaserCAN = new FrontLeftLaserCAN(new FrontLeftLaserCANIO() {});
-                m_frontRightLaserCAN = new FrontRightLaserCAN(new FrontRightLaserCANIO() {});
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
                 m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
                 m_LED = new LEDSubsystem(new LEDSubsystemIO() {},
@@ -245,7 +216,6 @@ public class RobotContainer {
 
         // Fallback Triggers
         hasLaserCAN = new Trigger(m_clawRollerLaserCAN.validMeasurement);
-        autoScore = hasVision.and(new Trigger(() -> autoScoreOverride).negate());
 
         // Superstructure coordinates Arm and Elevator motions
         m_superStruct = new Superstructure(m_profiledArm, m_profiledElevator);
@@ -292,7 +262,7 @@ public class RobotContainer {
             approachPose);
     }
 
-    private Command manualDescoreAlgae()
+    private Command descoreAlgae()
     {
         var approachCommand = new JoystickApproachCommand(
             m_drive,
@@ -312,12 +282,6 @@ public class RobotContainer {
                 m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
                     Elevator.State.ALGAE_STOW)),
             (hasVision.getAsBoolean()) ? approachCommand : Commands.none());
-    }
-
-    private Command descoreAlgae()
-    {
-        return ScoreCommands.descoreAlgae(m_drive,
-            () -> getFuturePose(alignPredictionSeconds.get()), m_superStruct, m_clawRoller);
     }
 
     private Command BargeAlgae()
@@ -340,14 +304,6 @@ public class RobotContainer {
             m_clawRoller.setStateCommand(ClawRoller.State.OFF),
             m_superStruct.getTransitionCommand(Arm.State.STOW,
                 Elevator.State.STOW, Units.degreesToRotations(10), 0.1));
-    }
-
-    private Command scoreCoral(ReefSide side)
-    {
-        return ScoreCommands.scoreCoral(m_drive,
-            () -> getFuturePose(alignPredictionSeconds.get()), m_superStruct, m_clawRoller,
-            m_clawRollerLaserCAN, m_frontLeftLaserCAN, m_frontRightLaserCAN, () -> scoreHeight,
-            side);
     }
 
     private Command driveTest(double speed)
@@ -376,35 +332,29 @@ public class RobotContainer {
             .rightBumper().and(hasVision)
             .whileTrue(
                 Commands.either(
-                    Commands.either(
-                        scoreCoral(ReefSide.RIGHT),
-                        joystickApproach(
-                            () -> FieldConstants.getNearestReefBranch(
-                                getFuturePose(alignPredictionSeconds.get()), ReefSide.RIGHT))
-                                    .until(isCoralMode.negate()),
-                        autoScore),
+                    joystickApproach(
+                        () -> FieldConstants.getNearestReefBranch(
+                            getFuturePose(alignPredictionSeconds.get()), ReefSide.RIGHT))
+                                .until(isCoralMode.negate()),
                     Commands.none(),
                     isCoralMode));
 
         // Driver Left Bumper and Coral Mode: Approach Nearest Left-Side Reef Branch
         m_driver
-            .leftBumper().and(hasVision)
+            .rightBumper().and(hasVision)
             .whileTrue(
                 Commands.either(
-                    Commands.either(
-                        scoreCoral(ReefSide.LEFT),
-                        joystickApproach(
-                            () -> FieldConstants.getNearestReefBranch(
-                                getFuturePose(alignPredictionSeconds.get()), ReefSide.LEFT))
-                                    .until(isCoralMode.negate()),
-                        autoScore),
+                    joystickApproach(
+                        () -> FieldConstants.getNearestReefBranch(
+                            getFuturePose(alignPredictionSeconds.get()), ReefSide.LEFT))
+                                .until(isCoralMode.negate()),
                     Commands.none(),
                     isCoralMode));
 
         // Driver Left and Right Bumpers and Algae mode: Descore to horns on nearest reef face
         m_driver
             .leftBumper().and(m_driver.rightBumper()).and(isCoralMode.negate())
-            .whileTrue(Commands.either(descoreAlgae(), manualDescoreAlgae(), autoScore));
+            .whileTrue(descoreAlgae());
 
         m_driver
             .a()
@@ -428,11 +378,8 @@ public class RobotContainer {
         m_driver
             .x().and(isCoralMode)
             .onTrue(
-                Commands.either(
-                    Commands.runOnce(() -> scoreHeight = ReefHeight.L2),
-                    m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_2,
-                        Elevator.State.LEVEL_2),
-                    autoScore));
+                m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_2,
+                    Elevator.State.LEVEL_2));
 
         // Driver X Button and Algae mode: Lollipop Collect
         m_driver
@@ -460,11 +407,8 @@ public class RobotContainer {
         m_driver
             .b().and(isCoralMode)
             .onTrue(
-                Commands.either(
-                    Commands.runOnce(() -> scoreHeight = ReefHeight.L3),
-                    m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_3,
-                        Elevator.State.LEVEL_3),
-                    autoScore));
+                m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_3,
+                    Elevator.State.LEVEL_3));
 
         // Driver B Button and Algae mode: Send Arm PROCESSOR SCORE
         m_driver
@@ -489,11 +433,8 @@ public class RobotContainer {
         m_driver
             .y().and(isCoralMode)
             .onTrue(
-                Commands.either(
-                    Commands.runOnce(() -> scoreHeight = ReefHeight.L4),
-                    m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_4,
-                        Elevator.State.LEVEL_4),
-                    autoScore));
+                m_superStruct.getDefaultTransitionCommand(Arm.State.LEVEL_4,
+                    Elevator.State.LEVEL_4));
 
         // Driver Y Button: Auto Barge
         m_driver
@@ -546,27 +487,24 @@ public class RobotContainer {
         m_driver
             .leftTrigger()
             .whileTrue(
-                Commands.parallel(
-                    Commands.sequence(
-                        m_tongue.setStateCommand(Tongue.State.RAISED),
-                        m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
-                        m_superStruct.getDefaultTransitionCommand(Arm.State.CORAL_INTAKE,
-                            Elevator.State.CORAL_INTAKE),
-                        m_hopper.setStateCommand(Hopper.State.INTAKE),
-                        Commands.either(
-                            Commands.waitUntil(
-                                m_clawRollerLaserCAN.triggered
-                                    .and(m_tongue.coralContactTrigger) // TODO: CHECK IF NEEDED
-                                    .and(m_clawRoller.stopped)),
-                            Commands.waitUntil(
-                                m_tongue.coralContactTrigger
-                                    .and(m_clawRoller.stopped)),
-                            hasLaserCAN), // If lasercan is not valid, don't check it while intaking
-                        m_clawRoller.shuffleCommand(),
-                        m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
-                        m_hopper.setStateCommand(Hopper.State.OFF)),
-                    new DriveToStation(m_drive, () -> -m_driver.getLeftY(),
-                        () -> -m_driver.getLeftX(), () -> -m_driver.getRightX()).onlyIf(autoScore)))
+                Commands.sequence(
+                    m_tongue.setStateCommand(Tongue.State.RAISED),
+                    m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                    m_superStruct.getDefaultTransitionCommand(Arm.State.CORAL_INTAKE,
+                        Elevator.State.CORAL_INTAKE),
+                    m_hopper.setStateCommand(Hopper.State.INTAKE),
+                    Commands.either(
+                        Commands.waitUntil(
+                            m_clawRollerLaserCAN.triggered
+                                .and(m_tongue.coralContactTrigger) // TODO: CHECK IF NEEDED
+                                .and(m_clawRoller.stopped)),
+                        Commands.waitUntil(
+                            m_tongue.coralContactTrigger
+                                .and(m_clawRoller.stopped)),
+                        hasLaserCAN), // If lasercan is not valid, don't check it while intaking
+                    m_clawRoller.shuffleCommand(),
+                    m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
+                    m_hopper.setStateCommand(Hopper.State.OFF)))
             .onFalse(
                 Commands.sequence(
                     m_clawRoller.setStateCommand(ClawRoller.State.OFF),
@@ -639,15 +577,6 @@ public class RobotContainer {
                     m_profiledElevator.setStateCommand(Elevator.State.LEVEL_2),
                     m_profiledArm.setStateCommand(Arm.State.LEVEL_2)));
 
-        // Driver Start x 2: Override Auto Scoring
-        m_driver.start()
-            .onTrue(
-                Commands.race(
-                    Commands.waitSeconds(0.5),
-                    Commands.sequence(Commands.waitUntil(m_driver.start().negate()),
-                        Commands.waitUntil(m_driver.start()),
-                        Commands.runOnce(() -> autoScoreOverride = !autoScoreOverride))));
-
         SmartDashboard.putData("Drive To Start",
             new DriveToPose(m_drive, () -> getFirstAutoPose().orElse(m_drive.getPose()))
                 .withTolerance(Units.inchesToMeters(1), Rotation2d.fromDegrees(1)));
@@ -658,11 +587,6 @@ public class RobotContainer {
                 .transformBy(new Transform2d(Constants.bumperWidth / 2,
                     0.0, Rotation2d.k180deg)))
                         .withTolerance(Units.inchesToMeters(1), Rotation2d.fromDegrees(1)));
-
-        SmartDashboard.putData("Drive to Station",
-            new DriveToStation(m_drive, () -> -m_driver.getLeftY(),
-                () -> -m_driver.getLeftX(), () -> -m_driver.getRightX())
-                    .withTolerance(Units.inchesToMeters(1), Rotation2d.fromDegrees(1)));
     }
 
     /**
