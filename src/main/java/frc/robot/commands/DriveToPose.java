@@ -59,11 +59,11 @@ public class DriveToPose extends Command {
     private LoggedTunableNumber driveMaxVelocity =
         new LoggedTunableNumber("DriveToPose/DriveMaxVelocity", 3.79);
     private LoggedTunableNumber driveMaxVelocityTop =
-        new LoggedTunableNumber("DriveToPose/DriveMaxVelocityTop", 1);
+        new LoggedTunableNumber("DriveToPose/DriveMaxVelocityTop", 2);
     private LoggedTunableNumber driveMaxAcceleration =
-        new LoggedTunableNumber("DriveToPose/DriveMaxAcceleration", 4);
+        new LoggedTunableNumber("DriveToPose/DriveMaxAcceleration", 6);
     private LoggedTunableNumber driveMaxAccelerationTop =
-        new LoggedTunableNumber("DriveToPose/DriveMaxAccelerationTop", 1);
+        new LoggedTunableNumber("DriveToPose/DriveMaxAccelerationTop", 4);
     private LoggedTunableNumber thetaMaxVelocity =
         new LoggedTunableNumber("DriveToPose/ThetaMaxVelocity", 9.27);
     private LoggedTunableNumber thetaMaxVelocityTop =
@@ -198,7 +198,7 @@ public class DriveToPose extends Command {
         double setpointVelocity =
             direction.norm() <= 0.01 // Don't calculate velocity in direction when really close
                 ? lastSetpointVelocity.getNorm()
-                : lastSetpointVelocity.toVector().dot(direction) / direction.norm();
+                : Math.abs(lastSetpointVelocity.toVector().dot(direction)) / direction.norm();
         setpointVelocity = Math.max(setpointVelocity, -0.5);
         State driveSetpoint =
             driveProfile.calculate(
