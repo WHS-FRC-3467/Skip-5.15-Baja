@@ -633,6 +633,15 @@ public class RobotContainer {
                         Commands.none(),
                         m_clawRollerLaserCAN.triggered));
 
+                NamedCommands.registerCommand(
+                    "L2",
+                    Commands.sequence(
+                        m_tongue.setStateCommand(Tongue.State.DOWN),
+                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_2,
+                            Elevator.State.LEVEL_2,
+                            Units.degreesToRotations(10),
+                            0.8)));
+
                 NamedCommands.registerCommand("AutoAlignLeft",
                     new DriveToPose(m_drive,
                         () -> FieldConstants.getNearestReefBranch(
@@ -722,6 +731,15 @@ public class RobotContainer {
                             Units.degreesToRotations(10),
                             0.8),
                         m_clawRoller.L4ShuffleCommand()));
+
+                NamedCommands.registerCommand(
+                    "L2",
+                    Commands.sequence(
+                        m_tongue.setStateCommand(Tongue.State.DOWN),
+                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_2,
+                            Elevator.State.LEVEL_2,
+                            Units.degreesToRotations(10),
+                            0.8)));
 
                 NamedCommands.registerCommand("AutoAlignLeft",
                     new DriveToPose(m_drive,
@@ -878,17 +896,6 @@ public class RobotContainer {
                 Commands.waitUntil(m_clawRollerLaserCAN.triggered),
                 m_tongue.setStateCommand(Tongue.State.DOWN),
                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_3, Elevator.State.LEVEL_3,
-                    Units.degreesToRotations(10),
-                    0.8),
-                Commands.waitSeconds(0.25)));
-
-        // Go to the L2 Position
-        NamedCommands.registerCommand(
-            "L2",
-            Commands.sequence(
-                Commands.waitUntil(m_clawRollerLaserCAN.triggered),
-                m_tongue.setStateCommand(Tongue.State.DOWN),
-                m_superStruct.getTransitionCommand(Arm.State.LEVEL_2, Elevator.State.LEVEL_2,
                     Units.degreesToRotations(10),
                     0.8),
                 Commands.waitSeconds(0.25)));

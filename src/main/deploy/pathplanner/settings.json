@@ -3,13 +3,14 @@
   "robotLength": 0.9,
   "holonomicMode": true,
   "pathFolders": [
-    "Swoop 4 Piece",
+    "Sneak",
     "Normal",
-    "Strafe"
+    "Strafe",
+    "Swoop 4 Piece"
   ],
   "autoFolders": [],
-  "defaultMaxVel": 3.7,
-  "defaultMaxAccel": 4.5,
+  "defaultMaxVel": 3.0,
+  "defaultMaxAccel": 4.0,
   "defaultMaxAngVel": 540.0,
   "defaultMaxAngAccel": 400.0,
   "defaultNominalVoltage": 12.0,

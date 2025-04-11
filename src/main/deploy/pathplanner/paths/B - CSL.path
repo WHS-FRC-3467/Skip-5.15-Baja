@@ -3,56 +3,48 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.5344262295081967,
-        "y": 0.8063012295081955
+        "x": 3.1270559210526314,
+        "y": 3.8710526315789475
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.4663209663503016,
-        "y": 1.2052814926660904
+        "x": 1.9118424206766362,
+        "y": 2.7355257152164985
       },
       "isLocked": false,
-      "linkedName": "SourceTop"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 5.202663934426229,
-        "y": 2.4006659836065567
+        "x": 0.7117500000000001,
+        "y": 1.3339999999999999
       },
       "prevControl": {
-        "x": 4.795081967213115,
-        "y": 1.669415983606557
+        "x": 0.9846755276949076,
+        "y": 1.6276474523389377
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "CSL"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.2176541717049573,
+      "rotationDegrees": 46.332726221628
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "IntakeCoral",
+      "name": "IntakePrep",
       "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
-        "type": "sequential",
+        "type": "named",
         "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "IntakeCoral"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "PrepScore"
-              }
-            }
-          ]
+          "name": "IntakePrep"
         }
       }
     }
@@ -66,14 +58,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
-    "rotation": 119.99999999999999
+    "velocity": 0,
+    "rotation": 54.02761295071511
   },
   "reversed": false,
-  "folder": "Normal",
+  "folder": "Sneak",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }
