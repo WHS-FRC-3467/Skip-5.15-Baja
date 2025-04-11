@@ -128,7 +128,7 @@ public class RobotContainer {
 
                 m_profiledArm = new Arm(new ArmIOTalonFX(), false);
                 m_profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
-                m_profiledClimber = new Climber(new ClimberIO() {}, true);
+                m_profiledClimber = new Climber(new ClimberIOTalonFX() {}, false);
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
@@ -882,9 +882,9 @@ public class RobotContainer {
         return Commands.deadline(
             Commands.sequence(
 
-                // m_clawRoller.L1ShuffleCommand(),
-                // m_tongue.setStateCommand(Tongue.State.L1),
-                // Commands.waitSeconds(0.25),
+                m_clawRoller.L1ShuffleCommand(),
+                m_tongue.setStateCommand(Tongue.State.L1),
+                Commands.waitSeconds(0.125),
                 m_clawRoller.setStateCommand(ClawRoller.State.L1_SCORE),
                 Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
                 Commands.waitSeconds(0.25)),
