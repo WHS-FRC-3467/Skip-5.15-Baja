@@ -128,7 +128,11 @@ public class RobotContainer {
 
                 m_profiledArm = new Arm(new ArmIOTalonFX(), false);
                 m_profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
-                m_profiledClimber = new Climber(new ClimberIO() {}, true);
+                if (Constants.getRobot() == RobotType.BAJA) {
+                    m_profiledClimber = new Climber(new ClimberIOTalonFX(), false);
+                } else {
+                    m_profiledClimber = new Climber(new ClimberIO() {}, false);
+                }
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOReal());
