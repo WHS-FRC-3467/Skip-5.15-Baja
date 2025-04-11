@@ -360,7 +360,7 @@ public class RobotContainer {
 
         // Driver Left Bumper and Coral Mode: Approach Nearest Left-Side Reef Branch
         m_driver
-            .leftBumper().and(isCoralMode).and(hasVision)
+            .leftBumper().and(isCoralMode).and(hasVision).and(m_driver.a().negate())
             .whileTrue(
                 joystickApproach(
                     () -> FieldConstants.getNearestReefBranch(
@@ -369,8 +369,17 @@ public class RobotContainer {
         // Driver Left and Right Bumpers and Algae mode: Descore to horns on nearest reef face
         m_driver
             .leftBumper().and(m_driver.rightBumper()).and(isCoralMode.negate())
+            .and(m_driver.a().negate())
             .whileTrue(
                 DescoreAlgae());
+
+        m_driver
+            .leftBumper().and(m_driver.a())
+            .whileTrue(spitAndStrafe(ReefSide.LEFT));
+
+        m_driver
+            .rightBumper().and(m_driver.a())
+            .whileTrue(spitAndStrafe(ReefSide.RIGHT));
 
         m_driver
             .a()
@@ -388,7 +397,17 @@ public class RobotContainer {
                         m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
                             Elevator.State.STOW)),
                     isCoralMode))
-            .whileTrue(Commands.none());
+            .whileTrue(
+                Commands.either(
+                    DriveCommands.joystickDriveAtAngle(
+                        m_drive,
+                        () -> -m_driver.getLeftY() * speedMultiplier.getAsDouble(),
+                        () -> -m_driver.getLeftX() * speedMultiplier.getAsDouble(),
+                        () -> FieldConstants
+                            .getNearestReefFace(getFuturePose(alignPredictionSeconds.get()))
+                            .getRotation().plus(Rotation2d.k180deg)),
+                    Commands.none(),
+                    isCoralMode));
 
         m_driver
             .start()
@@ -497,16 +516,16 @@ public class RobotContainer {
 
                     isCoralMode));
 
-        m_driver
-            .rightTrigger().and(m_driver.a())
-            .onTrue(
-                Commands.sequence(
-                    m_clawRoller.setStateCommand(ClawRoller.State.L1_SCORE),
-                    Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
-                    Commands.waitSeconds(0.2),
-                    m_clawRoller.setStateCommand(ClawRoller.State.OFF),
-                    m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
-                        Elevator.State.STOW)));
+        // m_driver
+        // .rightTrigger().and(m_driver.a())
+        // .onTrue(
+        // Commands.sequence(
+        // m_clawRoller.setStateCommand(ClawRoller.State.L1_SCORE),
+        // Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+        // Commands.waitSeconds(0.2),
+        // m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+        // m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
+        // Elevator.State.STOW)));
 
         m_driver
             .leftTrigger()
@@ -860,6 +879,32 @@ public class RobotContainer {
         if (!m_clawRollerLaserCAN.triggered.getAsBoolean()) {
             m_tongue.lowerTongueCommand().schedule();
         }
+    }
+
+    public Command spitAndStrafe(ReefSide side)
+    {
+        return Commands.deadline(
+            Commands.sequence(
+
+                m_clawRoller.L1ShuffleCommand(),
+                m_tongue.setStateCommand(Tongue.State.L1),
+                Commands.waitSeconds(0.125),
+                m_clawRoller.setStateCommand(ClawRoller.State.L1_SCORE),
+                Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
+                Commands.waitSeconds(0.25)),
+
+            Commands.either(
+                joystickApproach(
+                    () -> FieldConstants.getNearestReefBranch(
+                        getFuturePose(alignPredictionSeconds.get()), side)
+                        .transformBy(
+                            new Transform2d(0, Units.inchesToMeters(24), new Rotation2d()))),
+                joystickApproach(
+                    () -> FieldConstants.getNearestReefBranch(
+                        getFuturePose(alignPredictionSeconds.get()), side)
+                        .transformBy(
+                            new Transform2d(0, Units.inchesToMeters(-24), new Rotation2d()))),
+                () -> side == ReefSide.RIGHT));
     }
 
     public void registerSelfTestCommands()
