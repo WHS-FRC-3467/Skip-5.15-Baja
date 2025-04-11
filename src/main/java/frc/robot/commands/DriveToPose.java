@@ -1,8 +1,6 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -35,9 +33,9 @@ public class DriveToPose extends Command {
     private boolean finishWithinTolerance = true;
 
     private TrapezoidProfile driveProfile;
-    private final PIDController driveController =
+    private final TunablePIDController driveController =
         new TunablePIDController("DriveToPose/DriveController", 1.0, 0.0, 0.0);
-    private final ProfiledPIDController thetaController =
+    private final TuneableProfiledPID thetaController =
         new TuneableProfiledPID(
             "DriveToPose/ThetaController",
             4.0, 0.0, 0.0, 0.0, 0.0);
@@ -67,13 +65,13 @@ public class DriveToPose extends Command {
     private LoggedTunableNumber driveMaxAccelerationTop =
         new LoggedTunableNumber("DriveToPose/DriveMaxAccelerationTop", 1);
     private LoggedTunableNumber thetaMaxVelocity =
-        new LoggedTunableNumber("DriveToPose/ThetaMaxVelocity", 3.79);
+        new LoggedTunableNumber("DriveToPose/ThetaMaxVelocity", 9.27);
     private LoggedTunableNumber thetaMaxVelocityTop =
-        new LoggedTunableNumber("DriveToPose/ThetaMaxVelocityTop", 1);
+        new LoggedTunableNumber("DriveToPose/ThetaMaxVelocityTop", 2.31);
     private LoggedTunableNumber thetaMaxAcceleration =
-        new LoggedTunableNumber("DriveToPose/ThetaMaxAcceleration", 4);
+        new LoggedTunableNumber("DriveToPose/ThetaMaxAcceleration", 92.7);
     private LoggedTunableNumber thetaMaxAccelerationTop =
-        new LoggedTunableNumber("DriveToPose/ThetaMaxAccelerationTop", 1);
+        new LoggedTunableNumber("DriveToPose/ThetaMaxAccelerationTop", 4);
 
     public DriveToPose(Drive drive, Supplier<Pose2d> target)
     {
@@ -134,7 +132,7 @@ public class DriveToPose extends Command {
 
         driveProfile =
             new TrapezoidProfile(new TrapezoidProfile.Constraints(
-                driveMaxVelocity.get(), 4));
+                driveMaxVelocity.get(), driveMaxAcceleration.get()));
 
         this.driveController.setTolerance(driveTolerance);
         this.thetaController.setTolerance(thetaTolerance.getRadians());
@@ -150,6 +148,9 @@ public class DriveToPose extends Command {
     @Override
     public void execute()
     {
+        driveController.updatePID();
+        thetaController.updatePID();
+
         running = true;
 
         // Update constraints
@@ -182,7 +183,7 @@ public class DriveToPose extends Command {
         thetaErrorAbs = Math.abs(poseError.getRotation().getRadians());
         double linearFFScaler =
             MathUtil.clamp(
-                (driveErrorAbs - 0.01) / 0.04,
+                (driveErrorAbs - 0.01) / (0.5 - 0.01),
                 0.0,
                 1.0);
         double thetaFFScaler =
@@ -197,8 +198,8 @@ public class DriveToPose extends Command {
         double setpointVelocity =
             direction.norm() <= 0.01 // Don't calculate velocity in direction when really close
                 ? lastSetpointVelocity.getNorm()
-                : Math.abs(lastSetpointVelocity.toVector().dot(direction)) / direction.norm();
-
+                : lastSetpointVelocity.toVector().dot(direction) / direction.norm();
+        setpointVelocity = Math.max(setpointVelocity, -0.5);
         State driveSetpoint =
             driveProfile.calculate(
                 Constants.loopPeriodSecs,

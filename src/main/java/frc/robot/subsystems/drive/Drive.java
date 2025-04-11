@@ -114,13 +114,6 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions,
             new Pose2d());
 
-    private RobotState robotState = RobotState.getInstance();
-    private LoggedTunableNumber elevatorSlowdownHeight =
-        new LoggedTunableNumber("Drive/Elevator Slowdown Height", 5.0);
-    private LoggedTunableNumber elevatorSlowdownMultiplier =
-        new LoggedTunableNumber("Drive/Elevator Slowdown Multiplier", 0.5);
-
-
     public Drive(
         GyroIO gyroIO,
         ModuleIO flModuleIO,
@@ -259,11 +252,6 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     public void runVelocity(ChassisSpeeds speeds)
     {
         Logger.recordOutput("SwerveStates/InitSpeed", speeds);
-
-        if (robotState.getElevatorHeight() >= elevatorSlowdownHeight.getAsDouble()) {
-            speeds = speeds.times(elevatorSlowdownMultiplier.getAsDouble());
-        }
-        Logger.recordOutput("SwerveStates/LimitedSpeed", speeds);
 
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
