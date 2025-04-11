@@ -299,6 +299,7 @@ public class RobotContainer {
                         Elevator.State.ALGAE_LOW),
                     () -> FieldConstants.isAlgaeHigh(m_drive.getPose())),
                 Commands.waitUntil(m_clawRoller.stalled)),
+            // delivering
             approachCommand);
     }
 
@@ -745,7 +746,7 @@ public class RobotContainer {
                         Commands.none(),
                         hasLaserCAN));
                 break;
-            case REPLAY:
+            case SIM:
 
                 NamedCommands.registerCommand(
                     "L4",
@@ -756,6 +757,11 @@ public class RobotContainer {
                             Units.degreesToRotations(10),
                             0.8),
                         m_clawRoller.L4ShuffleCommand()));
+
+
+                NamedCommands.registerCommand("DescoreAlgae", DescoreAlgaeAuto());
+
+                NamedCommands.registerCommand("BargeAlgae", BargeAlgae());
 
                 NamedCommands.registerCommand("AutoAlignLeft",
                     new DriveToPose(m_drive,
