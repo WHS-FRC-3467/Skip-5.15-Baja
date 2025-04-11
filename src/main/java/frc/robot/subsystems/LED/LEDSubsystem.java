@@ -11,6 +11,7 @@ import frc.robot.subsystems.LED.LEDSubsystemIO.LEDState;
 import frc.robot.subsystems.LED.LEDSubsystemIO.MatchTimerState;
 import frc.robot.subsystems.Vision.Vision;
 import frc.robot.util.LoggedTunableNumber;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -175,6 +176,10 @@ public class LEDSubsystem extends SubsystemBase {
             boolean goodRot = SmartDashboard.getBoolean("Alignment/Rotation", false);
             if (goodTrans && goodRot) {
                 newState = LEDState.DISABLED_BOTH_OK;
+                // } else if (SmartDashboard.getNumber("Alignment/Distance To Auto Start", 0) >=
+                // Units
+                // .metersToInches(1)) {
+                // newState = LEDState.DISABLED_FAR;
             } else if (goodTrans) {
                 newState = LEDState.DISABLED_TRANSLATION_OK;
             } else if (goodRot) {

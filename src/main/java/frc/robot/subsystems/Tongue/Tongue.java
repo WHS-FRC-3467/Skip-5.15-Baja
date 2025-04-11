@@ -31,6 +31,7 @@ public class Tongue extends GenericMotionProfiledSubsystem<Tongue.State> {
         HOMING(new ProfileType.OPEN_VOLTAGE(() -> homingTuning.getAsDouble())),
         STOW(new ProfileType.OPEN_VOLTAGE(() -> 0)),
         RAISED(new ProfileType.OPEN_VOLTAGE(() -> 1)),
+        L1(new ProfileType.OPEN_VOLTAGE(() -> 12)),
         DOWN(new ProfileType.OPEN_VOLTAGE(() -> -12));
 
         private final ProfileType profileType;

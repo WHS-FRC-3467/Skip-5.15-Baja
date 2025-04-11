@@ -22,6 +22,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -38,7 +39,7 @@ public class Vision extends SubsystemBase {
     private final Alert[] disconnectedAlerts;
     public boolean visionHasTarget = false;
     private boolean seesThisTarget = false;
-    private boolean[] cameraConnected = new boolean[]{true, true};
+    private boolean[] cameraConnected = new boolean[] {true, true};
     @Getter
     public boolean anyCameraConnected = true;
 

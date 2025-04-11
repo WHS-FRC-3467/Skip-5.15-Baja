@@ -22,7 +22,7 @@ public class ClawRollerLaserCAN extends GenericLaserCANSubsystem<ClawRollerLaser
     public Trigger validMeasurement =
         new Trigger(
             () -> validDebouncer.calculate(io.getValidStatus()));
-            
+
     @RequiredArgsConstructor
     @Getter
     public enum State implements DistanceState {
@@ -42,9 +42,10 @@ public class ClawRollerLaserCAN extends GenericLaserCANSubsystem<ClawRollerLaser
     }
 
     @Override
-    public void periodic() {
+    public void periodic()
+    {
         super.periodic();
         SmartDashboard.putBoolean("Intake Fallback Active", !validMeasurement.getAsBoolean());
-        Logger.recordOutput("ClawRollerLaserCAN/Fallback Active", validMeasurement.getAsBoolean());
+        Logger.recordOutput("ClawRollerLaserCAN/Fallback Active", !validMeasurement.getAsBoolean());
     }
 }
