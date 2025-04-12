@@ -287,25 +287,23 @@ public class RobotContainer {
         var strafeCommand = new JoystickStrafeCommand(
             m_drive,
             () -> -m_driver.getLeftX(),
-            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine))
-                .withTolerance(Units.inchesToMeters(4.0), Rotation2d.fromDegrees(5));
+            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine));
 
-        // return Commands.parallel(
-        // strafeCommand,
-        // Commands.sequence(
-        // Commands.waitUntil(strafeCommand::withinTolerance),
-        // m_profiledArm.setStateCommand(Arm.State.STOW),
-        // Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
-        // m_profiledElevator.setStateCommand(Elevator.State.BARGE),
-        // Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
-        // m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
-        // Commands.waitUntil(m_clawRoller.stopped.negate()),
-        // Commands.waitSeconds(0.2),
-        // m_clawRoller.setStateCommand(ClawRoller.State.OFF),
-        // m_superStruct.getTransitionCommand(Arm.State.STOW,
-        // Elevator.State.STOW, Units.degreesToRotations(10), 0.1)));
-
-        return strafeCommand.until(strafeCommand::withinTolerance);
+        return Commands.deadline(
+            Commands.sequence(
+                Commands.waitUntil(() -> strafeCommand.withinTolerance(Units.inchesToMeters(4.0),
+                    Rotation2d.fromDegrees(5))),
+                m_profiledArm.setStateCommand(Arm.State.STOW),
+                Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
+                m_profiledElevator.setStateCommand(Elevator.State.BARGE),
+                Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+                Commands.waitUntil(m_clawRoller.freeSpin),
+                Commands.waitSeconds(0.2),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                m_superStruct.getTransitionCommand(Arm.State.STOW,
+                    Elevator.State.STOW, Units.degreesToRotations(10), 0.1)),
+            strafeCommand);
     }
 
     private Command driveTest(double speed)
