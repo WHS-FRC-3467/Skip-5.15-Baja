@@ -21,7 +21,7 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
         LEVEL_1(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(123), 0)),
         LEVEL_2(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(97.48), 0)),
         LEVEL_3(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(104.48), 0)),
-        LEVEL_4(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(101.33), 0)),
+        LEVEL_4(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(104.4), 0)),
         // LEVEL_4(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(98.33), 0)),
         CLIMB(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(73.44), 0)),
         ALGAE_LOW(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(103.3), 0)),
@@ -30,7 +30,7 @@ public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
         // ALGAE_HIGH_P(new ProfileType.MM_POSITION(() -> .2446, 0)),
         ALGAE_GROUND(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(70.0), 0)),
         PROCESSOR_SCORE(
-            new ProfileType.MM_POSITION(() -> 0.204, 0)),
+            new ProfileType.MM_POSITION(() -> 0.195, 0)),
         BARGE(new ProfileType.MM_POSITION(() -> Units.degreesToRotations(130.0), 0)),
         COAST(new ProfileType.DISABLED_COAST()),
         BRAKE(new ProfileType.DISABLED_BRAKE());

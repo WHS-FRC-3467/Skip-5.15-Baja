@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.5344262295081967,
-        "y": 0.8063012295081955
+        "x": 1.4864754098360655,
+        "y": 0.7823258196721316
       },
       "prevControl": null,
       "nextControl": {
-        "x": 2.036460077680971,
-        "y": 1.1696407551471069
+        "x": 1.9885092580088397,
+        "y": 1.145665345311043
       },
       "isLocked": false,
       "linkedName": "SourceTop"
@@ -34,7 +34,7 @@
   "eventMarkers": [
     {
       "name": "IntakeCoral",
-      "waypointRelativePos": 0.0,
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "sequential",

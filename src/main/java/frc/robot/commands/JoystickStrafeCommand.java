@@ -20,6 +20,6 @@ public class JoystickStrafeCommand extends DriveToPose {
             drive::getPose);
         super.withFeedforward(() -> new Translation2d(0.0, -xSupplier.getAsDouble())
             .rotateBy(target.get().getRotation()),
-            () -> 0.0);
+            () -> 0.0).finishWithinTolerance(false);
     }
 }

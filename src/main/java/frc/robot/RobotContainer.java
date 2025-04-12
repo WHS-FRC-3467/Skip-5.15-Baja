@@ -71,7 +71,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
 
     // Driver Controller
-    private final WindupXboxController m_driver = new WindupXboxController(0);
+    private final WindupXboxController m_driver = new WindupXboxController(0).withDeadband(0.1);
 
     // Autonomous Selector
     private final LoggedDashboardChooser<Command> m_autoChooser;
@@ -290,22 +290,23 @@ public class RobotContainer {
             () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine))
                 .withTolerance(Units.inchesToMeters(4.0), Rotation2d.fromDegrees(5));
 
-        // return Commands.parallel(
-        // strafeCommand,
-        // Commands.sequence(
-        // Commands.waitUntil(strafeCommand::withinTolerance),
-        // m_profiledArm.setStateCommand(Arm.State.STOW),
-        // Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
-        // m_profiledElevator.setStateCommand(Elevator.State.BARGE),
-        // Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
-        // m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
-        // Commands.waitUntil(m_clawRoller.stopped.negate()),
-        // Commands.waitSeconds(0.2),
-        // m_clawRoller.setStateCommand(ClawRoller.State.OFF),
-        // m_superStruct.getTransitionCommand(Arm.State.STOW,
-        // Elevator.State.STOW, Units.degreesToRotations(10), 0.1)));
-
-        return strafeCommand.until(strafeCommand::withinTolerance);
+        return Commands.deadline(
+            Commands.sequence(
+                Commands.waitUntil(strafeCommand::withinTolerance),
+                m_profiledArm.setStateCommand(Arm.State.STOW),
+                Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
+                m_profiledElevator.setStateCommand(Elevator.State.BARGE),
+                Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+                Commands.waitUntil(m_clawRoller.stopped.negate()),
+                Commands.waitSeconds(0.2),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF)),
+            strafeCommand)
+            .finallyDo(interrupted -> {
+                if (!interrupted)
+                    m_superStruct.getTransitionCommand(Arm.State.STOW,
+                        Elevator.State.STOW, Units.degreesToRotations(10), 0.1).schedule();;
+            });
     }
 
     private Command driveTest(double speed)
@@ -376,7 +377,7 @@ public class RobotContainer {
                     // Driver A Button and Algae mode: Send Arm and Elevator to Ground Intake
                     Commands.sequence(
                         m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_GROUND,
-                            Elevator.State.STOW),
+                            Elevator.State.CORAL_INTAKE),
                         m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
                         Commands.waitUntil(m_clawRoller.stalled),
                         m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
@@ -518,9 +519,14 @@ public class RobotContainer {
             .whileTrue(
                 Commands.sequence(
                     m_tongue.setStateCommand(Tongue.State.RAISED),
-                    m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
                     m_superStruct.getDefaultTransitionCommand(Arm.State.CORAL_INTAKE,
                         Elevator.State.CORAL_INTAKE),
+                    Commands.repeatingSequence(
+                        m_clawRoller.setStateCommand(ClawRoller.State.INTAKE),
+                        Commands.waitUntil(m_clawRoller.stalled.debounce(0.1)),
+                        m_clawRoller.shuffleCommand())
+                        .until(m_clawRollerLaserCAN.triggered
+                            .and(m_clawRoller.stopped.debounce(0.15))),
                     Commands.either(
                         Commands.waitUntil(
                             m_clawRollerLaserCAN.triggered
@@ -653,16 +659,24 @@ public class RobotContainer {
 
                 var leftAlign = new DriveToPose(m_drive,
                     () -> FieldConstants.getNearestReefBranch(
-                        getFuturePose(alignPredictionSeconds.get()),
-                        ReefSide.LEFT)
+                        m_drive.getPose(),
+                        m_flipChooser.get() ? ReefSide.RIGHT : ReefSide.LEFT)
+                        .transformBy(new Transform2d(
+                            Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
+                            Rotation2d.k180deg)));
+
+                var leftAlignL2 = new DriveToPose(m_drive,
+                    () -> FieldConstants.getNearestReefBranch(
+                        m_drive.getPose(),
+                        m_flipChooser.get() ? ReefSide.RIGHT : ReefSide.LEFT)
                         .transformBy(new Transform2d(
                             Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
                             Rotation2d.k180deg)));
 
                 var rightAlign = new DriveToPose(m_drive,
                     () -> FieldConstants.getNearestReefBranch(
-                        getFuturePose(alignPredictionSeconds.get()),
-                        ReefSide.RIGHT)
+                        m_drive.getPose(),
+                        m_flipChooser.get() ? ReefSide.LEFT : ReefSide.RIGHT)
                         .transformBy(new Transform2d(
                             Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
                             Rotation2d.k180deg)));
@@ -706,6 +720,27 @@ public class RobotContainer {
                                                     thetaRaiseElevatorToleranceDegrees.get()))),
                                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
                                     Elevator.State.LEVEL_4, Units.degreesToRotations(6),
+                                    0.8),
+                                m_clawRoller.L4ShuffleCommand())),
+                        Commands.none(),
+                        m_clawRollerLaserCAN.triggered));
+
+                NamedCommands.registerCommand("AutoAlignLeftL2",
+                    Commands.either(
+                        Commands.parallel(
+                            leftAlignL2.until(() -> leftAlignL2.withinTolerance(
+                                Units.inchesToMeters(linearAlignToleranceInches.get()),
+                                Rotation2d
+                                    .fromDegrees(thetaAlignToleranceDegrees.get()))),
+                            Commands.sequence(
+                                Commands.waitUntil(
+                                    () -> leftAlignL2
+                                        .withinTolerance(linearRaiseElevatorToleranceMeters.get(),
+                                            Rotation2d
+                                                .fromDegrees(
+                                                    thetaRaiseElevatorToleranceDegrees.get()))),
+                                m_superStruct.getTransitionCommand(Arm.State.LEVEL_2,
+                                    Elevator.State.LEVEL_2, Units.degreesToRotations(6),
                                     0.8),
                                 m_clawRoller.L4ShuffleCommand())),
                         Commands.none(),
@@ -926,16 +961,22 @@ public class RobotContainer {
                 Commands.waitSeconds(0.25)),
 
             Commands.either(
-                joystickApproach(
+                new DriveToPose(
+                    m_drive,
                     () -> FieldConstants.getNearestReefBranch(
                         getFuturePose(alignPredictionSeconds.get()), side)
-                        .transformBy(
-                            new Transform2d(0, Units.inchesToMeters(24), new Rotation2d()))),
-                joystickApproach(
+                        .transformBy(new Transform2d(
+                            Constants.bumperWidth / 2 + Units.inchesToMeters(1),
+                            Units.inchesToMeters(24),
+                            Rotation2d.k180deg))),
+                new DriveToPose(
+                    m_drive,
                     () -> FieldConstants.getNearestReefBranch(
                         getFuturePose(alignPredictionSeconds.get()), side)
-                        .transformBy(
-                            new Transform2d(0, Units.inchesToMeters(-24), new Rotation2d()))),
+                        .transformBy(new Transform2d(
+                            Constants.bumperWidth / 2 + Units.inchesToMeters(1),
+                            Units.inchesToMeters(-24),
+                            Rotation2d.k180deg))),
                 () -> side == ReefSide.RIGHT));
     }
 

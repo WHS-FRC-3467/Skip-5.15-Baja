@@ -32,16 +32,16 @@
     },
     {
       "anchor": {
-        "x": 2.5773565573770494,
-        "y": 3.8272028688524586
+        "x": 2.2230000000000003,
+        "y": 3.6154999999999995
       },
       "prevControl": {
-        "x": 1.4984631147540983,
-        "y": 3.071977459016393
+        "x": 1.3650000000000002,
+        "y": 2.728249999999999
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "EndStrafe"
     }
   ],
   "rotationTargets": [

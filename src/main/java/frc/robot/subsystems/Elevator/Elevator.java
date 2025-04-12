@@ -26,7 +26,7 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         new LoggedTunableNumber("Elevator/HomingVoltageSP", -1);
 
     static LoggedTunableNumber launchHeight =
-        new LoggedTunableNumber("Elevator/LaunchHeight", 3.4);
+        new LoggedTunableNumber("Elevator/LaunchHeight", 3.8);
 
     @RequiredArgsConstructor
     @Getter
@@ -38,7 +38,7 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         LEVEL_2(new ProfileType.MM_POSITION(() -> 1.217, 0)),
         LEVEL_3(new ProfileType.MM_POSITION(() -> 2.7, 0)),
         // LEVEL_4(new ProfileType.MM_POSITION(() -> 4.95, 0)), // UNH settings
-        LEVEL_4(new ProfileType.MM_POSITION(() -> 5.11, 0)), // Toyota settings
+        LEVEL_4(new ProfileType.MM_POSITION(() -> 5.02, 0)), // Toyota settings
         CLIMB(new ProfileType.MM_POSITION(() -> 0.0, 0)),
         ALGAE_LOW(new ProfileType.MM_POSITION(() -> 0.65, 0)),
         ALGAE_HIGH(new ProfileType.MM_POSITION(() -> 2.1, 0)),

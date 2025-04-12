@@ -20,6 +20,6 @@ public class JoystickApproachCommand extends DriveToPose {
             drive::getPose);
         super.withFeedforward(() -> new Translation2d(ySupplier.getAsDouble(), 0.0)
             .rotateBy(target.get().getRotation()),
-            () -> 0.0);
+            () -> 0.0).finishWithinTolerance(false);
     }
 }
