@@ -16,9 +16,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -502,17 +500,6 @@ public class RobotContainer {
 
                     isCoralMode));
 
-        // m_driver
-        // .rightTrigger().and(m_driver.a())
-        // .onTrue(
-        // Commands.sequence(
-        // m_clawRoller.setStateCommand(ClawRoller.State.L1_SCORE),
-        // Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
-        // Commands.waitSeconds(0.2),
-        // m_clawRoller.setStateCommand(ClawRoller.State.OFF),
-        // m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
-        // Elevator.State.STOW)));
-
         m_driver
             .leftTrigger()
             .whileTrue(
@@ -529,7 +516,7 @@ public class RobotContainer {
                     Commands.either(
                         Commands.waitUntil(
                             m_clawRollerLaserCAN.triggered
-                                .and(m_tongue.coralContactTrigger) // TODO: CHECK IF NEEDED
+                                .and(m_tongue.coralContactTrigger)
                                 .and(m_clawRoller.stopped)),
                         Commands.waitUntil(
                             m_tongue.coralContactTrigger
