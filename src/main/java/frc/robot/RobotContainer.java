@@ -287,8 +287,7 @@ public class RobotContainer {
         var strafeCommand = new JoystickStrafeCommand(
             m_drive,
             () -> -m_driver.getLeftX(),
-            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine))
-                .withTolerance(Units.inchesToMeters(4.0), Rotation2d.fromDegrees(5));
+            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine));
 
         return Commands.deadline(
             Commands.sequence(
