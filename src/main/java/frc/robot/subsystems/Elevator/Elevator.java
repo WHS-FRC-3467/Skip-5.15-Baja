@@ -28,6 +28,9 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
     static LoggedTunableNumber launchHeight =
         new LoggedTunableNumber("Elevator/LaunchHeight", 3.8);
 
+    static LoggedTunableNumber L4Prep =
+        new LoggedTunableNumber("Elevator/L4Prep", 4.0);
+
     @RequiredArgsConstructor
     @Getter
     public enum State implements TargetState {
@@ -50,7 +53,9 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         BARGE(new ProfileType.MM_POSITION(() -> 5.6, 0)),
         CHARACTERIZATION(new ProfileType.CHARACTERIZATION()),
         COAST(new ProfileType.DISABLED_COAST()),
-        BRAKE(new ProfileType.DISABLED_BRAKE());
+        BRAKE(new ProfileType.DISABLED_BRAKE()),
+        // Auto Prep
+        AUTOPREP(new ProfileType.MM_POSITION(() -> L4Prep.getAsDouble(), 0));
 
         private final ProfileType profileType;
     }

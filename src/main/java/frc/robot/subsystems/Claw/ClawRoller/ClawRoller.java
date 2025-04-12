@@ -36,7 +36,7 @@ public class ClawRoller
         INTAKE(new ProfileType.OPEN_CURRENT(() -> 80,
             () -> .35)),
         SHUFFLE(new ProfileType.POSITION(() -> -0.1, 0)),
-        L4_RETRACT(new ProfileType.POSITION(() -> -0.5, 0)),
+        L4_RETRACT(new ProfileType.POSITION(() -> -0.1, 0)),
         SCORE(new ProfileType.OPEN_VOLTAGE(() -> 2.0)),
         L1_SHUFFLE(new ProfileType.POSITION(() -> 0.5, 0)),
         L1_SCORE(new ProfileType.OPEN_CURRENT(() -> 60, L1_SPEED)),

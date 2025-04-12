@@ -30,41 +30,29 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "F-SourceTop"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.125
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "SourceTop-D"
-          }
-        },
-        {
-          "type": "sequential",
+          "type": "parallel",
           "data": {
             "commands": [
               {
-                "type": "race",
+                "type": "sequential",
                 "data": {
                   "commands": [
                     {
-                      "type": "wait",
+                      "type": "path",
                       "data": {
-                        "waitTime": 1.0
+                        "pathName": "F-SourceTop"
                       }
                     },
                     {
-                      "type": "named",
+                      "type": "wait",
                       "data": {
-                        "name": "IntakeCoral"
+                        "waitTime": 0.125
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "SourceTop-D"
                       }
                     }
                   ]
@@ -77,13 +65,13 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "AutoAlignRight"
+                        "name": "IntakeCoral"
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "Score"
+                        "name": "PrepScore"
                       }
                     }
                   ]
@@ -93,41 +81,42 @@
           }
         },
         {
-          "type": "path",
-          "data": {
-            "pathName": "D-SourceTop"
-          }
-        },
-        {
-          "type": "wait",
-          "data": {
-            "waitTime": 0.125
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "SourceTop-C"
-          }
-        },
-        {
           "type": "sequential",
           "data": {
             "commands": [
               {
-                "type": "race",
+                "type": "named",
+                "data": {
+                  "name": "AutoAlignRight"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Score"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "sequential",
                 "data": {
                   "commands": [
                     {
-                      "type": "wait",
+                      "type": "path",
                       "data": {
-                        "waitTime": 1.0
+                        "pathName": "D-SourceTop"
                       }
                     },
                     {
-                      "type": "named",
+                      "type": "path",
                       "data": {
-                        "name": "IntakeCoral"
+                        "pathName": "SourceTop-C"
                       }
                     }
                   ]
@@ -140,16 +129,35 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "AutoAlignLeft"
+                        "name": "IntakeCoral"
                       }
                     },
                     {
                       "type": "named",
                       "data": {
-                        "name": "Score"
+                        "name": "PrepScore"
                       }
                     }
                   ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "AutoAlignLeft"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Score"
                 }
               }
             ]

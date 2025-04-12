@@ -636,14 +636,12 @@ public class RobotContainer {
                     "L4",
                     Commands.either(
                         Commands.sequence(
+                            m_clawRoller.L4ShuffleCommand(),
                             m_tongue.lowerTongueCommand(),
                             m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
                                 Elevator.State.LEVEL_4,
                                 Units.degreesToRotations(6),
-                                0.8)
-                        // ,
-                        // m_clawRoller.L4ShuffleCommand()
-                        ),
+                                0.8)),
                         Commands.none(),
                         m_clawRollerLaserCAN.triggered));
 
@@ -749,13 +747,8 @@ public class RobotContainer {
                                 Commands.waitUntil(m_clawRoller.stalled.debounce(0.1)),
                                 m_clawRoller.shuffleCommand())
                                 .until(m_clawRollerLaserCAN.triggered
-                                    .and(m_clawRoller.stopped.debounce(0.15))),
-                            m_clawRoller.shuffleCommand(),
-                            m_tongue.lowerTongueCommand()),
-                        Commands.sequence(
-                            m_clawRoller.shuffleCommand(),
-                            m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
-                            m_tongue.lowerTongueCommand()),
+                                    .and(m_clawRoller.stopped.debounce(0.15)))),
+                        m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
                         m_clawRollerLaserCAN.triggered.negate()));
 
                 // Prepare Necessary Subsystems Before Intaking
@@ -771,10 +764,8 @@ public class RobotContainer {
                 NamedCommands.registerCommand(
                     "Score",
                     Commands.sequence(
-                        m_tongue.lowerTongueCommand(),
                         m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
                         Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
-                        Commands.waitSeconds(0.05),
                         m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
 
                 // Move to Stow
@@ -788,11 +779,10 @@ public class RobotContainer {
                     "PrepScore",
                     Commands.either(
                         Commands.sequence(
-                            m_tongue.lowerTongueCommand(),
                             m_profiledArm.setStateCommand(Arm.State.STOW),
                             Commands.waitUntil(
                                 () -> m_profiledArm.atPosition(Units.degreesToRotations(10))),
-                            m_profiledElevator.setStateCommand(Elevator.State.LEVEL_3)),
+                            m_profiledElevator.setStateCommand(Elevator.State.AUTOPREP)),
                         Commands.none(),
                         m_clawRollerLaserCAN.triggered));
                 break;
