@@ -625,6 +625,11 @@ public class RobotContainer {
      */
     private void registerNamedCommands()
     {
+
+        LoggedTunableNumber linearRaiseElevatorToleranceMeters =
+            new LoggedTunableNumber("Auto/LinearRaiseElevatorToleranceMeters", 0.6);
+        LoggedTunableNumber thetaRaiseElevatorToleranceDegrees =
+            new LoggedTunableNumber("Auto/ThetaRaiseElevatorToleranceDegrees", 60);
         switch (Constants.currentMode) {
             default:
 
@@ -637,8 +642,10 @@ public class RobotContainer {
                             m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
                                 Elevator.State.LEVEL_4,
                                 Units.degreesToRotations(6),
-                                0.8),
-                            m_clawRoller.L4ShuffleCommand()),
+                                0.8)
+                        // ,
+                        // m_clawRoller.L4ShuffleCommand()
+                        ),
                         Commands.none(),
                         m_clawRollerLaserCAN.triggered));
 
@@ -650,15 +657,6 @@ public class RobotContainer {
                             Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
                             Rotation2d.k180deg)));
 
-                // NamedCommands.registerCommand("AutoAlignLeft",
-                // Commands.either(
-                // leftAlign.until(() -> leftAlign.withinTolerance(
-                // Units.inchesToMeters(linearAlignToleranceInches.get()),
-                // Rotation2d
-                // .fromDegrees(thetaAlignToleranceDegrees.get()))),
-                // Commands.none(),
-                // m_clawRollerLaserCAN.triggered));
-
                 var rightAlign = new DriveToPose(m_drive,
                     () -> FieldConstants.getNearestReefBranch(
                         getFuturePose(alignPredictionSeconds.get()),
@@ -667,10 +665,7 @@ public class RobotContainer {
                             Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
                             Rotation2d.k180deg)));
 
-                LoggedTunableNumber linearRaiseElevatorToleranceMeters =
-                    new LoggedTunableNumber("Auto/LinearRaiseElevatorToleranceMeters", 0.8);
-                LoggedTunableNumber thetaRaiseElevatorToleranceDegrees =
-                    new LoggedTunableNumber("Auto/ThetaRaiseElevatorToleranceDegrees", 60);
+
                 NamedCommands.registerCommand("AutoAlignRight",
                     Commands.either(
                         Commands.parallel(
@@ -687,8 +682,10 @@ public class RobotContainer {
                                                     thetaRaiseElevatorToleranceDegrees.get()))),
                                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
                                     Elevator.State.LEVEL_4, Units.degreesToRotations(6),
-                                    0.8),
-                                m_clawRoller.L4ShuffleCommand())),
+                                    0.8)
+                            // ,
+                            // m_clawRoller.L4ShuffleCommand()
+                            )),
                         Commands.none(),
                         m_clawRollerLaserCAN.triggered));
 
@@ -708,8 +705,10 @@ public class RobotContainer {
                                                     thetaRaiseElevatorToleranceDegrees.get()))),
                                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
                                     Elevator.State.LEVEL_4, Units.degreesToRotations(6),
-                                    0.8),
-                                m_clawRoller.L4ShuffleCommand())),
+                                    0.8)
+                            // ,
+                            // m_clawRoller.L4ShuffleCommand()
+                            )),
                         Commands.none(),
                         m_clawRollerLaserCAN.triggered));
 
@@ -751,7 +750,7 @@ public class RobotContainer {
                         m_tongue.lowerTongueCommand(),
                         m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
                         Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
-                        Commands.waitSeconds(0.2),
+                        Commands.waitSeconds(0.05),
                         m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
 
                 // Move to Stow
@@ -782,8 +781,9 @@ public class RobotContainer {
                         m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
                             Elevator.State.LEVEL_4,
                             Units.degreesToRotations(10),
-                            0.8),
-                        m_clawRoller.L4ShuffleCommand()));
+                            0.8)// ,
+                    // m_clawRoller.L4ShuffleCommand()
+                    ));
 
                 NamedCommands.registerCommand(
                     "L2",
