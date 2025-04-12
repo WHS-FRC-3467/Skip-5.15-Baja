@@ -32,7 +32,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "B - CSL and Clear"
+            "pathName": "B - CSL"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.125
           }
         },
         {
@@ -64,6 +70,12 @@
           "type": "path",
           "data": {
             "pathName": "B - CSL"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.125
           }
         },
         {
