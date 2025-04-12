@@ -16,9 +16,6 @@ public class Ports {
 
     public static final CanDeviceId ELEVATOR_CANDLE = new CanDeviceId(20, "rio");
 
-    public static final CanDeviceId FRONT_LEFT_LASERCAN = new CanDeviceId(21, "rio");
-    public static final CanDeviceId FRONT_RIGHT_LASERCAN = new CanDeviceId(26, "rio");
-
     public static final CanDeviceId ELEVATOR_MAIN = new CanDeviceId(22, "rio"); // Top Kraken
     public static final CanDeviceId ELEVATOR_FOLLOWER = new CanDeviceId(23, "rio"); // Bottom Kraken
 
