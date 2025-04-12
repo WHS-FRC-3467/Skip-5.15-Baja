@@ -15,13 +15,13 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.ProfileType;
-import frc.robot.util.Util;
 import frc.robot.util.drivers.Phoenix6Util;
 import frc.robot.util.sim.PhysicsSim;
 import java.util.ArrayList;
@@ -496,7 +496,7 @@ public class GenericMotionProfiledSubsystemIOImpl implements GenericMotionProfil
             return false;
         }
 
-        return Util.epsilonEquals(mCurrPosition, mOpSetpoint,
+        return MathUtil.isNear(mCurrPosition, mOpSetpoint,
             Math.max(mConstants.kminTolerance, tolerance));
     }
 

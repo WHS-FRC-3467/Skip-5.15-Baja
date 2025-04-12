@@ -3,29 +3,29 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.4864754098360655,
-        "y": 0.7823258196721316
+        "x": 3.1270559210526314,
+        "y": 3.8710526315789475
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.9885092580088397,
-        "y": 1.145665345311043
+        "x": 1.9117951013300447,
+        "y": 2.787134430420621
       },
       "isLocked": false,
-      "linkedName": "SourceTop"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 3.1287909836065575,
-        "y": 2.0170594262295083
+        "x": 0.7312499999999998,
+        "y": 1.2977971311475414
       },
       "prevControl": {
-        "x": 2.707178624007159,
-        "y": 1.7016276236917782
+        "x": 0.9449273781285631,
+        "y": 1.4275737780301874
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "ReefD"
+      "linkedName": "CSL"
     }
   ],
   "rotationTargets": [],
@@ -33,26 +33,13 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "IntakeCoral",
+      "name": "IntakePrep",
       "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
-        "type": "sequential",
+        "type": "named",
         "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "IntakeCoral"
-              }
-            },
-            {
-              "type": "named",
-              "data": {
-                "name": "PrepScore"
-              }
-            }
-          ]
+          "name": "IntakePrep"
         }
       }
     }
@@ -66,14 +53,14 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.5,
-    "rotation": 59.99999999999999
+    "velocity": 0,
+    "rotation": 54.02761295071511
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-    "rotation": 54.0
+    "rotation": 0.0
   },
   "useDefaultConstraints": true
 }

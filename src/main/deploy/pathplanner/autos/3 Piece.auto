@@ -15,22 +15,9 @@
           "data": {
             "commands": [
               {
-                "type": "parallel",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "AutoAlignRight"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "L4"
-                      }
-                    }
-                  ]
+                  "name": "AutoAlignRight"
                 }
               },
               {
@@ -51,7 +38,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.25
+            "waitTime": 0.125
           }
         },
         {
@@ -84,7 +71,7 @@
                 }
               },
               {
-                "type": "parallel",
+                "type": "sequential",
                 "data": {
                   "commands": [
                     {
@@ -96,16 +83,10 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "L4"
+                        "name": "Score"
                       }
                     }
                   ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Score"
                 }
               }
             ]
@@ -120,7 +101,7 @@
         {
           "type": "wait",
           "data": {
-            "waitTime": 0.25
+            "waitTime": 0.125
           }
         },
         {
@@ -153,7 +134,7 @@
                 }
               },
               {
-                "type": "parallel",
+                "type": "sequential",
                 "data": {
                   "commands": [
                     {
@@ -165,16 +146,10 @@
                     {
                       "type": "named",
                       "data": {
-                        "name": "L4"
+                        "name": "Score"
                       }
                     }
                   ]
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Score"
                 }
               }
             ]
@@ -184,12 +159,6 @@
           "type": "path",
           "data": {
             "pathName": "C-TopSource"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Stow"
           }
         }
       ]
