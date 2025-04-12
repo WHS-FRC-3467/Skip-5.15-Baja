@@ -680,12 +680,11 @@ public class RobotContainer {
                                             Rotation2d
                                                 .fromDegrees(
                                                     thetaRaiseElevatorToleranceDegrees.get()))),
+                                // Commands.parallel()
                                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
                                     Elevator.State.LEVEL_4, Units.degreesToRotations(6),
-                                    0.8)
-                            // ,
-                            // m_clawRoller.L4ShuffleCommand()
-                            )),
+                                    0.8),
+                                m_clawRoller.L4ShuffleCommand())),
                         Commands.none(),
                         m_clawRollerLaserCAN.triggered));
 
@@ -705,10 +704,8 @@ public class RobotContainer {
                                                     thetaRaiseElevatorToleranceDegrees.get()))),
                                 m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
                                     Elevator.State.LEVEL_4, Units.degreesToRotations(6),
-                                    0.8)
-                            // ,
-                            // m_clawRoller.L4ShuffleCommand()
-                            )),
+                                    0.8),
+                                m_clawRoller.L4ShuffleCommand())),
                         Commands.none(),
                         m_clawRollerLaserCAN.triggered));
 
