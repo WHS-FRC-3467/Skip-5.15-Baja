@@ -15,22 +15,9 @@
           "data": {
             "commands": [
               {
-                "type": "parallel",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "L4"
-                      }
-                    },
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "AutoAlignRight"
-                      }
-                    }
-                  ]
+                  "name": "AutoAlignRight"
                 }
               },
               {
@@ -62,12 +49,6 @@
                 "type": "parallel",
                 "data": {
                   "commands": [
-                    {
-                      "type": "named",
-                      "data": {
-                        "name": "L4"
-                      }
-                    },
                     {
                       "type": "named",
                       "data": {
@@ -110,12 +91,6 @@
                       "type": "parallel",
                       "data": {
                         "commands": [
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "L2"
-                            }
-                          },
                           {
                             "type": "named",
                             "data": {

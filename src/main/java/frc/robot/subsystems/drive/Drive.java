@@ -83,7 +83,8 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             ROBOT_MOI,
             new ModuleConfig(
                 TunerConstants.FrontLeft.WheelRadius,
-                TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+                // TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+                4.49,
                 WHEEL_COF,
                 DCMotor.getKrakenX60Foc(1)
                     .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),

@@ -34,7 +34,7 @@ public class DriveToPose extends Command {
 
     private TrapezoidProfile driveProfile;
     private final TunablePIDController driveController =
-        new TunablePIDController("DriveToPose/DriveController", 1.0, 0.0, 0.0);
+        new TunablePIDController("DriveToPose/DriveController", 2.0, 0.0, 0.0);
     private final TuneableProfiledPID thetaController =
         new TuneableProfiledPID(
             "DriveToPose/ThetaController",
@@ -302,15 +302,15 @@ public class DriveToPose extends Command {
     public boolean withinTolerance()
     {
         return running
-            && Math.abs(driveErrorAbs) <= driveTolerance
-            && Math.abs(thetaErrorAbs) <= thetaTolerance.getRadians();
+            && driveErrorAbs <= driveTolerance
+            && thetaErrorAbs <= thetaTolerance.getRadians();
     }
 
     public boolean withinTolerance(double driveTolerance, Rotation2d thetaTolerance)
     {
         return running
-            && Math.abs(driveErrorAbs) <= driveTolerance
-            && Math.abs(thetaErrorAbs) <= thetaTolerance.getRadians();
+            && driveErrorAbs <= driveTolerance
+            && thetaErrorAbs <= thetaTolerance.getRadians();
     }
 
     @Override

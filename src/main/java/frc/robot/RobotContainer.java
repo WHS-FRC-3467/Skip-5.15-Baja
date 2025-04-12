@@ -16,7 +16,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -90,6 +92,11 @@ public class RobotContainer {
 
     private LoggedTunableNumber alignPredictionSeconds =
         new LoggedTunableNumber("Align Prediction Seconds", 0.3);
+
+    private LoggedTunableNumber linearAlignToleranceInches =
+        new LoggedTunableNumber("Auto/LinearAlignToleranceInches", 3);
+    private LoggedTunableNumber thetaAlignToleranceDegrees =
+        new LoggedTunableNumber("Auto/ThetaAlignToleranceDegrees", 4);
 
     // Trigger for algae/coral mode switching
     @AutoLogOutput
@@ -281,20 +288,22 @@ public class RobotContainer {
             m_drive,
             () -> -m_driver.getLeftX(),
             () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine))
-                .withTolerance(Units.inchesToMeters(2.0), Rotation2d.fromDegrees(0.04));
+                .withTolerance(Units.inchesToMeters(4.0), Rotation2d.fromDegrees(5));
 
-        return Commands.sequence(
+        return Commands.parallel(
             strafeCommand,
-            m_profiledArm.setStateCommand(Arm.State.STOW),
-            Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
-            m_profiledElevator.setStateCommand(Elevator.State.BARGE),
-            Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
-            m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
-            Commands.waitUntil(m_clawRoller.stopped.negate()),
-            Commands.waitSeconds(0.2),
-            m_clawRoller.setStateCommand(ClawRoller.State.OFF),
-            m_superStruct.getTransitionCommand(Arm.State.STOW,
-                Elevator.State.STOW, Units.degreesToRotations(10), 0.1));
+            Commands.sequence(
+                Commands.waitUntil(strafeCommand::withinTolerance),
+                m_profiledArm.setStateCommand(Arm.State.STOW),
+                Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(5))),
+                m_profiledElevator.setStateCommand(Elevator.State.BARGE),
+                Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+                Commands.waitUntil(m_clawRoller.stopped.negate()),
+                Commands.waitSeconds(0.2),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF),
+                m_superStruct.getTransitionCommand(Arm.State.STOW,
+                    Elevator.State.STOW, Units.degreesToRotations(10), 0.1)));
     }
 
     private Command driveTest(double speed)
@@ -606,7 +615,7 @@ public class RobotContainer {
         SmartDashboard.putData("Drive to Reef", new DriveToPose(m_drive,
             () -> FieldConstants.getNearestReefBranch(m_drive.getPose(),
                 ReefSide.LEFT)
-                .transformBy(new Transform2d(Constants.bumperWidth / 2,
+                .transformBy(new Transform2d(Constants.bumperWidth / 2 + Units.inchesToMeters(1),
                     0.0, Rotation2d.k180deg)))
                         .withTolerance(Units.inchesToMeters(1), Rotation2d.fromDegrees(1)));
     }
@@ -624,7 +633,7 @@ public class RobotContainer {
                     "L4",
                     Commands.either(
                         Commands.sequence(
-                            m_tongue.setStateCommand(Tongue.State.DOWN),
+                            m_tongue.lowerTongueCommand(),
                             m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
                                 Elevator.State.LEVEL_4,
                                 Units.degreesToRotations(6),
@@ -633,34 +642,76 @@ public class RobotContainer {
                         Commands.none(),
                         m_clawRollerLaserCAN.triggered));
 
-                NamedCommands.registerCommand(
-                    "L2",
-                    Commands.sequence(
-                        m_tongue.setStateCommand(Tongue.State.DOWN),
-                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_2,
-                            Elevator.State.LEVEL_2,
-                            Units.degreesToRotations(10),
-                            0.8)));
+                var leftAlign = new DriveToPose(m_drive,
+                    () -> FieldConstants.getNearestReefBranch(
+                        getFuturePose(alignPredictionSeconds.get()),
+                        ReefSide.LEFT)
+                        .transformBy(new Transform2d(
+                            Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
+                            Rotation2d.k180deg)));
+
+                // NamedCommands.registerCommand("AutoAlignLeft",
+                // Commands.either(
+                // leftAlign.until(() -> leftAlign.withinTolerance(
+                // Units.inchesToMeters(linearAlignToleranceInches.get()),
+                // Rotation2d
+                // .fromDegrees(thetaAlignToleranceDegrees.get()))),
+                // Commands.none(),
+                // m_clawRollerLaserCAN.triggered));
+
+                var rightAlign = new DriveToPose(m_drive,
+                    () -> FieldConstants.getNearestReefBranch(
+                        getFuturePose(alignPredictionSeconds.get()),
+                        ReefSide.RIGHT)
+                        .transformBy(new Transform2d(
+                            Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
+                            Rotation2d.k180deg)));
+
+                LoggedTunableNumber linearRaiseElevatorToleranceMeters =
+                    new LoggedTunableNumber("Auto/LinearRaiseElevatorToleranceMeters", 0.8);
+                LoggedTunableNumber thetaRaiseElevatorToleranceDegrees =
+                    new LoggedTunableNumber("Auto/ThetaRaiseElevatorToleranceDegrees", 60);
+                NamedCommands.registerCommand("AutoAlignRight",
+                    Commands.either(
+                        Commands.parallel(
+                            rightAlign.until(() -> rightAlign.withinTolerance(
+                                Units.inchesToMeters(linearAlignToleranceInches.get()),
+                                Rotation2d
+                                    .fromDegrees(thetaAlignToleranceDegrees.get()))),
+                            Commands.sequence(
+                                Commands.waitUntil(
+                                    () -> rightAlign
+                                        .withinTolerance(linearRaiseElevatorToleranceMeters.get(),
+                                            Rotation2d
+                                                .fromDegrees(
+                                                    thetaRaiseElevatorToleranceDegrees.get()))),
+                                m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
+                                    Elevator.State.LEVEL_4, Units.degreesToRotations(6),
+                                    0.8),
+                                m_clawRoller.L4ShuffleCommand())),
+                        Commands.none(),
+                        m_clawRollerLaserCAN.triggered));
 
                 NamedCommands.registerCommand("AutoAlignLeft",
-                    new DriveToPose(m_drive,
-                        () -> FieldConstants.getNearestReefBranch(
-                            getFuturePose(alignPredictionSeconds.get()),
-                            ReefSide.LEFT)
-                            .transformBy(new Transform2d(Constants.bumperWidth, 0.0,
-                                Rotation2d.k180deg)))
-                                    .withTolerance(Units.inchesToMeters(1),
-                                        Rotation2d.fromDegrees(1)));
-
-                NamedCommands.registerCommand("AutoAlignRight",
-                    new DriveToPose(m_drive,
-                        () -> FieldConstants.getNearestReefBranch(
-                            getFuturePose(alignPredictionSeconds.get()),
-                            ReefSide.RIGHT)
-                            .transformBy(new Transform2d(Constants.bumperWidth / 2, 0.0,
-                                Rotation2d.k180deg)))
-                                    .withTolerance(Units.inchesToMeters(1),
-                                        Rotation2d.fromDegrees(1)));
+                    Commands.either(
+                        Commands.parallel(
+                            leftAlign.until(() -> leftAlign.withinTolerance(
+                                Units.inchesToMeters(linearAlignToleranceInches.get()),
+                                Rotation2d
+                                    .fromDegrees(thetaAlignToleranceDegrees.get()))),
+                            Commands.sequence(
+                                Commands.waitUntil(
+                                    () -> leftAlign
+                                        .withinTolerance(linearRaiseElevatorToleranceMeters.get(),
+                                            Rotation2d
+                                                .fromDegrees(
+                                                    thetaRaiseElevatorToleranceDegrees.get()))),
+                                m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
+                                    Elevator.State.LEVEL_4, Units.degreesToRotations(6),
+                                    0.8),
+                                m_clawRoller.L4ShuffleCommand())),
+                        Commands.none(),
+                        m_clawRollerLaserCAN.triggered));
 
                 // Intake Coral
                 NamedCommands.registerCommand(
@@ -681,7 +732,7 @@ public class RobotContainer {
                         Commands.sequence(
                             m_clawRoller.shuffleCommand(),
                             m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL),
-                            m_tongue.setStateCommand(Tongue.State.DOWN)),
+                            m_tongue.lowerTongueCommand()),
                         m_clawRollerLaserCAN.triggered.negate()));
 
                 // Prepare Necessary Subsystems Before Intaking
@@ -697,7 +748,7 @@ public class RobotContainer {
                 NamedCommands.registerCommand(
                     "Score",
                     Commands.sequence(
-                        m_tongue.setStateCommand(Tongue.State.DOWN),
+                        m_tongue.lowerTongueCommand(),
                         m_clawRoller.setStateCommand(ClawRoller.State.SCORE),
                         Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
                         Commands.waitSeconds(0.2),
@@ -714,11 +765,13 @@ public class RobotContainer {
                     "PrepScore",
                     Commands.either(
                         Commands.sequence(
-                            m_tongue.setStateCommand(Tongue.State.DOWN),
-                            m_superStruct.getTransitionCommand(Arm.State.STOW,
-                                Elevator.State.LEVEL_3, Units.degreesToRotations(10), .2)),
+                            m_tongue.lowerTongueCommand(),
+                            m_profiledArm.setStateCommand(Arm.State.STOW),
+                            Commands.waitUntil(
+                                () -> m_profiledArm.atPosition(Units.degreesToRotations(10))),
+                            m_profiledElevator.setStateCommand(Elevator.State.LEVEL_3)),
                         Commands.none(),
-                        hasLaserCAN));
+                        m_clawRollerLaserCAN.triggered));
                 break;
             case REPLAY:
 
