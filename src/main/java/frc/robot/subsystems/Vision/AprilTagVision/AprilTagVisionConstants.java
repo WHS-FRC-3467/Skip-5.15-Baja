@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.Vision;
+package frc.robot.subsystems.Vision.AprilTagVision;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -24,7 +24,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Filesystem;
 
-public class VisionConstants {
+public class AprilTagVisionConstants {
     // AprilTag layout
     public static AprilTagFieldLayout aprilTagLayout;
     private static boolean usedCustomField = false;

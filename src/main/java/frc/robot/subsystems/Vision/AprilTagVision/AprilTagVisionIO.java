@@ -11,15 +11,15 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.Vision;
+package frc.robot.subsystems.Vision.AprilTagVision;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
-public interface VisionIO {
+public interface AprilTagVisionIO {
     @AutoLog
-    public static class VisionIOInputs {
+    public static class AprilTagVisionIOInputs {
         public boolean connected = false;
         public TargetObservation latestTargetObservation =
             new TargetObservation(new Rotation2d(), new Rotation2d());
@@ -36,6 +36,6 @@ public interface VisionIO {
         double timestamp, Pose3d pose, double ambiguity, int tagCount, double averageTagDistance) {
     }
 
-    public default void updateInputs(VisionIOInputs inputs)
+    public default void updateInputs(AprilTagVisionIOInputs inputs)
     {}
 }

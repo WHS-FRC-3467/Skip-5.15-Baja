@@ -11,13 +11,12 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.Vision;
-
-import static frc.robot.subsystems.Vision.VisionConstants.*;
+package frc.robot.subsystems.Vision.AprilTagVision;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import static frc.robot.subsystems.Vision.AprilTagVision.AprilTagVisionConstants.*;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.Set;
 import org.photonvision.PhotonCamera;
 
 /** IO implementation for real PhotonVision hardware. */
-public class VisionIOPhotonVision implements VisionIO {
+public class AprilTagVisionIOPhotonVision implements AprilTagVisionIO {
     protected final PhotonCamera camera;
     protected final Transform3d robotToCamera;
 
@@ -33,16 +32,16 @@ public class VisionIOPhotonVision implements VisionIO {
      * Creates a new VisionIOPhotonVision.
      *
      * @param name The configured name of the camera.
-     * @param rotationSupplier The 3D position of the camera relative to the robot.
+     * @param robotToCamera The 3D position of the camera relative to the robot.
      */
-    public VisionIOPhotonVision(String name, Transform3d robotToCamera)
+    public AprilTagVisionIOPhotonVision(String name, Transform3d robotToCamera)
     {
         camera = new PhotonCamera(name);
         this.robotToCamera = robotToCamera;
     }
 
     @Override
-    public void updateInputs(VisionIOInputs inputs)
+    public void updateInputs(AprilTagVisionIOInputs inputs)
     {
         inputs.connected = camera.isConnected();
 

@@ -4,7 +4,7 @@
 
 package frc.robot;
 
-import static frc.robot.subsystems.Vision.VisionConstants.*;
+import static frc.robot.subsystems.Vision.AprilTagVision.AprilTagVisionConstants.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -53,7 +53,8 @@ import frc.robot.subsystems.Tongue.Tongue;
 import frc.robot.subsystems.Tongue.TongueIO;
 import frc.robot.subsystems.Tongue.TongueIOSim;
 import frc.robot.subsystems.Tongue.TongueIOTalonFX;
-import frc.robot.subsystems.Vision.*;
+import frc.robot.subsystems.Vision.Vision;
+import frc.robot.subsystems.Vision.AprilTagVision.*;
 import frc.robot.subsystems.drive.*;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.WindupXboxController;
@@ -100,10 +101,6 @@ public class RobotContainer {
     @AutoLogOutput
     private Trigger isCoralMode;
 
-    // Override Triggers
-    public Trigger hasVision;
-    public Trigger hasLaserCAN;
-
     /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer()
     {
@@ -139,8 +136,9 @@ public class RobotContainer {
                 m_vision =
                     new Vision(
                         m_drive,
-                        new VisionIOPhotonVision(camera0Name, robotToCamera0),
-                        new VisionIOPhotonVision(camera1Name, robotToCamera1));
+                        new AprilTagVisionIO[] {
+                                new AprilTagVisionIOPhotonVision(camera0Name, robotToCamera0),
+                                new AprilTagVisionIOPhotonVision(camera1Name, robotToCamera1)});
 
                 // Instantiate LED Subsystem on BAJA only
                 if (Constants.getRobot() == RobotType.BAJA) {
@@ -151,7 +149,6 @@ public class RobotContainer {
                     m_LED = null;
                 }
 
-                hasVision = new Trigger(() -> m_vision.anyCameraConnected);
                 break;
 
             case SIM:
@@ -179,12 +176,11 @@ public class RobotContainer {
                 // m_drive,
                 // new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, m_drive::getPose),
                 // new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, m_drive::getPose));
-                m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
+                m_vision = new Vision(m_drive);
                 m_LED = new LEDSubsystem(new LEDSubsystemIOWPILib(),
                     m_clawRoller, m_profiledArm, m_profiledElevator, m_profiledClimber,
                     m_vision, m_clawRollerLaserCAN.triggered, isCoralMode);
 
-                hasVision = new Trigger(() -> true);
                 break;
 
             default:
@@ -205,17 +201,13 @@ public class RobotContainer {
                 m_tongue = new Tongue(new TongueIO() {}, true);
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIO() {});
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
-                m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
+                m_vision = new Vision(m_drive);
                 m_LED = new LEDSubsystem(new LEDSubsystemIO() {},
                     m_clawRoller, m_profiledArm, m_profiledElevator, m_profiledClimber,
                     m_vision, m_clawRollerLaserCAN.triggered, isCoralMode);
 
-                hasVision = new Trigger(() -> m_vision.anyCameraConnected);
                 break;
         }
-
-        // Fallback Triggers
-        hasLaserCAN = new Trigger(m_clawRollerLaserCAN.validMeasurement);
 
         // Superstructure coordinates Arm and Elevator motions
         m_superStruct = new Superstructure(m_profiledArm, m_profiledElevator);
@@ -281,7 +273,7 @@ public class RobotContainer {
                 Commands.waitUntil(m_clawRoller.stalled),
                 m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
                     Elevator.State.ALGAE_STOW)),
-            (hasVision.getAsBoolean()) ? approachCommand : Commands.none());
+            (m_vision.accuratePose.getAsBoolean()) ? approachCommand : Commands.none());
     }
 
     private Command BargeAlgae()
@@ -333,7 +325,7 @@ public class RobotContainer {
 
         // Driver Right Bumper and Coral Mode: Approach Nearest Right-Side Reef Branch
         m_driver
-            .rightBumper().and(hasVision)
+            .rightBumper().and(m_vision.accuratePose)
             .whileTrue(
                 Commands.either(
                     joystickApproach(
@@ -345,7 +337,7 @@ public class RobotContainer {
 
         // Driver Left Bumper and Coral Mode: Approach Nearest Left-Side Reef Branch
         m_driver
-            .leftBumper().and(hasVision)
+            .leftBumper().and(m_vision.accuratePose)
             .whileTrue(
                 Commands.either(
                     joystickApproach(
@@ -494,8 +486,7 @@ public class RobotContainer {
                                 m_clawRoller.setStateCommand(ClawRoller.State.OFF),
                                 m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
                                     Elevator.State.STOW)),
-
-                            hasLaserCAN)),
+                            m_clawRollerLaserCAN.validMeasurement)),
 
                     Commands.either(
                         m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
@@ -525,7 +516,8 @@ public class RobotContainer {
                         Commands.waitUntil(
                             m_tongue.coralContactTrigger
                                 .and(m_clawRoller.stopped)),
-                        hasLaserCAN), // If lasercan is not valid, don't check it while intaking
+                        m_clawRollerLaserCAN.validMeasurement), // If lasercan is not valid, don't
+                                                                // check it while intaking
                     m_clawRoller.shuffleCommand(),
                     m_clawRoller.setStateCommand(ClawRoller.State.HOLDCORAL)))
             .onFalse(

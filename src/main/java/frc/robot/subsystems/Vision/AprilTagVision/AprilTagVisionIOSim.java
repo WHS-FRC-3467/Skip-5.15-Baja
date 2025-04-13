@@ -11,19 +11,18 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.Vision;
-
-import static frc.robot.subsystems.Vision.VisionConstants.aprilTagLayout;
+package frc.robot.subsystems.Vision.AprilTagVision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import static frc.robot.subsystems.Vision.AprilTagVision.AprilTagVisionConstants.aprilTagLayout;
 import java.util.function.Supplier;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 
 /** IO implementation for physics sim using PhotonVision simulator. */
-public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
+public class AprilTagVisionIOSim extends AprilTagVisionIOPhotonVision {
     private static VisionSystemSim visionSim;
 
     private final Supplier<Pose2d> poseSupplier;
@@ -35,7 +34,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
      * @param name The name of the camera.
      * @param poseSupplier Supplier for the robot pose to use in simulation.
      */
-    public VisionIOPhotonVisionSim(
+    public AprilTagVisionIOSim(
         String name, Transform3d robotToCamera, Supplier<Pose2d> poseSupplier)
     {
         super(name, robotToCamera);
@@ -54,7 +53,7 @@ public class VisionIOPhotonVisionSim extends VisionIOPhotonVision {
     }
 
     @Override
-    public void updateInputs(VisionIOInputs inputs)
+    public void updateInputs(AprilTagVisionIOInputs inputs)
     {
         visionSim.update(poseSupplier.get());
         super.updateInputs(inputs);

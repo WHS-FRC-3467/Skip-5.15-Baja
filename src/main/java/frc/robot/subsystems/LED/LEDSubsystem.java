@@ -11,7 +11,6 @@ import frc.robot.subsystems.LED.LEDSubsystemIO.LEDState;
 import frc.robot.subsystems.LED.LEDSubsystemIO.MatchTimerState;
 import frc.robot.subsystems.Vision.Vision;
 import frc.robot.util.LoggedTunableNumber;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -201,7 +200,7 @@ public class LEDSubsystem extends SubsystemBase {
             runMatchTimerPattern();
 
             // Vision Out? For 2 seconds, quickly flash the LEDs red
-            if (!m_Vision.anyCameraConnected) {
+            if (m_Vision.accuratePose.negate().getAsBoolean()) {
                 if (visionOutCounter < 10) {
                     visionOutCounter++;
                     newState = LEDState.VISION_OUT;
