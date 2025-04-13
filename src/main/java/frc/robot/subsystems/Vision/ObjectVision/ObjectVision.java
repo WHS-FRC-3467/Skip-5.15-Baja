@@ -102,7 +102,7 @@ public class ObjectVision {
 
                 // Check whether to reject pose
                 boolean rejectPose =
-                    observation.ambiguity() > maxAmbiguity // Cannot be high ambiguity
+                    observation.confidence() < leastConfidence // Cannot be low confidence
                         || transform2d.getX() > maxXDistance // Cannot be too far away
                         || transform2d.getY() > maxYDistance; // Cannot be too far away
 

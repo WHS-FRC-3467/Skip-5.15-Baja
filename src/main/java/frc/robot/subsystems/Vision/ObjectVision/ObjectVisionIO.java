@@ -26,7 +26,7 @@ public interface ObjectVisionIO {
 
     /** Represents an object observation sample used for pose estimation. */
     public static record ObjectObservation(
-        double timestamp, Transform3d robotToObject, ObjectType object, double ambiguity) {
+        double timestamp, Transform3d robotToObject, ObjectType object, double confidence) {
     }
 
     public default void updateInputs(ObjectVisionIOInputs inputs)

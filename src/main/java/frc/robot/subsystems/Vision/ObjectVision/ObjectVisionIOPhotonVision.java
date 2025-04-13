@@ -58,7 +58,7 @@ public class ObjectVisionIOPhotonVision implements ObjectVisionIO {
                             result.getTimestampSeconds(), // Timestamp
                             robotToTarget, // 3D transform estimate
                             object,
-                            target.poseAmbiguity // Ambiguity
+                            target.getDetectedObjectConfidence() // Ambiguity
                         ));
                 }
             }

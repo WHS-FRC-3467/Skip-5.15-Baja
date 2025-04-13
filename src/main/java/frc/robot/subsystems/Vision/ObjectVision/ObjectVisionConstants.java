@@ -34,7 +34,7 @@ public class ObjectVisionConstants {
             new Rotation3d(0.0, Units.degreesToRadians(-15), Units.degreesToRadians(-30)));
 
     // Basic filtering thresholds
-    public static double maxAmbiguity = 0.3;
+    public static double leastConfidence = 0.7;
     public static double maxXDistance = 3;
     public static double maxYDistance = 1;
 }
