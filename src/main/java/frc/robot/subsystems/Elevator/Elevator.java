@@ -119,6 +119,9 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
             () -> homedDebouncer.calculate(
                 (this.state == State.HOMING && Math.abs(io.getSupplyCurrent()) > 3)));
 
+    public Trigger clearedFirstStage = new Trigger (() -> io.getPosition() > 2.6);
+
+
     public Command getHomeCommand()
     {
         return this.setStateCommand(State.HOMING).andThen(Commands.waitUntil(homedTrigger))

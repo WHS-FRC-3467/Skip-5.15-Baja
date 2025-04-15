@@ -603,11 +603,15 @@ public class RobotContainer {
                     Commands.either(
                         Commands.sequence(
                             m_tongue.setStateCommand(Tongue.State.DOWN),
-                            m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
-                                Elevator.State.LEVEL_4,
-                                Units.degreesToRotations(6),
-                                0.8),
-                            m_clawRoller.L4ShuffleCommand()),
+                            // Shuffle the coral ASAP to save a little time
+                            Commands.parallel(
+                                m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
+                                    Elevator.State.LEVEL_4,
+                                    Units.degreesToRotations(6),
+                                    0.8),
+                                Commands.sequence(
+                                    Commands.waitUntil(m_profiledElevator.clearedFirstStage),
+                                    m_clawRoller.L4ShuffleCommand()))),
                         Commands.none(),
                         m_clawRollerLaserCAN.triggered));
 
@@ -696,11 +700,15 @@ public class RobotContainer {
                     "L4",
                     Commands.sequence(
                         m_tongue.setStateCommand(Tongue.State.DOWN),
-                        m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
-                            Elevator.State.LEVEL_4,
-                            Units.degreesToRotations(10),
-                            0.8),
-                        m_clawRoller.L4ShuffleCommand()));
+                        // Shuffle the coral ASAP to save a little time
+                        Commands.parallel(
+                            m_superStruct.getTransitionCommand(Arm.State.LEVEL_4,
+                                Elevator.State.LEVEL_4,
+                                Units.degreesToRotations(10),
+                                0.8),
+                            Commands.sequence(
+                                Commands.waitUntil(m_profiledElevator.clearedFirstStage),
+                                m_clawRoller.L4ShuffleCommand()))));
 
                 NamedCommands.registerCommand("AutoAlignLeft",
                     new DriveToPose(m_drive,
