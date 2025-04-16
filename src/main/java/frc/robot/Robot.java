@@ -179,9 +179,9 @@ public class Robot extends LoggedRobot {
                         .getPathGroupFromAutoFile(m_autonomousCommand.getName())) {
                         // Adds all trajectories to master list
                         var finalPath = path;
-                        if (m_alliance) {
-                            finalPath = path.flipPath();
-                        }
+                        // if (m_alliance) {
+                        // finalPath = path.flipPath();
+                        // }
                         if (m_shouldMirror) {
                             finalPath = path.mirrorPath();
                         }
