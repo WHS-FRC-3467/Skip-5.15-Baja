@@ -298,9 +298,9 @@ public class RobotContainer {
                 m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
                 Commands.either(
                     m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_HIGH_P,
-                        Elevator.State.ALGAE_HIGH),
+                        Elevator.State.ALGAE_HIGH_P),
                     m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_LOW_P,
-                        Elevator.State.ALGAE_LOW),
+                        Elevator.State.ALGAE_LOW_P),
                     () -> FieldConstants.isAlgaeHigh(getFuturePose(alignPredictionSeconds.get()))),
                 Commands.waitUntil(m_clawRoller.stalled),
                 m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
