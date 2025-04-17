@@ -830,7 +830,7 @@ public class RobotContainer {
                         m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
 
                 NamedCommands.registerCommand("DescoreAlgae", DescoreAlgaeAuto());
-                NamedCommands.registerCommand("BargeAlgae", BargeAlgae());
+                NamedCommands.registerCommand("BargeAlgae", BargeAlgaeAuto());
 
                 // Move to Stow
                 NamedCommands.registerCommand(
