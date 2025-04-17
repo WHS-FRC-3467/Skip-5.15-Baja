@@ -309,6 +309,30 @@ public class RobotContainer {
             approachCommand);
     }
 
+    private Command BargeAlgaeAuto()
+    {
+        var strafeCommand = new JoystickStrafeCommand(
+            m_drive,
+            () -> -m_driver.getLeftX(),
+            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine));
+
+        return Commands.deadline(
+            Commands.sequence(
+                Commands.waitUntil(
+                    () -> strafeCommand.withinTolerance(
+                        Units.inchesToMeters(2.0),
+                        Rotation2d.fromDegrees(4.0))),
+                m_profiledArm.setStateCommand(Arm.State.STOW),
+                Commands.waitUntil(() -> m_profiledArm.atPosition(Units.degreesToRotations(10))),
+                m_profiledElevator.setStateCommand(Elevator.State.BARGE),
+                Commands.waitUntil(m_profiledElevator.launchHeightTrigger),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
+                Commands.waitUntil(m_clawRoller.stopped.negate()),
+                Commands.waitSeconds(0.2),
+                m_clawRoller.setStateCommand(ClawRoller.State.OFF)),
+            strafeCommand);
+    }
+
     private Command BargeAlgae()
     {
         var strafeCommand = new JoystickStrafeCommand(
@@ -334,7 +358,7 @@ public class RobotContainer {
             .finallyDo(interrupted -> {
                 if (!interrupted)
                     m_superStruct.getTransitionCommand(Arm.State.STOW,
-                        Elevator.State.STOW, Units.degreesToRotations(10), 0.1).schedule();;
+                        Elevator.State.STOW, Units.degreesToRotations(10), 0.1).schedule();
             });
     }
 
