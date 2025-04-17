@@ -668,13 +668,6 @@ public class RobotContainer {
                     m_profiledElevator.setStateCommand(Elevator.State.LEVEL_2),
                     m_profiledArm.setStateCommand(Arm.State.LEVEL_2)));
 
-        m_driver.start().whileTrue(new DriveToPose(m_drive,
-            () -> FieldConstants.getNearestReefBranch(m_drive.getPose(),
-                ReefSide.LEFT)
-                .transformBy(new Transform2d(Constants.bumperWidth / 2,
-                    0.0, Rotation2d.k180deg)))
-                        .withTolerance(Units.inchesToMeters(1), Rotation2d.fromDegrees(1)));
-
         SmartDashboard.putData("Drive To Start",
             new DriveToPose(m_drive, () -> getFirstAutoPose().orElse(m_drive.getPose()))
                 .withTolerance(Units.inchesToMeters(1), Rotation2d.fromDegrees(1)));
