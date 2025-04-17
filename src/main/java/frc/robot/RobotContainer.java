@@ -286,6 +286,28 @@ public class RobotContainer {
             (hasVision.getAsBoolean()) ? approachCommand : Commands.none());
     }
 
+    private Command descoreAlgaeProcessor()
+    {
+        var approachCommand = new JoystickApproachCommand(
+            m_drive,
+            () -> m_driver.getLeftY(),
+            () -> FieldConstants.getNearestReefFace(getFuturePose(alignPredictionSeconds.get())));
+
+        return Commands.deadline(
+            Commands.sequence(
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+                Commands.either(
+                    m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_HIGH_P,
+                        Elevator.State.ALGAE_HIGH),
+                    m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_LOW_P,
+                        Elevator.State.ALGAE_LOW),
+                    () -> FieldConstants.isAlgaeHigh(getFuturePose(alignPredictionSeconds.get()))),
+                Commands.waitUntil(m_clawRoller.stalled),
+                m_superStruct.getDefaultTransitionCommand(Arm.State.STOW,
+                    Elevator.State.ALGAE_STOW)),
+            (hasVision.getAsBoolean()) ? approachCommand : Commands.none());
+    }
+
     private Command DescoreAlgaeAuto()
     {
         DriveToPose approachCommand = new DriveToPose(
@@ -450,12 +472,7 @@ public class RobotContainer {
 
         m_driver
             .start()
-            .onTrue(
-                Commands.sequence(
-                    m_clawRoller.L1ShuffleCommand(),
-                    m_tongue.setStateCommand(Tongue.State.L1),
-                    Commands.waitSeconds(0.25),
-                    m_clawRoller.setStateCommand(ClawRoller.State.L1_SCORE)));
+            .whileTrue(descoreAlgaeProcessor());
 
         // Driver X Button: Send Arm and Elevator to LEVEL_2
         m_driver
