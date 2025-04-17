@@ -8,6 +8,7 @@ import static frc.robot.subsystems.Vision.VisionConstants.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import com.ctre.phoenix.Util;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -15,6 +16,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -206,12 +208,13 @@ public class RobotContainer {
                 m_clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIO() {});
                 isCoralMode = new Trigger(m_clawRollerLaserCAN.triggered.debounce(0.25));
                 m_vision = new Vision(m_drive, new VisionIO() {}, new VisionIO() {});
-                m_LED = new LEDSubsystem(new LEDSubsystemIO() {},
-                    m_clawRoller, m_profiledArm, m_profiledElevator, m_profiledClimber,
-                    m_vision, m_clawRollerLaserCAN.triggered, isCoralMode);
+                m_LED = new LEDSubsystem(new LEDSubsystemIO() {}, m_clawRoller, m_profiledArm,
+                    m_profiledElevator, m_profiledClimber, m_vision, m_clawRollerLaserCAN.triggered,
+                    isCoralMode);
 
                 hasVision = new Trigger(() -> m_vision.anyCameraConnected);
                 break;
+
         }
 
         // Fallback Triggers
@@ -234,8 +237,7 @@ public class RobotContainer {
         // }
 
         // Drivebase characterizations
-        m_autoChooser.addOption(
-            "Drive Wheel Radius Characterization",
+        m_autoChooser.addOption("Drive Wheel Radius Characterization",
             DriveCommands.wheelRadiusCharacterization(m_drive));
 
         // Configure the controller button and joystick bindings
@@ -286,15 +288,12 @@ public class RobotContainer {
 
     private Command DescoreAlgaeAuto()
     {
-        var approachCommand = new DriveToPose(
+        DriveToPose approachCommand = new DriveToPose(
             m_drive,
-            () -> Util
-                .moveForward(
-                    FieldConstants.getNearestReefFace(m_drive.getPose()),
-                    (Constants.bumperWidth / 2) + Units.inchesToMeters(0))
-                .transformBy(
-                    new Transform2d(Translation2d.kZero, Rotation2d.k180deg)),
-            Units.inchesToMeters(1.5), Units.inchesToMeters(1.5), .04);
+            () -> FieldConstants.getNearestReefFace(m_drive.getPose()).transformBy(
+                new Transform2d((Constants.bumperWidth / 2) + Units.inchesToMeters(0), 0.0,
+                    Rotation2d.k180deg))).withTolerance(Units.inchesToMeters(1.5),
+                        Rotation2d.fromDegrees(1));
 
         return Commands.deadline(
             Commands.sequence(
@@ -306,6 +305,7 @@ public class RobotContainer {
                         Elevator.State.ALGAE_LOW),
                     () -> FieldConstants.isAlgaeHigh(m_drive.getPose())),
                 Commands.waitUntil(m_clawRoller.stalled)),
+            // delivering
             approachCommand);
     }
 
@@ -804,6 +804,9 @@ public class RobotContainer {
                         Commands.waitUntil(m_clawRollerLaserCAN.triggered.negate()),
                         Commands.waitSeconds(0.05),
                         m_clawRoller.setStateCommand(ClawRoller.State.OFF)));
+
+                NamedCommands.registerCommand("DescoreAlgae", DescoreAlgaeAuto());
+                NamedCommands.registerCommand("BargeAlgae", BargeAlgae());
 
                 // Move to Stow
                 NamedCommands.registerCommand(
