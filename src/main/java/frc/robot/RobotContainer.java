@@ -959,7 +959,7 @@ public class RobotContainer {
                     () -> FieldConstants.getNearestReefBranch(
                         getFuturePose(alignPredictionSeconds.get()), side)
                         .transformBy(new Transform2d(
-                            Constants.bumperWidth / 2 + Units.inchesToMeters(1),
+                            Constants.bumperWidth / 2 - Units.inchesToMeters(1),
                             Units.inchesToMeters(24),
                             Rotation2d.k180deg))),
                 new DriveToPose(
@@ -967,7 +967,7 @@ public class RobotContainer {
                     () -> FieldConstants.getNearestReefBranch(
                         getFuturePose(alignPredictionSeconds.get()), side)
                         .transformBy(new Transform2d(
-                            Constants.bumperWidth / 2 + Units.inchesToMeters(1),
+                            Constants.bumperWidth / 2 - Units.inchesToMeters(1),
                             Units.inchesToMeters(-24),
                             Rotation2d.k180deg))),
                 () -> side == ReefSide.RIGHT));
