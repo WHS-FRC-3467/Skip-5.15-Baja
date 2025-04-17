@@ -3,35 +3,47 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 5.166700819672132,
-        "y": 5.1698258196721305
+        "x": 12.388352272727275,
+        "y": 5.168465909090909
       },
       "prevControl": null,
       "nextControl": {
-        "x": 6.166700819672132,
-        "y": 5.1698258196721305
+        "x": 12.139215833166055,
+        "y": 5.189227279054343
       },
       "isLocked": false,
-      "linkedName": "AlgaeI"
+      "linkedName": "SneakLeft"
     },
     {
       "anchor": {
-        "x": 7.183295454545455,
-        "y": 5.6624431818181815
+        "x": 10.449034090909093,
+        "y": 5.854545454545454
       },
       "prevControl": {
-        "x": 6.183295454545455,
-        "y": 5.6624431818181815
+        "x": 10.698007392526021,
+        "y": 5.831911518034823
       },
       "nextControl": null,
       "isLocked": false,
-      "linkedName": "BargeLeftAlign"
+      "linkedName": "ReturnLeft"
     }
   ],
   "rotationTargets": [],
   "constraintZones": [],
   "pointTowardsZones": [],
-  "eventMarkers": [],
+  "eventMarkers": [
+    {
+      "name": "Home",
+      "waypointRelativePos": 0,
+      "endWaypointRelativePos": null,
+      "command": {
+        "type": "named",
+        "data": {
+          "name": "Stow"
+        }
+      }
+    }
+  ],
   "globalConstraints": {
     "maxVelocity": 3.7,
     "maxAcceleration": 4.5,
@@ -42,13 +54,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 0.0
+    "rotation": -166.2637316943775
   },
   "reversed": false,
-  "folder": "Normal",
+  "folder": "Kevin's Auto",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -119.98163936884934
+    "rotation": -57.99461679191644
   },
   "useDefaultConstraints": true
 }
