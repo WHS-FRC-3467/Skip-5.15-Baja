@@ -295,7 +295,7 @@ public class RobotContainer {
 
         return Commands.deadline(
             Commands.sequence(
-                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_FORWARD),
+                m_clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
                 Commands.either(
                     m_superStruct.getDefaultTransitionCommand(Arm.State.ALGAE_HIGH_P,
                         Elevator.State.ALGAE_HIGH_P),
