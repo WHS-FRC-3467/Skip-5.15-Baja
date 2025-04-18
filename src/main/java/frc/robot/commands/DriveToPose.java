@@ -34,7 +34,7 @@ public class DriveToPose extends Command {
 
     private TrapezoidProfile driveProfile;
     private final PIDController driveController =
-        new PIDController(2.0, 0.0, 0.1);
+        new PIDController(3.0, 0.0, 0.1);
     private final TuneableProfiledPID thetaController =
         new TuneableProfiledPID(
             "DriveToPose/ThetaController",
@@ -57,13 +57,13 @@ public class DriveToPose extends Command {
     private DoubleSupplier omegaOverride = () -> 0.0;
 
     private LoggedTunableNumber driveMaxVelocity =
-        new LoggedTunableNumber("DriveToPose/DriveMaxVelocity", 3.79);
+        new LoggedTunableNumber("DriveToPose/DriveMaxVelocity", 3);
     private LoggedTunableNumber driveMaxVelocityTop =
         new LoggedTunableNumber("DriveToPose/DriveMaxVelocityTop", 2);
     private LoggedTunableNumber driveMaxAcceleration =
-        new LoggedTunableNumber("DriveToPose/DriveMaxAcceleration", 6);
+        new LoggedTunableNumber("DriveToPose/DriveMaxAcceleration", 4);
     private LoggedTunableNumber driveMaxAccelerationTop =
-        new LoggedTunableNumber("DriveToPose/DriveMaxAccelerationTop", 4);
+        new LoggedTunableNumber("DriveToPose/DriveMaxAccelerationTop", 3);
     private LoggedTunableNumber thetaMaxVelocity =
         new LoggedTunableNumber("DriveToPose/ThetaMaxVelocity", 9.27);
     private LoggedTunableNumber thetaMaxVelocityTop =
