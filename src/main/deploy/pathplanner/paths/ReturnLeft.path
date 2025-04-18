@@ -16,19 +16,24 @@
     },
     {
       "anchor": {
-        "x": 10.449034090909093,
-        "y": 5.854545454545454
+        "x": 10.381352459016393,
+        "y": 5.649334016393442
       },
       "prevControl": {
-        "x": 10.698007392526021,
-        "y": 5.831911518034823
+        "x": 10.63032576063332,
+        "y": 5.626700079882811
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": "ReturnLeft"
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": -57.99499999999999
+    }
+  ],
   "constraintZones": [],
   "pointTowardsZones": [],
   "eventMarkers": [
@@ -54,13 +59,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -166.2637316943775
+    "rotation": 180.0
   },
   "reversed": false,
   "folder": "Kevin's Auto",
   "idealStartingState": {
     "velocity": 0,
-    "rotation": -57.99461679191644
+    "rotation": -57.99499999999999
   },
   "useDefaultConstraints": true
 }
