@@ -304,6 +304,8 @@ public class DriveToPose extends Command {
                         Rotation2d.fromRadians(thetaController.getSetpoint().position))
             });
         Logger.recordOutput("DriveToPose/Goal", new Pose2d[] {targetPose});
+        Logger.recordOutput("DriveToPose/IOutput",
+            driveController.getAccumulatedError() * driveController.getI());
     }
 
     /** Checks if the robot pose is within the allowed drive and theta tolerances. */
