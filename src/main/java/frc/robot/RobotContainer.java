@@ -667,7 +667,7 @@ public class RobotContainer {
         m_driver
             .povUp().onTrue(
                 Commands.parallel(
-                    m_profiledElevator.setStateCommand(Elevator.State.LEVEL_2),
+                    m_profiledElevator.setStateCommand(Elevator.State.LEVEL_3),
                     m_profiledArm.setStateCommand(Arm.State.LEVEL_2)));
 
         SmartDashboard.putData("Drive To Start",
