@@ -256,7 +256,7 @@ public class RobotContainer {
             () -> -m_driver.getRightX());
     }
 
-    private Command joystickApproach(Supplier<Pose2d> approachPose)
+    private JoystickApproachCommand joystickApproach(Supplier<Pose2d> approachPose)
     {
         return new JoystickApproachCommand(
             m_drive,
@@ -413,6 +413,7 @@ public class RobotContainer {
                     joystickApproach(
                         () -> FieldConstants.getNearestReefBranch(
                             getFuturePose(alignPredictionSeconds.get()), ReefSide.RIGHT))
+                                .withPID(2, 0.05, 0)
                                 .until(isCoralMode.negate()),
                     Commands.none(),
                     isCoralMode));
@@ -425,6 +426,7 @@ public class RobotContainer {
                     joystickApproach(
                         () -> FieldConstants.getNearestReefBranch(
                             getFuturePose(alignPredictionSeconds.get()), ReefSide.LEFT))
+                                .withPID(2, 0.05, 0)
                                 .until(isCoralMode.negate()),
                     Commands.none(),
                     isCoralMode));

@@ -34,7 +34,7 @@ public class DriveToPose extends Command {
 
     private TrapezoidProfile driveProfile;
     private final TunablePIDController driveController =
-        new TunablePIDController("DriveToPose/DriveController", 2.5, 0.0, 0.0);
+        new TunablePIDController("DriveToPose/DriveController", 2.0, 0.0, 0.0);
     private final TuneableProfiledPID thetaController =
         new TuneableProfiledPID(
             "DriveToPose/ThetaController",
@@ -112,6 +112,14 @@ public class DriveToPose extends Command {
         this.thetaTolerance = thetaTolerance;
         this.driveController.setTolerance(driveTolerance);
         this.thetaController.setTolerance(thetaTolerance.getRadians());
+        return this;
+    }
+
+    public DriveToPose withPID(double p, double i, double d)
+    {
+        this.driveController.setP(p);
+        this.driveController.setI(i);
+        this.driveController.setD(d);
         return this;
     }
 
