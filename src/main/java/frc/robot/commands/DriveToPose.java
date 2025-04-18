@@ -34,7 +34,7 @@ public class DriveToPose extends Command {
 
     private TrapezoidProfile driveProfile;
     private final PIDController driveController =
-        new PIDController(2.0, 0.0, 0.0);
+        new PIDController(7.0, 0.0, 0.1);
     private final TuneableProfiledPID thetaController =
         new TuneableProfiledPID(
             "DriveToPose/ThetaController",
