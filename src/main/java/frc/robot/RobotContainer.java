@@ -94,7 +94,7 @@ public class RobotContainer {
         new LoggedTunableNumber("Align Prediction Seconds", 0.3);
 
     private LoggedTunableNumber linearAlignToleranceInches =
-        new LoggedTunableNumber("Auto/LinearAlignToleranceInches", 3);
+        new LoggedTunableNumber("Auto/LinearAlignToleranceInches", 2);
     private LoggedTunableNumber thetaAlignToleranceDegrees =
         new LoggedTunableNumber("Auto/ThetaAlignToleranceDegrees", 4);
 
@@ -716,7 +716,7 @@ public class RobotContainer {
                         m_drive.getPose(),
                         m_flipChooser.get() ? ReefSide.RIGHT : ReefSide.LEFT)
                         .transformBy(new Transform2d(
-                            Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
+                            Constants.bumperWidth / 2 + Units.inchesToMeters(0.5), 0.0,
                             Rotation2d.k180deg)));
 
                 var leftAlignL2 = new DriveToPose(m_drive,
@@ -724,7 +724,7 @@ public class RobotContainer {
                         m_drive.getPose(),
                         m_flipChooser.get() ? ReefSide.RIGHT : ReefSide.LEFT)
                         .transformBy(new Transform2d(
-                            Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
+                            Constants.bumperWidth / 2 + Units.inchesToMeters(0.5), 0.0,
                             Rotation2d.k180deg)));
 
                 var rightAlign = new DriveToPose(m_drive,
@@ -732,7 +732,7 @@ public class RobotContainer {
                         m_drive.getPose(),
                         m_flipChooser.get() ? ReefSide.LEFT : ReefSide.RIGHT)
                         .transformBy(new Transform2d(
-                            Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
+                            Constants.bumperWidth / 2 + Units.inchesToMeters(0.5), 0.0,
                             Rotation2d.k180deg)));
 
 

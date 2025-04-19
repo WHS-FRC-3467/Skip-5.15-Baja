@@ -219,8 +219,8 @@ public class DriveToPose extends Command {
         double driveVelocityScalar =
             driveController.calculate(driveErrorAbs, driveSetpoint.position)
                 + driveSetpoint.velocity * linearFFScaler;
-        if (driveErrorAbs < driveController.getErrorTolerance())
-            driveVelocityScalar = 0.0;
+        // if (driveErrorAbs < driveController.getErrorTolerance())
+        // driveVelocityScalar = 0.0;
 
         Rotation2d targetToCurrentAngle =
             currentPose.getTranslation().minus(targetPose.getTranslation()).getAngle();
