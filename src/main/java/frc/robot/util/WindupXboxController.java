@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 public class WindupXboxController extends CommandXboxController {
 
     Timer timer = new Timer();
-    private GenericHID m_driveRmbl;
+    private GenericHID driveRmbl;
     private double deadband = 0.0;
 
     /**
@@ -22,7 +22,7 @@ public class WindupXboxController extends CommandXboxController {
     public WindupXboxController(int port)
     {
         super(port);
-        m_driveRmbl = this.getHID();
+        driveRmbl = this.getHID();
 
     }
 
@@ -46,10 +46,10 @@ public class WindupXboxController extends CommandXboxController {
     {
         return Commands.startEnd(() -> {
             timer.restart();
-            m_driveRmbl.setRumble(GenericHID.RumbleType.kBothRumble, intensity);
+            driveRmbl.setRumble(GenericHID.RumbleType.kBothRumble, intensity);
         },
             () -> {
-                m_driveRmbl.setRumble(GenericHID.RumbleType.kBothRumble, 0);
+                driveRmbl.setRumble(GenericHID.RumbleType.kBothRumble, 0);
             })
             .until(() -> timer.get() >= seconds);
 
@@ -63,10 +63,10 @@ public class WindupXboxController extends CommandXboxController {
     {
         return Commands.startEnd(
             () -> {
-                m_driveRmbl.setRumble(GenericHID.RumbleType.kBothRumble, intensity);
+                driveRmbl.setRumble(GenericHID.RumbleType.kBothRumble, intensity);
             },
             () -> {
-                m_driveRmbl.setRumble(GenericHID.RumbleType.kBothRumble, 0);
+                driveRmbl.setRumble(GenericHID.RumbleType.kBothRumble, 0);
             })
             .until(condition);
     }

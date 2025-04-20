@@ -11,10 +11,10 @@ import frc.robot.Constants;
 public class TunablePIDController extends PIDController {
 
     // Instance name for tagging log values
-    String m_name;
+    String name;
 
     // Tunable numbers
-    private LoggedTunableNumber m_kP, m_kI, m_kD;
+    private LoggedTunableNumber kP, kI, kD;
 
     public TunablePIDController(String name, double kP, double kI,
         double kD)
@@ -27,21 +27,21 @@ public class TunablePIDController extends PIDController {
     {
         super(kP, kI, kD, period);
 
-        m_name = name;
+        this.name = name;
 
         // Tunable numbers for PID and motion gain constants
-        m_kP = new LoggedTunableNumber(m_name + "/kP", kP);
-        m_kI = new LoggedTunableNumber(m_name + "/kI", kI);
-        m_kD = new LoggedTunableNumber(m_name + "/kD", kD);
+        this.kP = new LoggedTunableNumber(name + "/kP", kP);
+        this.kI = new LoggedTunableNumber(name + "/kI", kI);
+        this.kD = new LoggedTunableNumber(name + "/kD", kD);
     }
 
     public void updatePID()
     {
         // If changed, update controller constants from Tuneable Numbers
-        if (m_kP.hasChanged(hashCode())
-            || m_kI.hasChanged(hashCode())
-            || m_kD.hasChanged(hashCode())) {
-            this.setPID(m_kP.get(), m_kI.get(), m_kD.get());
+        if (kP.hasChanged(hashCode())
+            || kI.hasChanged(hashCode())
+            || kD.hasChanged(hashCode())) {
+            this.setPID(kP.get(), kI.get(), kD.get());
         }
     }
 

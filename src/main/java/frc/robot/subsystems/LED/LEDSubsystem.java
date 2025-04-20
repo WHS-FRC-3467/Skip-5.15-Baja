@@ -21,25 +21,25 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class LEDSubsystem extends SubsystemBase {
 
     // Subsystems to query
-    ClawRoller m_ClawRoller;
-    Arm m_Arm;
-    Elevator m_Elevator;
-    Climber m_Climber;
-    Vision m_Vision;
+    ClawRoller clawRoller;
+    Arm arm;
+    Elevator elevator;
+    Climber climber;
+    Vision vision;
 
-    Trigger m_haveCoral;
-    Trigger m_isCoralMode;
+    Trigger haveCoral;
+    Trigger isCoralMode;
 
     // LoggedTunableNumbers for testing LED states
     private LoggedTunableNumber kMode, kState;
     // Flag for testing mode
     boolean kTesting = false;
 
-    AllianceColor m_DSAlliance = AllianceColor.UNDETERMINED;
-    LEDSubsystemIO m_io;
+    AllianceColor DSAlliance = AllianceColor.UNDETERMINED;
+    LEDSubsystemIO io;
 
     int visionOutCounter = 0;
-    Timer m_timer = new Timer();
+    Timer timer = new Timer();
     double lastTimeStamp = 0.0;
     double thisTimeStamp;
 
@@ -60,41 +60,41 @@ public class LEDSubsystem extends SubsystemBase {
         Trigger isCoralMode)
     {
 
-        m_io = io;
-        m_ClawRoller = clawRoller;
-        m_Arm = arm;
-        m_Elevator = elevator;
-        m_Climber = climber;
-        m_Vision = vision;
-        m_haveCoral = haveCoral;
-        m_isCoralMode = isCoralMode;
+        this.io = io;
+        this.clawRoller = clawRoller;
+        this.arm = arm;
+        this.elevator = elevator;
+        this.climber = climber;
+        this.vision = vision;
+        this.haveCoral = haveCoral;
+        this.isCoralMode = isCoralMode;
 
         // Tunable numbers for testing
         kMode = new LoggedTunableNumber("LED/Mode", 0);
         kState = new LoggedTunableNumber("LED/State", 0);
-        m_timer.start();
+        timer.start();
     }
 
     @Override
     public void periodic()
     {
         // Only loop through periodic LED checking every 0.2 seconds, makes code more efficient
-        thisTimeStamp = m_timer.get();
+        thisTimeStamp = timer.get();
         if (thisTimeStamp - lastTimeStamp >= 0.2) {
             lastTimeStamp = thisTimeStamp;
             LEDState newState;
             GPMode newGPMode;
 
             // Determine and Set Alliance color
-            if (m_DSAlliance == AllianceColor.UNDETERMINED) {
+            if (DSAlliance == AllianceColor.UNDETERMINED) {
                 if (DriverStation.getAlliance().isPresent()) {
                     if (DriverStation.getAlliance().get() == Alliance.Blue) {
-                        m_DSAlliance = AllianceColor.BLUE;
+                        DSAlliance = AllianceColor.BLUE;
                     } else {
-                        m_DSAlliance = AllianceColor.RED;
+                        DSAlliance = AllianceColor.RED;
                     }
                 }
-                m_io.setAlliance(m_DSAlliance);
+                io.setAlliance(DSAlliance);
             }
 
             if (kTesting) {
@@ -119,7 +119,7 @@ public class LEDSubsystem extends SubsystemBase {
 
                 // Real Robot
                 // Determine Game Piece Mode
-                if (m_isCoralMode.getAsBoolean()) {
+                if (isCoralMode.getAsBoolean()) {
                     newGPMode = GPMode.CORAL;
                 } else {
                     newGPMode = GPMode.ALGAE;
@@ -129,11 +129,11 @@ public class LEDSubsystem extends SubsystemBase {
             }
 
             // Process Changes
-            m_io.setGPMode(newGPMode);
-            m_io.setRobotState(newState);
+            io.setGPMode(newGPMode);
+            io.setRobotState(newState);
 
             // Do AKit logging
-            m_io.updateInputs(inputs);
+            io.updateInputs(inputs);
             Logger.processInputs("LED", inputs);
             Logger.recordOutput("LED/GamePiece", inputs.GamePiece);
             Logger.recordOutput("LED/RobotState", inputs.RobotState);
@@ -198,7 +198,7 @@ public class LEDSubsystem extends SubsystemBase {
             runMatchTimerPattern();
 
             // Vision Out? For 2 seconds, quickly flash the LEDs red
-            if (!m_Vision.anyCameraConnected) {
+            if (!vision.anyCameraConnected) {
                 if (visionOutCounter < 10) {
                     visionOutCounter++;
                     newState = LEDState.VISION_OUT;
@@ -210,30 +210,30 @@ public class LEDSubsystem extends SubsystemBase {
                 visionOutCounter = 0;
             }
             // Intaking Coral?
-            if (m_ClawRoller.getState() == ClawRoller.State.INTAKE &&
-                !m_haveCoral.getAsBoolean()) {
+            if (clawRoller.getState() == ClawRoller.State.INTAKE &&
+                !haveCoral.getAsBoolean()) {
                 // Waiting for Coral
                 newState = LEDState.INTAKING;
 
                 // Climbing?
-            } else if (m_Climber.getState() == Climber.State.PREP ||
-                m_Climber.getState() == Climber.State.CLIMB) {
+            } else if (climber.getState() == Climber.State.PREP ||
+                climber.getState() == Climber.State.CLIMB) {
                 // Climb complete?
-                if (m_Climber.atPosition(0.1)) {
+                if (climber.atPosition(0.1)) {
                     newState = LEDState.CLIMBED;
                 } else {
                     newState = LEDState.CLIMBING;
                 }
 
                 // Moving Superstructure?
-            } else if (m_Elevator.isElevated() &&
-                (!m_Elevator.atPosition(0.0) ||
-                    !m_Arm.atPosition(0.0))) {
+            } else if (elevator.isElevated() &&
+                (!elevator.atPosition(0.0) ||
+                    !arm.atPosition(0.0))) {
                 // An Elevated position has been commanded, but it's not there yet
                 newState = LEDState.SUPER_MOVE;
 
                 // Holding Coral?
-            } else if (m_haveCoral.getAsBoolean()) {
+            } else if (haveCoral.getAsBoolean()) {
                 // Claw is holding Coral
                 newState = LEDState.HAVE_CORAL;
 
@@ -247,8 +247,8 @@ public class LEDSubsystem extends SubsystemBase {
 
 
     // Match Timer Module
-    Timer m_pseudoTimer = new Timer();
-    MatchTimerState m_currentState = MatchTimerState.OFF;
+    Timer pseudoTimer = new Timer();
+    MatchTimerState currentState = MatchTimerState.OFF;
 
     private void runMatchTimerPattern()
     {
@@ -256,8 +256,8 @@ public class LEDSubsystem extends SubsystemBase {
 
         double matchTime = DriverStation.getMatchTime();
         if (matchTime < 0.0) {
-            m_pseudoTimer.start();
-            matchTime = (int) (150.0 - m_pseudoTimer.get());
+            pseudoTimer.start();
+            matchTime = (int) (150.0 - pseudoTimer.get());
         }
 
         if (matchTime > 60.0) {
@@ -277,19 +277,19 @@ public class LEDSubsystem extends SubsystemBase {
             newState = MatchTimerState.END;
         }
 
-        if (newState != m_currentState) {
-            m_io.setMatchTimerState(newState);
-            m_currentState = newState;
+        if (newState != currentState) {
+            io.setMatchTimerState(newState);
+            currentState = newState;
         }
     }
 
     public void timerDisabled()
     {
-        m_pseudoTimer.stop();
-        m_pseudoTimer.reset();
-        if (m_currentState != MatchTimerState.OFF) {
-            m_io.setMatchTimerState(MatchTimerState.OFF);
-            m_currentState = MatchTimerState.OFF;
+        pseudoTimer.stop();
+        pseudoTimer.reset();
+        if (currentState != MatchTimerState.OFF) {
+            io.setMatchTimerState(MatchTimerState.OFF);
+            currentState = MatchTimerState.OFF;
         }
     }
 

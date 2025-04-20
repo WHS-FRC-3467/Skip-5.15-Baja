@@ -18,13 +18,11 @@ import frc.robot.util.sim.mechanisms.MotionProfiledMechanism;
 /** Holds information about a simulated Single-Jointed Arm. */
 public class ArmSimProfile extends SimProfile {
 
-    private final String m_Name;
-    private final TalonFX m_Talon;
-    private final CANcoder m_CANcoder;
-    private final MotorSimConfiguration m_MotorConst;
-    private final ArmSimConfiguration m_ArmConst;
-    private final SingleJointedArmSim m_ArmSim;
-    private MotionProfiledMechanism m_Mech;
+    private final TalonFX talon;
+    private final CANcoder CANCoder;
+    private final ArmSimConfiguration armConst;
+    private final SingleJointedArmSim armSim;
+    private MotionProfiledMechanism mech;
 
     /**
      * Creates a new simulation profile for a Single-Jointed Arm using the WPILib Arm sim.
@@ -34,38 +32,36 @@ public class ArmSimProfile extends SimProfile {
      * @param armConst Arm Sim configuration values
      */
     public ArmSimProfile(
-        final String simName,
+        final String name,
         final TalonFX talon,
-        final CANcoder cancoder,
+        final CANcoder CANcoder,
         final MotorSimConfiguration motorConst,
         final ArmSimConfiguration armConst)
     {
 
-        this.m_Name = simName;
-        this.m_Talon = talon;
-        this.m_CANcoder = cancoder;
-        this.m_MotorConst = motorConst;
-        this.m_ArmConst = armConst;
+        this.talon = talon;
+        this.CANCoder = CANcoder;
+        this.armConst = armConst;
 
-        DCMotor m_armGearbox = m_MotorConst.simMotorModelSupplier.get();
+        DCMotor armGearbox = motorConst.simMotorModelSupplier.get();
 
         // Create sim object
-        this.m_ArmSim =
+        this.armSim =
             new SingleJointedArmSim(
-                m_armGearbox,
-                m_ArmConst.kArmReduction,
-                SingleJointedArmSim.estimateMOI(m_ArmConst.kArmLength, m_ArmConst.kArmMass),
-                m_ArmConst.kArmLength,
-                Units.degreesToRadians(m_ArmConst.kMinAngleDegrees),
-                Units.degreesToRadians(m_ArmConst.kMaxAngleDegrees),
+                armGearbox,
+                armConst.kArmReduction,
+                SingleJointedArmSim.estimateMOI(armConst.kArmLength, armConst.kArmMass),
+                armConst.kArmLength,
+                Units.degreesToRadians(armConst.kMinAngleDegrees),
+                Units.degreesToRadians(armConst.kMaxAngleDegrees),
                 true,
-                Units.degreesToRadians(m_ArmConst.kDefaultArmSetpointDegrees));
+                Units.degreesToRadians(armConst.kDefaultArmSetpointDegrees));
 
         // Create sim mechanism
-        if (m_ArmConst.kIsComboSim) {
-            m_Mech = ArmElevComboMechanism.getInstance();
+        if (armConst.kIsComboSim) {
+            mech = ArmElevComboMechanism.getInstance();
         } else {
-            m_Mech = new MotionProfiledArmMechanism(m_Name);
+            mech = new MotionProfiledArmMechanism(name);
         }
     }
 
@@ -74,31 +70,31 @@ public class ArmSimProfile extends SimProfile {
     {
 
         // Get the simulation state for the lead motor
-        var simState = m_Talon.getSimState();
+        var simState = talon.getSimState();
 
         // set the supply (battery) voltage for the lead motor simulation state
         simState.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         // Set the input (voltage) to the Arm Simulation
-        m_ArmSim.setInputVoltage(simState.getMotorVoltage());
+        armSim.setInputVoltage(simState.getMotorVoltage());
         // Update the Arm Sim each time throuhgh the loop
-        m_ArmSim.update(getPeriod());
+        armSim.update(getPeriod());
 
         // Get current position and velocity of the Arm Sim ...
-        final double position_rot = Units.radiansToRotations(m_ArmSim.getAngleRads());
-        final double velocity_rps = Units.radiansToRotations(m_ArmSim.getVelocityRadPerSec());
+        final double position_rot = Units.radiansToRotations(armSim.getAngleRads());
+        final double velocity_rps = Units.radiansToRotations(armSim.getVelocityRadPerSec());
 
         // ... and set the position and velocity for the lead motor simulation
-        simState.setRawRotorPosition(position_rot * m_ArmConst.kArmReduction);
-        simState.setRotorVelocity(velocity_rps * m_ArmConst.kArmReduction);
+        simState.setRawRotorPosition(position_rot * armConst.kArmReduction);
+        simState.setRotorVelocity(velocity_rps * armConst.kArmReduction);
 
         // If using an external encoder, update its sim as well
-        if (m_CANcoder != null) {
-            m_CANcoder.getSimState().setRawPosition(position_rot * m_ArmConst.kSensorReduction);
-            m_CANcoder.getSimState().setVelocity(velocity_rps * m_ArmConst.kSensorReduction);
+        if (CANCoder != null) {
+            CANCoder.getSimState().setRawPosition(position_rot * armConst.kSensorReduction);
+            CANCoder.getSimState().setVelocity(velocity_rps * armConst.kSensorReduction);
         }
 
         // Update sim mechanism (in degrees)
-        m_Mech.updateArm(Units.rotationsToDegrees(position_rot));
+        mech.updateArm(Units.rotationsToDegrees(position_rot));
     }
 }

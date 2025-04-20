@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 public class Phoenix6Util {
 
     private static boolean configResult = true;
-    private static Alert m_configAlert = new Alert("Talon Config", null, AlertType.kWarning);
+    private static Alert configAlert = new Alert("Talon Config", null, AlertType.kWarning);
 
     /**
      * checks the specified error code for issues
@@ -134,8 +134,8 @@ public class Phoenix6Util {
         boolean result = applyAndCheckConfiguration(talon, config, 5);
 
         configResult &= result;
-        m_configAlert.setText(talon.getDescription() + " failed to configure correctly");
-        m_configAlert.set(!configResult);
+        configAlert.setText(talon.getDescription() + " failed to configure correctly");
+        configAlert.set(!configResult);
 
         return result;
     }

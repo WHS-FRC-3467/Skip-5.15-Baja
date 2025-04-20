@@ -17,16 +17,16 @@ import edu.wpi.first.wpilibj.util.Color;
 /** Add your docs here. */
 public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
 
-    AddressableLED m_led;
-    AddressableLEDBuffer m_ledBuffer;
+    AddressableLED led;
+    AddressableLEDBuffer ledBuffer;
 
-    LEDState m_currentState = LEDState.NOT_SET;
-    GPMode m_currentGPMode = GPMode.CORAL;
-    AllianceColor m_DSAlliance = AllianceColor.UNDETERMINED;
-    Color m_allianceColor = Color.kBlack;
-    MatchTimerState m_mtState = MatchTimerState.END;
-    String m_tipColor = "x000000";
-    String m_stateColor = "x000000";
+    LEDState currentState = LEDState.NOT_SET;
+    GPMode currentGPMode = GPMode.CORAL;
+    AllianceColor DSAlliance = AllianceColor.UNDETERMINED;
+    Color allianceColor = Color.kBlack;
+    MatchTimerState mtState = MatchTimerState.END;
+    String tipColor = "x000000";
+    String stateColor = "x000000";
 
     // LED Index Constants
     final int TOTAL_LEDS = 182;
@@ -49,85 +49,85 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
     // Define LED Buffer Viewa
     // Numbering Sequence: Right LEDs go down, Left LEDs go Up
     // Match Time Indicator - CANdle module
-    AddressableLEDBufferView m_MatchTime;
+    AddressableLEDBufferView MatchTime;
     // These are for Disabled/Auto states
     // They are each a full strip
-    AddressableLEDBufferView m_FullRight;
-    AddressableLEDBufferView m_FullLeft;
+    AddressableLEDBufferView FullRight;
+    AddressableLEDBufferView FullLeft;
     // These are for Coral/Algae Mode while robot is Enabled
     // These are the top pixels on each strip
-    AddressableLEDBufferView m_RightTip;
-    AddressableLEDBufferView m_LeftTip;
+    AddressableLEDBufferView RightTip;
+    AddressableLEDBufferView LeftTip;
     // This is for what the robot is doing while robot is Enabled
     // This is the bottom of each strip combined into one segment
-    AddressableLEDBufferView m_State;
+    AddressableLEDBufferView State;
 
     // Create LED patterns that sets the entire strip to a solid color
-    LEDPattern m_solidBlack = LEDPattern.solid(Color.kBlack);
-    LEDPattern m_solidWhite = LEDPattern.solid(Color.kWhite);
-    LEDPattern m_solidRed = LEDPattern.solid(Color.kRed);
-    LEDPattern m_solidBlue = LEDPattern.solid(Color.kBlue);
-    LEDPattern m_solidGreen = LEDPattern.solid(Color.kGreen);
-    LEDPattern m_solidYellow = LEDPattern.solid(Color.kYellow);
-    LEDPattern m_solidCyan = LEDPattern.solid(Color.kCyan);
-    LEDPattern m_solidMagenta = LEDPattern.solid(Color.kMagenta);
-    LEDPattern m_solidOrange = LEDPattern.solid(Color.kOrange);
-    LEDPattern m_solidFirstRed = LEDPattern.solid(Color.kFirstRed);
-    LEDPattern m_solidFirstBlue = LEDPattern.solid(Color.kFirstBlue);
-    LEDPattern m_solidAlliance = LEDPattern.solid(Color.kFirstRed);
-    LEDPattern m_fastFlashGreen = LEDPattern.solid(Color.kGreen).blink(Seconds.of(0.3));
-    LEDPattern m_slowFlashRed = LEDPattern.solid(Color.kRed).blink(Seconds.of(0.7));
-    LEDPattern m_fastFlashRed = LEDPattern.solid(Color.kRed).blink(Seconds.of(0.3));
-    LEDPattern m_medFlashYellow = LEDPattern.solid(Color.kYellow).blink(Seconds.of(0.5));
+    LEDPattern solidBlack = LEDPattern.solid(Color.kBlack);
+    LEDPattern solidWhite = LEDPattern.solid(Color.kWhite);
+    LEDPattern solidRed = LEDPattern.solid(Color.kRed);
+    LEDPattern solidBlue = LEDPattern.solid(Color.kBlue);
+    LEDPattern solidGreen = LEDPattern.solid(Color.kGreen);
+    LEDPattern solidYellow = LEDPattern.solid(Color.kYellow);
+    LEDPattern solidCyan = LEDPattern.solid(Color.kCyan);
+    LEDPattern solidMagenta = LEDPattern.solid(Color.kMagenta);
+    LEDPattern solidOrange = LEDPattern.solid(Color.kOrange);
+    LEDPattern solidFirstRed = LEDPattern.solid(Color.kFirstRed);
+    LEDPattern solidFirstBlue = LEDPattern.solid(Color.kFirstBlue);
+    LEDPattern solidAlliance = LEDPattern.solid(Color.kFirstRed);
+    LEDPattern fastFlashGreen = LEDPattern.solid(Color.kGreen).blink(Seconds.of(0.3));
+    LEDPattern slowFlashRed = LEDPattern.solid(Color.kRed).blink(Seconds.of(0.7));
+    LEDPattern fastFlashRed = LEDPattern.solid(Color.kRed).blink(Seconds.of(0.3));
+    LEDPattern medFlashYellow = LEDPattern.solid(Color.kYellow).blink(Seconds.of(0.5));
 
     // Create Rainbow Pattern - all hues at maximum saturation and half brightness
-    private final LEDPattern m_rainbow = LEDPattern.rainbow(255, 128);
+    private final LEDPattern rainbow = LEDPattern.rainbow(255, 128);
     // Rainbow animation
     // Our LED strip has a density of 144 LEDs per meter
     private final Distance kLedSpacing = Meters.of(1 / 144.0);
     // Create a new pattern that scrolls the rainbow pattern across the LED strip, moving at a
     // speed of 0.5 meter per second.
-    private final LEDPattern m_scrollingRainbow =
-        m_rainbow.scrollAtAbsoluteSpeed(MetersPerSecond.of(.5), kLedSpacing);
+    private final LEDPattern scrollingRainbow =
+        rainbow.scrollAtAbsoluteSpeed(MetersPerSecond.of(.5), kLedSpacing);
 
     public LEDSubsystemIOWPILib()
     {
         // Must be a PWM header, not MXP or DIO
-        m_led = new AddressableLED(9);
+        led = new AddressableLED(9);
 
         // Reusable buffer
         // Length is expensive to set, so only set it once, then just update data
-        m_ledBuffer = new AddressableLEDBuffer(TOTAL_LEDS);
-        m_led.setLength(m_ledBuffer.getLength());
+        ledBuffer = new AddressableLEDBuffer(TOTAL_LEDS);
+        led.setLength(ledBuffer.getLength());
 
         // Set the data
-        m_led.setData(m_ledBuffer);
-        m_led.start();
+        led.setData(ledBuffer);
+        led.start();
 
         // Create Buffer Views
-        m_MatchTime = m_ledBuffer.createView(MATCHTIME_START, MATCHTIME_END);
+        MatchTime = ledBuffer.createView(MATCHTIME_START, MATCHTIME_END);
         // These are for Disabled/Auto states
         // They are each a full strip
-        m_FullRight = m_ledBuffer.createView(RIGHTSTRIP_START, RIGHTSTRIP_END).reversed();
-        m_FullLeft = m_ledBuffer.createView(LEFTSTRIP_START, LEFTSTRIP_END);
+        FullRight = ledBuffer.createView(RIGHTSTRIP_START, RIGHTSTRIP_END).reversed();
+        FullLeft = ledBuffer.createView(LEFTSTRIP_START, LEFTSTRIP_END);
         // These are for Coral/Algae Mode while robot is Enabled
         // These are the top pixels on each strip
-        m_RightTip = m_ledBuffer.createView(RIGHTTIP_START, RIGHTTIP_END).reversed();
-        m_LeftTip = m_ledBuffer.createView(LEFTTIP_START, LEFTTIP_END);
+        RightTip = ledBuffer.createView(RIGHTTIP_START, RIGHTTIP_END).reversed();
+        LeftTip = ledBuffer.createView(LEFTTIP_START, LEFTTIP_END);
         // This is for what the robot is doing while robot is Enabled
         // This is the bottom of each strip combined into one segment
-        m_State = m_ledBuffer.createView(STATE_START, STATE_END);
+        State = ledBuffer.createView(STATE_START, STATE_END);
     }
 
     @Override
     public void updateInputs(LEDSubsystemIOInputs inputs)
     {
-        inputs.alliance = m_DSAlliance;
-        inputs.ledState = m_currentState;
-        inputs.gpMode = m_currentGPMode;
-        inputs.matchTime = m_mtState;
-        inputs.GamePiece = m_tipColor;
-        inputs.RobotState = m_stateColor;
+        inputs.alliance = DSAlliance;
+        inputs.ledState = currentState;
+        inputs.gpMode = currentGPMode;
+        inputs.matchTime = mtState;
+        inputs.GamePiece = tipColor;
+        inputs.RobotState = stateColor;
     }
 
     /** Update Alliance Color */
@@ -136,18 +136,18 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
     {
         switch (alliance) {
             case RED:
-                m_allianceColor = Color.kRed;
+                allianceColor = Color.kRed;
                 break;
             case BLUE:
-                m_allianceColor = Color.kBlue;
+                allianceColor = Color.kBlue;
                 break;
             case UNDETERMINED:
             default:
-                m_allianceColor = Color.kMagenta;
+                allianceColor = Color.kMagenta;
                 break;
         }
-        m_DSAlliance = alliance;
-        m_solidAlliance = LEDPattern.solid(m_allianceColor);
+        DSAlliance = alliance;
+        solidAlliance = LEDPattern.solid(allianceColor);
 
     }
 
@@ -159,7 +159,7 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
         // - GPMode -> Tips: White or "algae" color
 
         // Process and make changes for changed GPMode
-        switch (m_currentState) {
+        switch (currentState) {
             case DISABLED:
             case DISABLED_FAR:
             case DISABLED_TRANSLATION_OK:
@@ -169,25 +169,25 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
                 // Mode is not displayed in these cases
                 // so just break out
                 newGPMode = GPMode.NOT_SET;
-                m_tipColor = Color.kBlack.toHexString();
+                tipColor = Color.kBlack.toHexString();
                 break;
             default:
-                if (newGPMode != m_currentGPMode) {
+                if (newGPMode != currentGPMode) {
                     switch (newGPMode) {
                         case ALGAE:
-                            m_solidGreen.applyTo(m_LeftTip);
-                            m_solidGreen.applyTo(m_RightTip);
-                            m_tipColor = Color.kGreen.toHexString();
+                            solidGreen.applyTo(LeftTip);
+                            solidGreen.applyTo(RightTip);
+                            tipColor = Color.kGreen.toHexString();
                             break;
                         case CORAL:
                         default:
-                            m_solidWhite.applyTo(m_LeftTip);
-                            m_solidWhite.applyTo(m_RightTip);
-                            m_tipColor = Color.kWhite.toHexString();
+                            solidWhite.applyTo(LeftTip);
+                            solidWhite.applyTo(RightTip);
+                            tipColor = Color.kWhite.toHexString();
                             break;
                     }
-                    m_currentGPMode = newGPMode;
-                    m_led.setData(m_ledBuffer);
+                    currentGPMode = newGPMode;
+                    led.setData(ledBuffer);
                 }
                 break;
         }
@@ -216,93 +216,93 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
         // - ENABLED -> Yellow
 
         // Don't do anything unless state has changed
-        if (m_currentState == newState) {
+        if (currentState == newState) {
             return;
         }
 
         // Process and make changes for changed LEDState
         switch (newState) {
             case DISABLED:
-                m_scrollingRainbow.applyTo(m_FullLeft);
-                m_scrollingRainbow.applyTo(m_FullRight);
-                m_tipColor = m_allianceColor.toHexString();
-                m_stateColor = m_allianceColor.toHexString();
+                scrollingRainbow.applyTo(FullLeft);
+                scrollingRainbow.applyTo(FullRight);
+                tipColor = allianceColor.toHexString();
+                stateColor = allianceColor.toHexString();
                 break;
 
             case DISABLED_FAR:
-                m_fastFlashRed.applyTo(m_FullLeft);
-                m_stateColor = Color.kRed.toHexString();
+                fastFlashRed.applyTo(FullLeft);
+                stateColor = Color.kRed.toHexString();
                 break;
 
             case DISABLED_TRANSLATION_OK:
-                m_solidGreen.applyTo(m_FullLeft);
-                m_solidAlliance.applyTo(m_FullRight);
-                m_tipColor = Color.kGreen.toHexString();
-                m_stateColor = m_allianceColor.toHexString();
+                solidGreen.applyTo(FullLeft);
+                solidAlliance.applyTo(FullRight);
+                tipColor = Color.kGreen.toHexString();
+                stateColor = allianceColor.toHexString();
                 break;
 
             case DISABLED_ROTATION_OK:
-                m_solidAlliance.applyTo(m_FullLeft);
-                m_solidGreen.applyTo(m_FullRight);
-                m_tipColor = m_allianceColor.toHexString();
-                m_stateColor = Color.kGreen.toHexString();
+                solidAlliance.applyTo(FullLeft);
+                solidGreen.applyTo(FullRight);
+                tipColor = allianceColor.toHexString();
+                stateColor = Color.kGreen.toHexString();
                 break;
 
             case DISABLED_BOTH_OK:
-                m_solidGreen.applyTo(m_FullLeft);
-                m_solidGreen.applyTo(m_FullRight);
-                m_tipColor = Color.kGreen.toHexString();
-                m_stateColor = Color.kGreen.toHexString();
+                solidGreen.applyTo(FullLeft);
+                solidGreen.applyTo(FullRight);
+                tipColor = Color.kGreen.toHexString();
+                stateColor = Color.kGreen.toHexString();
                 break;
 
             case AUTONOMOUS:
-                m_medFlashYellow.applyTo(m_FullLeft);
-                m_medFlashYellow.applyTo(m_FullRight);
-                m_solidYellow.applyTo(m_MatchTime);
-                m_tipColor = Color.kOrange.toHexString();
-                m_stateColor = Color.kOrange.toHexString();
+                medFlashYellow.applyTo(FullLeft);
+                medFlashYellow.applyTo(FullRight);
+                solidYellow.applyTo(MatchTime);
+                tipColor = Color.kOrange.toHexString();
+                stateColor = Color.kOrange.toHexString();
                 break;
 
             case INTAKING:
-                m_slowFlashRed.applyTo(m_State);
-                m_stateColor = Color.kRed.toHexString();
+                slowFlashRed.applyTo(State);
+                stateColor = Color.kRed.toHexString();
                 break;
 
             case CLIMBING:
-                m_fastFlashRed.applyTo(m_State);
-                m_stateColor = Color.kRed.toHexString();
+                fastFlashRed.applyTo(State);
+                stateColor = Color.kRed.toHexString();
                 break;
 
             case CLIMBED:
-                m_solidGreen.applyTo(m_State);
-                m_stateColor = Color.kGreen.toHexString();
+                solidGreen.applyTo(State);
+                stateColor = Color.kGreen.toHexString();
                 break;
 
             case SUPER_MOVE:
-                m_solidMagenta.applyTo(m_State);
-                m_stateColor = Color.kMagenta.toHexString();
+                solidMagenta.applyTo(State);
+                stateColor = Color.kMagenta.toHexString();
                 break;
 
             case ALIGNING:
-                m_solidCyan.applyTo(m_State);
-                m_stateColor = Color.kCyan.toHexString();
+                solidCyan.applyTo(State);
+                stateColor = Color.kCyan.toHexString();
                 break;
 
             case HAVE_CORAL:
-                m_solidGreen.applyTo(m_State);
-                m_stateColor = Color.kGreen.toHexString();
+                solidGreen.applyTo(State);
+                stateColor = Color.kGreen.toHexString();
                 break;
 
             case ENABLED:
-                m_solidYellow.applyTo(m_State);
-                m_stateColor = Color.kYellow.toHexString();
+                solidYellow.applyTo(State);
+                stateColor = Color.kYellow.toHexString();
                 break;
 
             default:
                 break;
         }
-        m_currentState = newState;
-        m_led.setData(m_ledBuffer);
+        currentState = newState;
+        led.setData(ledBuffer);
     }
 
     /** Update Match Timer */
@@ -317,32 +317,32 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
         // * 0:10 -> 0:00: Strobing Red
         // * Non-auto periods & Disabled: White
 
-        if (mtState != m_mtState) {
+        if (mtState != mtState) {
 
             switch (mtState) {
 
                 case OFF:
-                    m_solidBlack.applyTo(m_MatchTime);
+                    solidBlack.applyTo(MatchTime);
                     break;
                 case TELEOP_BEGIN:
-                    m_solidGreen.applyTo(m_MatchTime);
+                    solidGreen.applyTo(MatchTime);
                     break;
                 case LAST_60:
-                    m_solidYellow.applyTo(m_MatchTime);
+                    solidYellow.applyTo(MatchTime);
                     break;
                 case LAST_20:
-                    m_solidRed.applyTo(m_MatchTime);
+                    solidRed.applyTo(MatchTime);
                     break;
                 case LAST_10:
-                    m_fastFlashRed.applyTo(m_MatchTime);
+                    fastFlashRed.applyTo(MatchTime);
                     break;
                 case END:
                 default:
-                    m_solidWhite.applyTo(m_MatchTime);
+                    solidWhite.applyTo(MatchTime);
                     break;
             }
-            m_mtState = mtState;
-            m_led.setData(m_ledBuffer);
+            mtState = mtState;
+            led.setData(ledBuffer);
         }
     }
 }

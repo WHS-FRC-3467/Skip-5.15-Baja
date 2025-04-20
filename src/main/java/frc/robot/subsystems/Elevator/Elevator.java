@@ -20,7 +20,7 @@ import lombok.Setter;
 @Getter
 public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
 
-    ArmElevComboReplay m_Replay = null;
+    ArmElevComboReplay Replay = null;
 
     static LoggedTunableNumber homingTuning =
         new LoggedTunableNumber("Elevator/HomingVoltageSP", -1);

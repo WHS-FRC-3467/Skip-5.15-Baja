@@ -24,11 +24,11 @@ public class MotionProfiledArmMechanism implements MotionProfiledMechanism {
 
         // Create a Mechanism2d display of an Arm with a fixed ArmTower and moving Arm.
         mMech = new Mechanism2d(WIDTH, HEIGHT);
-        MechanismRoot2d m_armPivot = mMech.getRoot("ArmPivot", 30, .75);
-        m_armPivot.append(
+        MechanismRoot2d armPivot = mMech.getRoot("ArmPivot", 30, .75);
+        armPivot.append(
             new MechanismLigament2d("ArmTower", .75, -90, 5, new Color8Bit(Color.kBlack)));
         mArm =
-            m_armPivot
+            armPivot
                 .append(new MechanismLigament2d("Arm", .5, 0, 3, new Color8Bit(Color.kYellow)));
     }
 

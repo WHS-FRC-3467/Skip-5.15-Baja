@@ -9,29 +9,29 @@ import frc.robot.util.sim.ElevatorSimConfiguration;
 
 public class ArmElevComboReplay {
 
-    MotionProfiledMechanism m_Mech;
-    private final ElevatorSimConfiguration m_ElevConst;
+    MotionProfiledMechanism Mech;
+    private final ElevatorSimConfiguration ElevConst;
 
-    protected static ArmElevComboReplay m_ArmElevReplay;
+    protected static ArmElevComboReplay ArmElevReplay;
 
     public static ArmElevComboReplay getInstance()
     {
-        if (m_ArmElevReplay == null) {
-            m_ArmElevReplay =
+        if (ArmElevReplay == null) {
+            ArmElevReplay =
                 new ArmElevComboReplay(ElevatorConstants.kSubSysConstants.kElevSimConfig);
         }
-        return m_ArmElevReplay;
+        return ArmElevReplay;
     }
 
     // Creates the replay mechanism
     private ArmElevComboReplay(final ElevatorSimConfiguration elevConst)
     {
-        m_ElevConst = elevConst;
+        ElevConst = elevConst;
 
-        if (m_ElevConst.kIsComboSim) {
-            m_Mech = ArmElevComboMechanism.getInstance();
+        if (ElevConst.kIsComboSim) {
+            Mech = ArmElevComboMechanism.getInstance();
         } else {
-            m_Mech = new MotionProfiledElevatorMechanism("Replay_Elevator");
+            Mech = new MotionProfiledElevatorMechanism("Replay_Elevator");
         }
     }
 

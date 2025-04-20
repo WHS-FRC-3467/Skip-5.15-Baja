@@ -23,18 +23,18 @@ import frc.robot.Ports;
 public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
 
     // Control everything with a CANdle
-    private static final CANdle m_candle = new CANdle(Ports.ELEVATOR_CANDLE.getDeviceNumber());
+    private static final CANdle candle = new CANdle(Ports.ELEVATOR_CANDLE.getDeviceNumber());
 
     Alert ledConfigError = new Alert("CANdle Configuration Error!", Alert.AlertType.kWarning);
 
-    boolean m_teleopBegun = false;
-    LEDState m_currentState = LEDState.NOT_SET;
-    GPMode m_currentGPMode = GPMode.NOT_SET;
-    AllianceColor m_DSAlliance = AllianceColor.UNDETERMINED;
-    Color m_allianceColor = Color.kBlack;
-    MatchTimerState m_mtState = MatchTimerState.END;
-    String m_tipColor = "x000000";
-    String m_stateColor = "x000000";
+    boolean teleopBegun = false;
+    LEDState currentState = LEDState.NOT_SET;
+    GPMode currentGPMode = GPMode.NOT_SET;
+    AllianceColor DSAlliance = AllianceColor.UNDETERMINED;
+    Color allianceColor = Color.kBlack;
+    MatchTimerState mtState = MatchTimerState.END;
+    String tipColor = "x000000";
+    String stateColor = "x000000";
 
     // LED Index Constants
     final int TOTAL_LEDS = 182;
@@ -57,25 +57,25 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
     // Define LED Segments
     // Numbering Sequence: Right LEDs go down, Left LEDs go Up
     // Match Time Indicator - CANdle module
-    LEDSegment m_MatchTime = new LEDSegment(MATCHTIME_START, BASESEG_SIZE, 0);
+    LEDSegment MatchTime = new LEDSegment(MATCHTIME_START, BASESEG_SIZE, 0);
     // These are for Disabled/Auto states
     // They are each a full strip
-    LEDSegment m_FullRight = new LEDSegment(RIGHTSTRIP_START, FULLSTRIP_SIZE, 1);
-    LEDSegment m_FullLeft = new LEDSegment(LEFTSTRIP_START, FULLSTRIP_SIZE, 2);
+    LEDSegment FullRight = new LEDSegment(RIGHTSTRIP_START, FULLSTRIP_SIZE, 1);
+    LEDSegment FullLeft = new LEDSegment(LEFTSTRIP_START, FULLSTRIP_SIZE, 2);
     // These are for Coral/Algae Mode while robot is Enabled
     // These are the top pixels on each strip
-    LEDSegment m_RightTip = new LEDSegment(RIGHTTIP_START, TIP_SIZE, 3);
-    LEDSegment m_LeftTip = new LEDSegment(LEFTTIP_START, TIP_SIZE, 4);
+    LEDSegment RightTip = new LEDSegment(RIGHTTIP_START, TIP_SIZE, 3);
+    LEDSegment LeftTip = new LEDSegment(LEFTTIP_START, TIP_SIZE, 4);
     // This is for what the robot is doing while robot is Enabled
     // This is the bottom of each strip combined into one segment
-    LEDSegment m_State = new LEDSegment(STATE_START, (STATE_END - STATE_START) + 1, 5);
+    LEDSegment State = new LEDSegment(STATE_START, (STATE_END - STATE_START) + 1, 5);
 
     public LEDSubsystemIOCANdle()
     {
-        m_candle.configFactoryDefault();
+        candle.configFactoryDefault();
 
         CANdleConfiguration candleConfiguration = new CANdleConfiguration();
-        // m_candle.getAllConfigs(candleConfiguration);
+        // candle.getAllConfigs(candleConfiguration);
 
         candleConfiguration.statusLedOffWhenActive = true;
         candleConfiguration.disableWhenLOS = false;
@@ -83,14 +83,14 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
         candleConfiguration.brightnessScalar = 0.5;
         candleConfiguration.vBatOutputMode = VBatOutputMode.Modulated;
         candleConfiguration.v5Enabled = false;
-        ErrorCode ec = m_candle.configAllSettings(candleConfiguration, 100);
+        ErrorCode ec = candle.configAllSettings(candleConfiguration, 100);
         if (ec != ErrorCode.OK) {
             ledConfigError.set(true);
             ledConfigError.setText(ec.toString());
         }
 
         // StripType setting needs to be done twice (for some reason, once doesn't work)
-        ec = m_candle.configLEDType(LEDStripType.RGB, 300);
+        ec = candle.configLEDType(LEDStripType.RGB, 300);
         if (ec != ErrorCode.OK) {
             ledConfigError.set(true);
             ledConfigError.setText(ec.toString());
@@ -100,12 +100,12 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
     @Override
     public void updateInputs(LEDSubsystemIOInputs inputs)
     {
-        inputs.alliance = m_DSAlliance;
-        inputs.ledState = m_currentState;
-        inputs.gpMode = m_currentGPMode;
-        inputs.matchTime = m_mtState;
-        inputs.GamePiece = m_tipColor;
-        inputs.RobotState = m_stateColor;
+        inputs.alliance = DSAlliance;
+        inputs.ledState = currentState;
+        inputs.gpMode = currentGPMode;
+        inputs.matchTime = mtState;
+        inputs.GamePiece = tipColor;
+        inputs.RobotState = stateColor;
     }
 
     /** Update Alliance Color */
@@ -114,17 +114,17 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
     {
         switch (alliance) {
             case RED:
-                m_allianceColor = Color.kRed;
+                allianceColor = Color.kRed;
                 break;
             case BLUE:
-                m_allianceColor = Color.kBlue;
+                allianceColor = Color.kBlue;
                 break;
             case UNDETERMINED:
             default:
-                m_allianceColor = Color.kMagenta;
+                allianceColor = Color.kMagenta;
                 break;
         }
-        m_DSAlliance = alliance;
+        DSAlliance = alliance;
     }
 
     // Set the Game Piece Mode indicator LEDS
@@ -135,7 +135,7 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
         // - GPMode -> Tips: White or "algae" color
 
         // Process and make changes for changed GPMode
-        switch (m_currentState) {
+        switch (currentState) {
             case DISABLED:
             case DISABLED_FAR:
             case DISABLED_TRANSLATION_OK:
@@ -144,31 +144,31 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
             case AUTONOMOUS:
                 // Mode is not displayed in these cases
                 // so just break out
-                m_currentGPMode = GPMode.NOT_SET;
-                m_tipColor = Color.kBlack.toHexString();
+                currentGPMode = GPMode.NOT_SET;
+                tipColor = Color.kBlack.toHexString();
                 break;
             default:
-                if (newGPMode != m_currentGPMode) {
+                if (newGPMode != currentGPMode) {
 
-                    if (!m_teleopBegun) {
-                        m_FullLeft.setOff();
-                        m_FullRight.setOff();
-                        m_teleopBegun = true;
+                    if (!teleopBegun) {
+                        FullLeft.setOff();
+                        FullRight.setOff();
+                        teleopBegun = true;
                     }
                     switch (newGPMode) {
                         case ALGAE:
-                            m_LeftTip.setColor(Color.kGreen);
-                            m_RightTip.setColor(Color.kGreen);
-                            m_tipColor = Color.kGreen.toHexString();
+                            LeftTip.setColor(Color.kGreen);
+                            RightTip.setColor(Color.kGreen);
+                            tipColor = Color.kGreen.toHexString();
                             break;
                         case CORAL:
                         default:
-                            m_LeftTip.setColor(Color.kWhite);
-                            m_RightTip.setColor(Color.kWhite);
-                            m_tipColor = Color.kWhite.toHexString();
+                            LeftTip.setColor(Color.kWhite);
+                            RightTip.setColor(Color.kWhite);
+                            tipColor = Color.kWhite.toHexString();
                             break;
                     }
-                    m_currentGPMode = newGPMode;
+                    currentGPMode = newGPMode;
                 }
                 break;
         }
@@ -198,100 +198,100 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
         // - ENABLED -> Yellow
 
         // Don't do anything unless state has changed
-        if (m_currentState == newState) {
+        if (currentState == newState) {
             return;
         }
 
         // Process and make changes for changed LEDState
         switch (newState) {
             case DISABLED:
-                m_FullLeft.setColor(m_allianceColor);
-                m_FullRight.setColor(m_allianceColor);
-                m_tipColor = m_allianceColor.toHexString();
-                m_stateColor = m_allianceColor.toHexString();
+                FullLeft.setColor(allianceColor);
+                FullRight.setColor(allianceColor);
+                tipColor = allianceColor.toHexString();
+                stateColor = allianceColor.toHexString();
                 break;
 
             case DISABLED_FAR:
-                m_FullLeft.setAnimation(a_StrobeRedLeft);
-                m_FullRight.setAnimation(a_StrobeRedRight);
+                FullLeft.setAnimation(a_StrobeRedLeft);
+                FullRight.setAnimation(a_StrobeRedRight);
                 break;
 
             case DISABLED_TRANSLATION_OK:
-                m_FullLeft.setColor(Color.kGreen);
-                m_FullRight.setColor(m_allianceColor);
-                m_tipColor = Color.kGreen.toHexString();
-                m_stateColor = m_allianceColor.toHexString();
+                FullLeft.setColor(Color.kGreen);
+                FullRight.setColor(allianceColor);
+                tipColor = Color.kGreen.toHexString();
+                stateColor = allianceColor.toHexString();
                 break;
 
             case DISABLED_ROTATION_OK:
-                m_FullLeft.setColor(m_allianceColor);
-                m_FullRight.setColor(Color.kGreen);
-                m_tipColor = m_allianceColor.toHexString();
-                m_stateColor = Color.kGreen.toHexString();
+                FullLeft.setColor(allianceColor);
+                FullRight.setColor(Color.kGreen);
+                tipColor = allianceColor.toHexString();
+                stateColor = Color.kGreen.toHexString();
                 break;
 
             case DISABLED_BOTH_OK:
-                m_FullLeft.setColor(Color.kGreen);
-                m_FullRight.setColor(Color.kGreen);
-                m_tipColor = Color.kGreen.toHexString();
-                m_stateColor = Color.kGreen.toHexString();
+                FullLeft.setColor(Color.kGreen);
+                FullRight.setColor(Color.kGreen);
+                tipColor = Color.kGreen.toHexString();
+                stateColor = Color.kGreen.toHexString();
                 break;
 
             case AUTONOMOUS:
-                m_FullLeft.setAnimation(a_LeftFlame);
-                m_FullRight.setAnimation(a_RightFlame);
-                m_MatchTime.setAnimation(a_InAutonomous);
-                m_tipColor = Color.kOrange.toHexString();
-                m_stateColor = Color.kOrange.toHexString();
+                FullLeft.setAnimation(a_LeftFlame);
+                FullRight.setAnimation(a_RightFlame);
+                MatchTime.setAnimation(a_InAutonomous);
+                tipColor = Color.kOrange.toHexString();
+                stateColor = Color.kOrange.toHexString();
                 break;
 
             case VISION_OUT:
-                m_State.setAnimation(a_FastFlashOrange);
-                m_stateColor = Color.kOrange.toHexString();
+                State.setAnimation(a_FastFlashOrange);
+                stateColor = Color.kOrange.toHexString();
                 break;
 
             case INTAKING:
-                m_State.setAnimation(a_SlowFlashRed);
-                m_stateColor = Color.kRed.toHexString();
+                State.setAnimation(a_SlowFlashRed);
+                stateColor = Color.kRed.toHexString();
                 break;
 
             case CLIMBING:
-                m_State.setAnimation(a_FastFlashRed);
-                m_stateColor = Color.kRed.toHexString();
+                State.setAnimation(a_FastFlashRed);
+                stateColor = Color.kRed.toHexString();
                 break;
 
             case CLIMBED:
-                m_State.setColor(Color.kGreen);
-                m_stateColor = Color.kGreen.toHexString();
+                State.setColor(Color.kGreen);
+                stateColor = Color.kGreen.toHexString();
                 break;
 
             case SUPER_MOVE:
-                // m_State.setAnimation(a_MedFlashMagenta);
-                m_State.setColor(Color.kMagenta);
-                m_stateColor = Color.kMagenta.toHexString();
+                // State.setAnimation(a_MedFlashMagenta);
+                State.setColor(Color.kMagenta);
+                stateColor = Color.kMagenta.toHexString();
                 break;
 
             case ALIGNING:
-                // m_State.setAnimation(a_MedFlashCyan);
-                m_State.setColor(Color.kCyan);
-                m_stateColor = Color.kCyan.toHexString();
+                // State.setAnimation(a_MedFlashCyan);
+                State.setColor(Color.kCyan);
+                stateColor = Color.kCyan.toHexString();
                 break;
 
             case HAVE_CORAL:
-                m_State.setColor(Color.kGreen);
-                m_stateColor = Color.kGreen.toHexString();
+                State.setColor(Color.kGreen);
+                stateColor = Color.kGreen.toHexString();
                 break;
 
             case ENABLED:
-                // m_State.setAnimation(a_SingleFadeFastYellow);
-                m_State.setColor(Color.kYellow);
-                m_stateColor = Color.kYellow.toHexString();
+                // State.setAnimation(a_SingleFadeFastYellow);
+                State.setColor(Color.kYellow);
+                stateColor = Color.kYellow.toHexString();
                 break;
 
             default:
                 break;
         }
-        m_currentState = newState;
+        currentState = newState;
     }
 
     /** Update Match Timer */
@@ -306,31 +306,31 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
         // * 0:10 -> 0:00: Strobing Red
         // * Non-auto periods & Disabled: White
 
-        if (mtState != m_mtState) {
+        if (mtState != mtState) {
 
             switch (mtState) {
 
                 case OFF:
-                    m_MatchTime.setOff();
+                    MatchTime.setOff();
                     break;
                 case TELEOP_BEGIN:
-                    m_MatchTime.setColor(Color.kGreen);
+                    MatchTime.setColor(Color.kGreen);
                     break;
                 case LAST_60:
-                    m_MatchTime.setColor(Color.kYellow);
+                    MatchTime.setColor(Color.kYellow);
                     break;
                 case LAST_20:
-                    m_MatchTime.setColor(Color.kRed);
+                    MatchTime.setColor(Color.kRed);
                     break;
                 case LAST_10:
-                    m_MatchTime.setAnimation(a_TimeExpiring);
+                    MatchTime.setAnimation(a_TimeExpiring);
                     break;
                 case END:
                 default:
-                    m_MatchTime.setColor(Color.kWhite);
+                    MatchTime.setColor(Color.kWhite);
                     break;
             }
-            m_mtState = mtState;
+            mtState = mtState;
         }
     }
 
@@ -368,97 +368,97 @@ public class LEDSubsystemIOCANdle implements LEDSubsystemIO {
 
         public void setColor(Color color)
         {
-            m_candle.clearAnimation(animationSlot);
-            m_candle.setLEDs(getR(color), getG(color), getB(color), 0, startIndex, segmentSize);
-            m_candle.modulateVBatOutput(0.95);
+            candle.clearAnimation(animationSlot);
+            candle.setLEDs(getR(color), getG(color), getB(color), 0, startIndex, segmentSize);
+            candle.modulateVBatOutput(0.95);
         }
 
         private void setAnimation(Animation animation)
         {
-            m_candle.clearAnimation(animationSlot);
-            m_candle.animate(animation, animationSlot);
-            m_candle.modulateVBatOutput(0.95);
+            candle.clearAnimation(animationSlot);
+            candle.animate(animation, animationSlot);
+            candle.modulateVBatOutput(0.95);
         }
 
         public void setOff()
         {
-            m_candle.clearAnimation(animationSlot);
-            m_candle.setLEDs(0, 0, 0, 0, startIndex, segmentSize);
-            m_candle.modulateVBatOutput(0.0);
+            candle.clearAnimation(animationSlot);
+            candle.setLEDs(0, 0, 0, 0, startIndex, segmentSize);
+            candle.modulateVBatOutput(0.0);
         }
     }
 
     // Disabled Animations
     Animation a_StrobeRedLeft =
         new StrobeAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed),
-            0, 0.2, m_FullLeft.segmentSize, m_FullLeft.startIndex);
+            0, 0.2, FullLeft.segmentSize, FullLeft.startIndex);
     Animation a_StrobeRedRight =
         new StrobeAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed),
-            0, 0.2, m_FullRight.segmentSize, m_FullRight.startIndex);
+            0, 0.2, FullRight.segmentSize, FullRight.startIndex);
     Animation a_RightRedLarson =
         new LarsonAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed), 0, 0.2,
-            m_FullRight.segmentSize, BounceMode.Front, 10, m_FullRight.startIndex);
+            FullRight.segmentSize, BounceMode.Front, 10, FullRight.startIndex);
     Animation a_LeftRedLarson =
         new LarsonAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed), 0, 0.2,
-            m_FullLeft.segmentSize, BounceMode.Front, 10, m_FullLeft.startIndex);
+            FullLeft.segmentSize, BounceMode.Front, 10, FullLeft.startIndex);
     Animation a_RightBlueLarson =
         new LarsonAnimation(getR(Color.kBlue), getG(Color.kBlue), getB(Color.kBlue), 0, 0.2,
-            m_FullRight.segmentSize, BounceMode.Front, 10, m_FullRight.startIndex);
+            FullRight.segmentSize, BounceMode.Front, 10, FullRight.startIndex);
     Animation a_LeftBlueLarson =
         new LarsonAnimation(getR(Color.kBlue), getG(Color.kBlue), getB(Color.kBlue), 0,
-            0.2, m_FullLeft.segmentSize, BounceMode.Front, 10, m_FullLeft.startIndex);
+            0.2, FullLeft.segmentSize, BounceMode.Front, 10, FullLeft.startIndex);
     Animation a_RightRainbow =
-        new RainbowAnimation(0.7, 0.5, m_FullRight.segmentSize, true, m_FullRight.startIndex);
+        new RainbowAnimation(0.7, 0.5, FullRight.segmentSize, true, FullRight.startIndex);
     Animation a_LeftRainbow =
-        new RainbowAnimation(0.7, 0.5, m_FullLeft.segmentSize, false, m_FullLeft.startIndex);
+        new RainbowAnimation(0.7, 0.5, FullLeft.segmentSize, false, FullLeft.startIndex);
     Animation a_RightFlame =
-        new FireAnimation(1.0, 0.75, m_FullRight.segmentSize, 1.0, 0.1, true,
-            m_FullRight.startIndex);
+        new FireAnimation(1.0, 0.75, FullRight.segmentSize, 1.0, 0.1, true,
+            FullRight.startIndex);
     Animation a_LeftFlame =
-        new FireAnimation(1.0, 0.75, m_FullLeft.segmentSize, 1.0, 0.1, false,
-            m_FullLeft.startIndex);
+        new FireAnimation(1.0, 0.75, FullLeft.segmentSize, 1.0, 0.1, false,
+            FullLeft.startIndex);
 
     // GamePieceMode Animations
     // Processor
     Animation a_LeftFlashGreen =
         new StrobeAnimation(getR(Color.kGreen), getG(Color.kGreen), getB(Color.kGreen),
-            0, 0.8, m_LeftTip.segmentSize, m_LeftTip.startIndex);
+            0, 0.8, LeftTip.segmentSize, LeftTip.startIndex);
     Animation a_RightFlashGreen =
         new StrobeAnimation(getR(Color.kGreen), getG(Color.kGreen), getB(Color.kGreen),
-            0, 0.8, m_RightTip.segmentSize, m_RightTip.startIndex);
+            0, 0.8, RightTip.segmentSize, RightTip.startIndex);
 
     // Robot State Animations
     // Lost vision?
     Animation a_FastFlashOrange =
         new StrobeAnimation(getR(Color.kRed), getG(Color.kOrange), getB(Color.kOrange),
-            0, 0.8, m_State.segmentSize, m_State.startIndex);
+            0, 0.8, State.segmentSize, State.startIndex);
     // Intaking
     Animation a_FastFlashRed =
         new StrobeAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed),
-            0, 0.8, m_State.segmentSize, m_State.startIndex);
+            0, 0.8, State.segmentSize, State.startIndex);
     // Climbing
     Animation a_SlowFlashRed =
         new StrobeAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed),
-            0, 0.2, m_State.segmentSize, m_State.startIndex);
+            0, 0.2, State.segmentSize, State.startIndex);
     // Super Move
     Animation a_MedFlashMagenta =
         new StrobeAnimation(getR(Color.kMagenta), getG(Color.kMagenta), getB(Color.kMagenta),
-            0, 0.5, m_State.segmentSize, m_State.startIndex);
+            0, 0.5, State.segmentSize, State.startIndex);
     // Aligning
     Animation a_MedFlashCyan =
         new StrobeAnimation(getR(Color.kCyan), getG(Color.kCyan), getB(Color.kCyan),
-            0, 0.5, m_State.segmentSize, m_State.startIndex);
+            0, 0.5, State.segmentSize, State.startIndex);
     // Enabled
     Animation a_SingleFadeFastYellow =
         new SingleFadeAnimation(getR(Color.kYellow), getG(Color.kYellow), getB(Color.kYellow),
-            0, 0.8, m_State.segmentSize, m_State.startIndex);
+            0, 0.8, State.segmentSize, State.startIndex);
 
     // Match Timer Animations
     Animation a_InAutonomous =
         new StrobeAnimation(getR(Color.kYellow), getG(Color.kYellow), getB(Color.kYellow),
-            0, 0.8, m_MatchTime.segmentSize, m_MatchTime.startIndex);
+            0, 0.8, MatchTime.segmentSize, MatchTime.startIndex);
     Animation a_TimeExpiring =
         new StrobeAnimation(getR(Color.kRed), getG(Color.kRed), getB(Color.kRed),
-            0, 0.5, m_MatchTime.segmentSize, m_MatchTime.startIndex);
+            0, 0.5, MatchTime.segmentSize, MatchTime.startIndex);
 
 }

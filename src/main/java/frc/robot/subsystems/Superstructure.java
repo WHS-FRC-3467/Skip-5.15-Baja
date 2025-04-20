@@ -14,13 +14,13 @@ import frc.robot.subsystems.Elevator.Elevator;
  * Management class for synchronizing Arm and Elevator movements
  */
 public class Superstructure {
-    Arm m_Arm;
-    Elevator m_Elevator;
+    Arm arm;
+    Elevator elevator;
 
     public Superstructure(Arm arm, Elevator elevator)
     {
-        m_Arm = arm;
-        m_Elevator = elevator;
+        this.arm = arm;
+        this.elevator = elevator;
     }
 
     /**
@@ -45,19 +45,19 @@ public class Superstructure {
             Commands.either(
                 Commands.none(), // If True
                 Commands.sequence( // If False
-                    m_Arm.setStateCommand(Arm.State.STOW),
-                    Commands.waitUntil(() -> m_Arm.atPosition(armTolerance))),
-                () -> m_Arm.checkState(armState, m_Arm.getState())), // Condition
+                    arm.setStateCommand(Arm.State.STOW),
+                    Commands.waitUntil(() -> arm.atPosition(armTolerance))),
+                () -> arm.checkState(armState, arm.getState())), // Condition
 
             // Move Elevator to new position
             Commands.sequence(
-                m_Elevator.setStateCommand(elevatorState),
-                Commands.waitUntil(() -> m_Elevator.atPosition(elevTolerance))),
+                elevator.setStateCommand(elevatorState),
+                Commands.waitUntil(() -> elevator.atPosition(elevTolerance))),
 
             // Reposition Arm to new position
             Commands.sequence(
-                m_Arm.setStateCommand(armState),
-                Commands.waitUntil(() -> m_Arm.atPosition(armTolerance))));
+                arm.setStateCommand(armState),
+                Commands.waitUntil(() -> arm.atPosition(armTolerance))));
     }
 
     public Command getTransitionCommand(Arm.State armState, Elevator.State elevatorState)

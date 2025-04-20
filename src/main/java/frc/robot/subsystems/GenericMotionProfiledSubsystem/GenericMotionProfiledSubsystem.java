@@ -44,11 +44,11 @@ public abstract class GenericMotionProfiledSubsystem<G extends GenericMotionProf
 
     public abstract G getState();
 
-    private final String m_name;
-    private final GenericMotionProfiledSubsystemConstants m_constants;
+    private final String name;
+    private final GenericMotionProfiledSubsystemConstants constants;
     protected final GenericMotionProfiledSubsystemIO io;
-    private boolean mIsSim = false;
-    private ProfileType m_proType;
+    private boolean isSim = false;
+    private ProfileType proType;
 
     protected final GenericMotionProfiledIOInputsAutoLogged inputs =
         new GenericMotionProfiledIOInputsAutoLogged();
@@ -63,40 +63,40 @@ public abstract class GenericMotionProfiledSubsystem<G extends GenericMotionProf
         boolean isSim)
     {
 
-        this.m_proType = defaultProfileType;
-        this.m_constants = constants;
+        this.proType = defaultProfileType;
+        this.constants = constants;
         this.io = io;
-        this.mIsSim = isSim;
-        this.m_name = m_constants.kName;
+        this.isSim = isSim;
+        this.name = constants.kName;
 
         this.leaderMotorDisconnected =
-            new Alert(m_name + " Leader motor disconnected!", Alert.AlertType.kWarning);
+            new Alert(name + " Leader motor disconnected!", Alert.AlertType.kWarning);
         this.followerMotorDisconnected =
-            new Alert(m_name + " Follower motor disconnected!", Alert.AlertType.kWarning);
+            new Alert(name + " Follower motor disconnected!", Alert.AlertType.kWarning);
         this.CANcoderDisconnected =
-            new Alert(m_name + " CANcoder disconnected!", Alert.AlertType.kWarning);
+            new Alert(name + " CANcoder disconnected!", Alert.AlertType.kWarning);
 
         // Make sure we use the correct profiling configs
         TalonFXConfiguration fxConfig =
-            mIsSim ? m_constants.kSimMotorConfig : m_constants.kMotorConfig;
+            isSim ? constants.kSimMotorConfig : constants.kMotorConfig;
 
         // Tunable numbers for PID and motion gain constants
-        kP = new LoggedTunableNumber(m_name + "/Gains/kP", fxConfig.Slot0.kP);
-        kI = new LoggedTunableNumber(m_name + "/Gains/kI", fxConfig.Slot0.kI);
-        kD = new LoggedTunableNumber(m_name + "/Gains/kD", fxConfig.Slot0.kD);
+        kP = new LoggedTunableNumber(name + "/Gains/kP", fxConfig.Slot0.kP);
+        kI = new LoggedTunableNumber(name + "/Gains/kI", fxConfig.Slot0.kI);
+        kD = new LoggedTunableNumber(name + "/Gains/kD", fxConfig.Slot0.kD);
 
-        kG = new LoggedTunableNumber(m_name + "/Gains/kG", fxConfig.Slot0.kG);
-        kS = new LoggedTunableNumber(m_name + "/Gains/kS", fxConfig.Slot0.kS);
-        kV = new LoggedTunableNumber(m_name + "/Gains/kV", fxConfig.Slot0.kV);
-        kA = new LoggedTunableNumber(m_name + "/Gains/kA", fxConfig.Slot0.kA);
+        kG = new LoggedTunableNumber(name + "/Gains/kG", fxConfig.Slot0.kG);
+        kS = new LoggedTunableNumber(name + "/Gains/kS", fxConfig.Slot0.kS);
+        kV = new LoggedTunableNumber(name + "/Gains/kV", fxConfig.Slot0.kV);
+        kA = new LoggedTunableNumber(name + "/Gains/kA", fxConfig.Slot0.kA);
 
         kCruiseVelocity =
             new LoggedTunableNumber(
-                m_name + "/CruiseVelocity", fxConfig.MotionMagic.MotionMagicCruiseVelocity);
+                name + "/CruiseVelocity", fxConfig.MotionMagic.MotionMagicCruiseVelocity);
         kAcceleration =
             new LoggedTunableNumber(
-                m_name + "/Acceleration", fxConfig.MotionMagic.MotionMagicAcceleration);
-        kJerk = new LoggedTunableNumber(m_name + "/Jerk", fxConfig.MotionMagic.MotionMagicJerk);
+                name + "/Acceleration", fxConfig.MotionMagic.MotionMagicAcceleration);
+        kJerk = new LoggedTunableNumber(name + "/Jerk", fxConfig.MotionMagic.MotionMagicJerk);
 
         io.configurePID(kP.get(), kI.get(), kD.get(), true);
         io.configureGSVA(kG.get(), kS.get(), kV.get(), kA.get(), true);
@@ -107,21 +107,21 @@ public abstract class GenericMotionProfiledSubsystem<G extends GenericMotionProf
     {
         // If Profile Type has changed, reset the encoder(s)
         ProfileType newProfType = getState().getProfileType();
-        if (m_proType.getClass() != newProfType.getClass()) {
+        if (proType.getClass() != newProfType.getClass()) {
             // io.zeroSensors();
         }
-        if (m_proType != newProfType) {
-            m_proType = newProfType;
+        if (proType != newProfType) {
+            proType = newProfType;
         }
 
         io.updateInputs(inputs);
-        Logger.processInputs(m_name, inputs);
+        Logger.processInputs(name, inputs);
 
         // Check for disconnections
         leaderMotorDisconnected.set(!inputs.leaderMotorConnected);
         followerMotorDisconnected.set(
-            m_constants.kFollowMotor != null && !inputs.followerMotorConnected);
-        CANcoderDisconnected.set(m_constants.kCANcoder != null && !inputs.CANcoderConnected);
+            constants.kFollowMotor != null && !inputs.followerMotorConnected);
+        CANcoderDisconnected.set(constants.kCANcoder != null && !inputs.CANcoderConnected);
 
         // If changed, update controller constants from Tuneable Numbers
         if (kP.hasChanged(hashCode()) || kI.hasChanged(hashCode()) || kD.hasChanged(hashCode())) {
@@ -142,37 +142,31 @@ public abstract class GenericMotionProfiledSubsystem<G extends GenericMotionProf
         }
 
         // Run system based on Profile Type
-        if (m_proType instanceof ProfileType.POSITION) {
+        if (proType instanceof ProfileType.POSITION profile) {
             /* Run Closed Loop to position in rotations */
-            ProfileType.POSITION proType = (ProfileType.POSITION) m_proType;
-            io.runToPosition(proType.position.getAsDouble(), proType.slot);
-        } else if (m_proType instanceof ProfileType.VELOCITY) {
+            io.runToPosition(profile.position.getAsDouble(), profile.slot);
+        } else if (proType instanceof ProfileType.VELOCITY profile) {
             /* Run Closed Loop to velocity in rotations/second */
-            ProfileType.VELOCITY proType = (ProfileType.VELOCITY) m_proType;
-            io.runToVelocity(proType.velocity.getAsDouble(), proType.slot);
-        } else if (m_proType instanceof ProfileType.MM_POSITION) {
+            io.runToVelocity(profile.velocity.getAsDouble(), profile.slot);
+        } else if (proType instanceof ProfileType.MM_POSITION profile) {
             /* Run Motion Magic to the specified position setpoint (in rotations) */
-            ProfileType.MM_POSITION proType = (ProfileType.MM_POSITION) m_proType;
-            io.runMotionMagicPosition(proType.position.getAsDouble(), proType.slot);
-        } else if (m_proType instanceof ProfileType.MM_VELOCITY) {
+            io.runMotionMagicPosition(profile.position.getAsDouble(), profile.slot);
+        } else if (proType instanceof ProfileType.MM_VELOCITY profile) {
             /* Run Motion Magic to the specified velocity setpoint (in rotations/second) */
-            ProfileType.MM_VELOCITY proType = (ProfileType.MM_VELOCITY) m_proType;
-            io.runMotionMagicVelocity(proType.velocity.getAsDouble(), proType.slot);
-        } else if (m_proType instanceof ProfileType.OPEN_VOLTAGE) {
+            io.runMotionMagicVelocity(profile.velocity.getAsDouble(), profile.slot);
+        } else if (proType instanceof ProfileType.OPEN_VOLTAGE profile) {
             /* Run Open Loop using specified voltage in volts */
-            ProfileType.OPEN_VOLTAGE proType = (ProfileType.OPEN_VOLTAGE) m_proType;
-            io.runVoltage(proType.voltage.getAsDouble());
-        } else if (m_proType instanceof ProfileType.OPEN_CURRENT) {
+            io.runVoltage(profile.voltage.getAsDouble());
+        } else if (proType instanceof ProfileType.OPEN_CURRENT profile) {
             /* Run Open Loop using specified current in amps */
-            ProfileType.OPEN_CURRENT proType = (ProfileType.OPEN_CURRENT) m_proType;
-            io.runCurrent(proType.current.getAsDouble(), proType.maxDutyCycle.getAsDouble());
-        } else if (m_proType instanceof ProfileType.DISABLED_COAST) {
+            io.runCurrent(profile.current.getAsDouble(), profile.maxDutyCycle.getAsDouble());
+        } else if (proType instanceof ProfileType.DISABLED_COAST) {
             /* Stop all output and put motor in Coast mode */
             io.stopCoast();
-        } else if (m_proType instanceof ProfileType.DISABLED_BRAKE) {
+        } else if (proType instanceof ProfileType.DISABLED_BRAKE) {
             /* Stop all output and put motor in Brake mode */
             io.stopBrake();
-        } else if (m_proType instanceof ProfileType.CHARACTERIZATION) {
+        } else if (proType instanceof ProfileType.CHARACTERIZATION) {
             /*
              * Run Open Loop for characterization in the child subsystem class's characterization
              * command. Do nothing here.
@@ -185,24 +179,26 @@ public abstract class GenericMotionProfiledSubsystem<G extends GenericMotionProf
     private void displayInfo()
     {
 
-        Logger.recordOutput(m_name + "/Goal State", getState().toString());
-        Logger.recordOutput(m_name + "/Profile Type", getState().getProfileType().toString());
-        // As the Arm is the only non-drive subsystem with an external CANcoder, report if Arm is in fallback
-        if (m_constants.kCANcoder != null) {
-            SmartDashboard.putBoolean("Arm Fallback Active", ((m_constants.kCANcoder != null) && (!inputs.CANcoderConnected)));
-            Logger.recordOutput(m_name + "/Fallback Active", !inputs.CANcoderConnected);
+        Logger.recordOutput(name + "/Goal State", getState().toString());
+        Logger.recordOutput(name + "/Profile Type", getState().getProfileType().toString());
+        // As the Arm is the only non-drive subsystem with an external CANcoder, report if Arm is in
+        // fallback
+        if (constants.kCANcoder != null) {
+            SmartDashboard.putBoolean("Arm Fallback Active",
+                ((constants.kCANcoder != null) && (!inputs.CANcoderConnected)));
+            Logger.recordOutput(name + "/Fallback Active", !inputs.CANcoderConnected);
         }
 
         if (Constants.tuningMode) {
-            Logger.recordOutput(m_name + "/Setpoint", io.getSetpoint());
-            Logger.recordOutput(m_name + "/Position(Rotations)", io.getPosition());
-            Logger.recordOutput(m_name + "/Position(Degrees)",
+            Logger.recordOutput(name + "/Setpoint", io.getSetpoint());
+            Logger.recordOutput(name + "/Position(Rotations)", io.getPosition());
+            Logger.recordOutput(name + "/Position(Degrees)",
                 (Units.rotationsToDegrees(io.getPosition())));
-            Logger.recordOutput(m_name + "/Velocity", io.getVelocity());
-            Logger.recordOutput(m_name + "/CurrTrajPos", io.getCurrTrajPos());
-            Logger.recordOutput(m_name + "/AtPosition?", io.atPosition(m_proType, 0.0));
-            Logger.recordOutput(m_name + "/Appl Volt", inputs.appliedVoltage[0]);
-            Logger.recordOutput(m_name + "/Supply Current", inputs.supplyCurrentAmps[0]);
+            Logger.recordOutput(name + "/Velocity", io.getVelocity());
+            Logger.recordOutput(name + "/CurrTrajPos", io.getCurrTrajPos());
+            Logger.recordOutput(name + "/AtPosition?", io.atPosition(proType, 0.0));
+            Logger.recordOutput(name + "/Appl Volt", inputs.appliedVoltage[0]);
+            Logger.recordOutput(name + "/Supply Current", inputs.supplyCurrentAmps[0]);
         }
     }
 }

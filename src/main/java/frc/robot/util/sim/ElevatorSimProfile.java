@@ -17,13 +17,11 @@ import frc.robot.util.sim.mechanisms.MotionProfiledMechanism;
 /** Holds information about a simulated Elevatore. */
 public class ElevatorSimProfile extends SimProfile {
 
-    private final String m_Name;
-    private final TalonFX m_Talon;
-    private final CANcoder m_CANcoder;
-    private final MotorSimConfiguration m_MotorConst;
-    private final ElevatorSimConfiguration m_ElevConst;
-    private final ElevatorSim m_ElevatorSim;
-    private final MotionProfiledMechanism m_Mech;
+    private final TalonFX talon;
+    private final CANcoder CANCoder;
+    private final ElevatorSimConfiguration elevConst;
+    private final ElevatorSim elevatorSim;
+    private final MotionProfiledMechanism mech;
 
     /**
      * Creates a new simulation profile for an Elevator using the WPILib Elevator sim.
@@ -33,37 +31,35 @@ public class ElevatorSimProfile extends SimProfile {
      * @param armConst Arm Sim configuration values
      */
     public ElevatorSimProfile(
-        final String simName,
+        final String name,
         final TalonFX talon,
-        final CANcoder cancoder,
+        final CANcoder CANCoder,
         final MotorSimConfiguration motorConst,
         final ElevatorSimConfiguration elevConst)
     {
-        this.m_Name = simName;
-        this.m_Talon = talon;
-        this.m_CANcoder = cancoder;
-        this.m_MotorConst = motorConst;
-        this.m_ElevConst = elevConst;
+        this.talon = talon;
+        this.CANCoder = CANCoder;
+        this.elevConst = elevConst;
 
-        DCMotor elevatorGearbox = m_MotorConst.simMotorModelSupplier.get();
+        DCMotor elevatorGearbox = motorConst.simMotorModelSupplier.get();
 
         // Create sim object
-        this.m_ElevatorSim =
+        this.elevatorSim =
             new ElevatorSim(
                 elevatorGearbox,
-                m_ElevConst.kElevatorGearing,
-                m_ElevConst.kCarriageMass,
-                m_ElevConst.kElevatorDrumRadius,
-                m_ElevConst.kMinElevatorHeight,
-                m_ElevConst.kMaxElevatorHeight,
+                elevConst.kElevatorGearing,
+                elevConst.kCarriageMass,
+                elevConst.kElevatorDrumRadius,
+                elevConst.kMinElevatorHeight,
+                elevConst.kMaxElevatorHeight,
                 true,
-                m_ElevConst.kDefaultSetpoint);
+                elevConst.kDefaultSetpoint);
 
         // Create sim mechanism
-        if (m_ElevConst.kIsComboSim) {
-            m_Mech = ArmElevComboMechanism.getInstance();
+        if (elevConst.kIsComboSim) {
+            mech = ArmElevComboMechanism.getInstance();
         } else {
-            m_Mech = new MotionProfiledElevatorMechanism(m_Name);
+            mech = new MotionProfiledElevatorMechanism(name);
         }
     }
 
@@ -72,37 +68,37 @@ public class ElevatorSimProfile extends SimProfile {
     {
 
         // Get the simulation state for the lead motor
-        var simState = m_Talon.getSimState();
+        var simState = talon.getSimState();
 
         // set the supply (battery) voltage for the lead motor simulation state
         simState.setSupplyVoltage(RobotController.getBatteryVoltage());
 
         // Set the input (voltage) to the Arm Simulation
-        m_ElevatorSim.setInputVoltage(simState.getMotorVoltage());
+        elevatorSim.setInputVoltage(simState.getMotorVoltage());
         // Update the Elevator Sim each time throuhgh the loop
-        m_ElevatorSim.update(getPeriod());
+        elevatorSim.update(getPeriod());
 
         // Get current position and velocity of the Elevator Sim ...
-        double position_meters = m_ElevatorSim.getPositionMeters();
-        double velocity_mps = m_ElevatorSim.getVelocityMetersPerSecond();
+        double position_meters = elevatorSim.getPositionMeters();
+        double velocity_mps = elevatorSim.getVelocityMetersPerSecond();
 
         // ... and set the position and velocity for the lead motor simulation
         // (Multiply elevator positon by total gearing reduction from motor to elevator)
         simState.setRawRotorPosition(position_meters
-            / (2 * Math.PI * m_ElevConst.kElevatorDrumRadius) * m_ElevConst.kElevatorGearing);
-        simState.setRotorVelocity(velocity_mps / (2 * Math.PI * m_ElevConst.kElevatorDrumRadius)
-            * m_ElevConst.kElevatorGearing);
+            / (2 * Math.PI * elevConst.kElevatorDrumRadius) * elevConst.kElevatorGearing);
+        simState.setRotorVelocity(velocity_mps / (2 * Math.PI * elevConst.kElevatorDrumRadius)
+            * elevConst.kElevatorGearing);
 
         // If using an external encoder, update its sim as well
-        if (m_CANcoder != null) {
+        if (CANCoder != null) {
             // (Multiply elevator position by gearing reduction from sensor to elevator)
-            m_CANcoder.getSimState().setRawPosition(position_meters
-                / (2 * Math.PI * m_ElevConst.kElevatorDrumRadius) * m_ElevConst.kSensorReduction);
-            m_CANcoder.getSimState().setVelocity(velocity_mps
-                / (2 * Math.PI * m_ElevConst.kElevatorDrumRadius) * m_ElevConst.kSensorReduction);
+            CANCoder.getSimState().setRawPosition(position_meters
+                / (2 * Math.PI * elevConst.kElevatorDrumRadius) * elevConst.kSensorReduction);
+            CANCoder.getSimState().setVelocity(velocity_mps
+                / (2 * Math.PI * elevConst.kElevatorDrumRadius) * elevConst.kSensorReduction);
         }
 
         // Update elevator sim mechanism
-        m_Mech.updateElevator(position_meters);
+        mech.updateElevator(position_meters);
     }
 }

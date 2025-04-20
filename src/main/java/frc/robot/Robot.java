@@ -28,9 +28,9 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
-    private Command m_autonomousCommand;
-    private RobotContainer m_robotContainer;
-    private Field2d m_autoTraj = new Field2d();
+    private Command autonomousCommand;
+    private RobotContainer robotContainer;
+    private Field2d autoTraj = new Field2d();
     public static final double fieldLength = Units.inchesToMeters(690.876);
     public static final double fieldWidth = Units.inchesToMeters(317);
     public static final Translation2d fieldCenter =
@@ -122,7 +122,7 @@ public class Robot extends LoggedRobot {
 
         // Instantiate our RobotContainer. This will perform all our button bindings,
         // and put our autonomous chooser on the dashboard.
-        m_robotContainer = new RobotContainer();
+        robotContainer = new RobotContainer();
     }
 
     /** This function is called periodically during all modes. */
@@ -140,7 +140,7 @@ public class Robot extends LoggedRobot {
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(1);
         }
-        SmartDashboard.putData("Auto Path Preview", m_autoTraj);
+        SmartDashboard.putData("Auto Path Preview", autoTraj);
     }
 
     /** This function is called periodically when disabled. */
@@ -155,11 +155,11 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit()
     {
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        autonomousCommand = robotContainer.getAutonomousCommand();
 
         // schedule the autonomous command
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.schedule();
+        if (autonomousCommand != null) {
+            autonomousCommand.schedule();
         }
     }
 
@@ -176,8 +176,8 @@ public class Robot extends LoggedRobot {
         // teleop starts running. If you want the autonomous to
         // continue until interrupted by another command, remove
         // this line or comment it out.
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.cancel();
+        if (autonomousCommand != null) {
+            autonomousCommand.cancel();
         }
 
         if (DriverStation.isFMSAttached()) {
