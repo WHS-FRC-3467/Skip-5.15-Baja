@@ -16,12 +16,6 @@ package frc.robot.subsystems.drive;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.CANBus;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.ModuleConfig;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -37,25 +31,20 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
-import frc.robot.RobotState;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Vision.Vision;
-import frc.robot.util.LoggedTunableNumber;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -73,24 +62,6 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                 Math.hypot(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
                 Math.hypot(TunerConstants.BackRight.LocationX,
                     TunerConstants.BackRight.LocationY)));
-    // PathPlanner config constants
-    private static final double ROBOT_MASS_KG = 64.728;
-    private static final double ROBOT_MOI = 5.835;
-    private static final double WHEEL_COF = 1.13; // https://www.chiefdelphi.com/t/vexpro-new-products-2023-2024/446005/91?
-    private static final RobotConfig PP_CONFIG =
-        new RobotConfig(
-            ROBOT_MASS_KG,
-            ROBOT_MOI,
-            new ModuleConfig(
-                TunerConstants.FrontLeft.WheelRadius,
-                // TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
-                4.49,
-                WHEEL_COF,
-                DCMotor.getKrakenX60Foc(1)
-                    .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
-                TunerConstants.FrontLeft.SlipCurrent,
-                1),
-            getModuleTranslations());
 
     public Field2d fieldMap = new Field2d();
     static final Lock odometryLock = new ReentrantLock();
@@ -120,8 +91,7 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         ModuleIO flModuleIO,
         ModuleIO frModuleIO,
         ModuleIO blModuleIO,
-        ModuleIO brModuleIO,
-        BooleanSupplier mirrorAuto)
+        ModuleIO brModuleIO)
     {
         SmartDashboard.putData("Robot Pose Field Map", fieldMap);
         this.gyroIO = gyroIO;
@@ -136,40 +106,6 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
 
         // Start odometry thread
         PhoenixOdometryThread.getInstance().start();
-
-        // AutoBuilder.configure(
-        // this::getPose,
-        // this::setPoseIfSim,
-        // this::getChassisSpeeds,
-        // this::runVelocity,
-        // new PPHolonomicDriveController(
-        // new PIDConstants(3, 0.0, 0), new PIDConstants(5.5, 0.0, 0.0)),
-        // PP_CONFIG,
-        // () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-        // this);
-
-        AutoBuilder.configureCustom(
-            (path) -> new MirrorableFollowPathCommand(
-                path, this::getPose,
-                this::getChassisSpeeds,
-                this::runVelocity,
-                new PPHolonomicDriveController(
-                    new PIDConstants(3, 0.0, 0), new PIDConstants(5.5, 0.0, 0.0)),
-                PP_CONFIG,
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                mirrorAuto,
-                this),
-            this::getPose, this::setPoseIfSim, true);
-        PathPlannerLogging.setLogActivePathCallback(
-            (activePath) -> {
-                Logger.recordOutput(
-                    "Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
-            });
-        PathPlannerLogging.setLogTargetPoseCallback(
-            (targetPose) -> {
-                Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-            });
-
 
         // Configure SysId
         sysId =

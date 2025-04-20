@@ -11,15 +11,12 @@ import frc.robot.subsystems.LED.LEDSubsystemIO.LEDState;
 import frc.robot.subsystems.LED.LEDSubsystemIO.MatchTimerState;
 import frc.robot.subsystems.Vision.Vision;
 import frc.robot.util.LoggedTunableNumber;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.DriveCommands;
-import frc.robot.commands.DriveCommands.DriveMode;
 
 public class LEDSubsystem extends SubsystemBase {
 
@@ -234,11 +231,6 @@ public class LEDSubsystem extends SubsystemBase {
                     !m_Arm.atPosition(0.0))) {
                 // An Elevated position has been commanded, but it's not there yet
                 newState = LEDState.SUPER_MOVE;
-
-                // Aligning?
-            } else if (DriveCommands.getDriveMode() == DriveMode.dmApproach) {
-                // The robot is auto-aligning
-                newState = LEDState.ALIGNING;
 
                 // Holding Coral?
             } else if (m_haveCoral.getAsBoolean()) {

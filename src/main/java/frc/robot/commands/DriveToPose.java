@@ -1,7 +1,6 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -16,6 +15,7 @@ import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.TunablePIDController;
 import frc.robot.util.TuneableProfiledPID;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -33,8 +33,8 @@ public class DriveToPose extends Command {
     private boolean finishWithinTolerance = true;
 
     private TrapezoidProfile driveProfile;
-    private final PIDController driveController =
-        new PIDController(3.0, 0.0, 0.1);
+    private final TunablePIDController driveController =
+        new TunablePIDController("DriveToPose/DriveController", 3.0, 0.0, 0.1);
     private final TuneableProfiledPID thetaController =
         new TuneableProfiledPID(
             "DriveToPose/ThetaController",
@@ -115,14 +115,6 @@ public class DriveToPose extends Command {
         return this;
     }
 
-    public DriveToPose withPID(double p, double i, double d)
-    {
-        this.driveController.setP(p);
-        this.driveController.setI(i);
-        this.driveController.setD(d);
-        return this;
-    }
-
     public DriveToPose finishWithinTolerance(boolean finish)
     {
         this.finishWithinTolerance = finish;
@@ -156,8 +148,8 @@ public class DriveToPose extends Command {
     @Override
     public void execute()
     {
-        // driveController.updatePID();
-        // thetaController.updatePID();
+        driveController.updatePID();
+        thetaController.updatePID();
 
         running = true;
 

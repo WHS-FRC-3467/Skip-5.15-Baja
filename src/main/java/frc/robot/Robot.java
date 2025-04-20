@@ -8,27 +8,18 @@ import au.grapplerobotics.CanBridge;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.DriveMotorArrangement;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerMotorArrangement;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.PathPlannerPath;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.generated.TunerConstants;
 import frc.robot.util.Elastic;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -42,10 +33,6 @@ public class Robot extends LoggedRobot {
     private Field2d m_autoTraj = new Field2d();
     public static final double fieldLength = Units.inchesToMeters(690.876);
     public static final double fieldWidth = Units.inchesToMeters(317);
-    private Command m_lastAutonomousCommand;
-    private boolean m_shouldMirror;
-    private boolean m_lastShouldMirror;
-    private List<Pose2d> m_pathsToShow = new ArrayList<Pose2d>();
     public static final Translation2d fieldCenter =
         new Translation2d(fieldLength / 2, fieldWidth / 2);
 
@@ -159,60 +146,7 @@ public class Robot extends LoggedRobot {
     /** This function is called periodically when disabled. */
     @Override
     public void disabledPeriodic()
-    {
-        var m_alliance = DriverStation.getAlliance().isPresent()
-            && DriverStation.getAlliance().get() == Alliance.Red;
-
-        // Get currently selected command
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-        m_shouldMirror = m_robotContainer.shouldMirrorPath();
-        // Check if is the same as the last one
-        if ((m_autonomousCommand != m_lastAutonomousCommand || m_shouldMirror != m_lastShouldMirror)
-            && m_autonomousCommand != null) {
-            // Check if its contained in the list of our autos
-            if (AutoBuilder.getAllAutoNames().contains(m_autonomousCommand.getName())) {
-                // Clear the current path
-                m_pathsToShow.clear();
-                // Grabs all paths from the auto
-                try {
-                    for (PathPlannerPath path : PathPlannerAuto
-                        .getPathGroupFromAutoFile(m_autonomousCommand.getName())) {
-                        // Adds all trajectories to master list
-                        var finalPath = path;
-                        // if (m_alliance) {
-                        // finalPath = path.flipPath();
-                        // }
-                        if (m_shouldMirror) {
-                            finalPath = path.mirrorPath();
-                        }
-                        m_pathsToShow.addAll(finalPath.getPathPoses());
-                    }
-                } catch (IOException | ParseException e) {
-                    e.printStackTrace();
-                }
-                // Displays all poses on Field2d widget
-                m_autoTraj.getObject("traj").setPoses(m_pathsToShow);
-            }
-        }
-        m_lastAutonomousCommand = m_autonomousCommand;
-        m_lastShouldMirror = m_shouldMirror;
-
-        var firstPose = m_robotContainer.getFirstAutoPose();
-        if (firstPose.isPresent()) {
-            Logger.recordOutput("Alignment/StartPose", firstPose.get());
-            SmartDashboard.putBoolean("Alignment/Translation",
-                firstPose.get().getTranslation().getDistance(
-                    m_robotContainer.m_drive.getPose().getTranslation()) <= Units
-                        .inchesToMeters(4));
-            SmartDashboard.putBoolean("Alignment/Rotation",
-                firstPose.get().getRotation()
-                    .minus(m_robotContainer.m_drive.getPose().getRotation())
-                    .getDegrees() < 5);
-            SmartDashboard.putNumber("Alignment/Distance To Auto Start",
-                Math.round(Units.metersToInches(firstPose.get().getTranslation().getDistance(
-                    m_robotContainer.m_drive.getPose().getTranslation()))));
-        }
-    }
+    {}
 
 
     /**
@@ -221,10 +155,9 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit()
     {
-        m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-        // schedule the autonomous command (example)
+        // schedule the autonomous command
         if (m_autonomousCommand != null) {
             m_autonomousCommand.schedule();
         }
@@ -249,14 +182,7 @@ public class Robot extends LoggedRobot {
 
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(0);
-        } else {
-            m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
         }
-
-        // Bring the Tongue back down after auto
-        m_robotContainer.lowerTongueTele();
-
-
     }
 
     /** This function is called periodically during operator control. */

@@ -13,7 +13,6 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,12 +28,11 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
     private static final double ANGLE_KP = 5.0;
@@ -45,20 +43,6 @@ public class DriveCommands {
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
-
-    public enum DriveMode {
-        dmJoystick,
-        dmAngle,
-        dmApproach,
-        dmStrafe
-    }
-
-    private static DriveMode currentDriveMode = DriveMode.dmJoystick;
-
-    public static DriveMode getDriveMode()
-    {
-        return currentDriveMode;
-    }
 
     private DriveCommands()
     {}
@@ -88,7 +72,6 @@ public class DriveCommands {
     {
         return Commands.run(
             () -> {
-                currentDriveMode = DriveMode.dmJoystick;
                 // Get linear velocity
                 Translation2d linearVelocity =
                     getLinearVelocityFromJoysticks(xSupplier.getAsDouble(),
@@ -142,7 +125,6 @@ public class DriveCommands {
         // Construct command
         return Commands.run(
             () -> {
-                currentDriveMode = DriveMode.dmAngle;
                 // Get linear velocity
                 Translation2d linearVelocity =
                     getLinearVelocityFromJoysticks(
@@ -235,11 +217,8 @@ public class DriveCommands {
                         double kS = (sumY * sumX2 - sumX * sumXY) / (n * sumX2 - sumX * sumX);
                         double kV = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
 
-                        NumberFormat formatter = new DecimalFormat("#0.00000");
-                        System.out
-                            .println("********** Drive FF Characterization Results **********");
-                        System.out.println("\tkS: " + formatter.format(kS));
-                        System.out.println("\tkV: " + formatter.format(kV));
+                        Logger.recordOutput("Drive/Characterization/kS", kS);
+                        Logger.recordOutput("Drive/Characterization/kV", kV);
                     }));
     }
 
@@ -300,19 +279,12 @@ public class DriveCommands {
                             double wheelRadius =
                                 (state.gyroDelta * Drive.DRIVE_BASE_RADIUS) / wheelDelta;
 
-                            NumberFormat formatter = new DecimalFormat("#0.000");
-                            System.out.println(
-                                "********** Wheel Radius Characterization Results **********");
-                            System.out.println(
-                                "\tWheel Delta: " + formatter.format(wheelDelta) + " radians");
-                            System.out.println(
-                                "\tGyro Delta: " + formatter.format(state.gyroDelta) + " radians");
-                            System.out.println(
-                                "\tWheel Radius: "
-                                    + formatter.format(wheelRadius)
-                                    + " meters, "
-                                    + formatter.format(Units.metersToInches(wheelRadius))
-                                    + " inches");
+                            Logger.recordOutput("Drive/Characterization/WheelDelta",
+                                Rotation2d.fromRadians(wheelDelta));
+                            Logger.recordOutput("Drive/Characterization/GyroDelta",
+                                Rotation2d.fromRadians(state.gyroDelta));
+                            Logger.recordOutput("Drive/Characterization/WheelRadiusInches",
+                                Units.metersToInches(wheelRadius));
                         })));
     }
 
@@ -320,27 +292,5 @@ public class DriveCommands {
         double[] positions = new double[4];
         Rotation2d lastAngle = new Rotation2d();
         double gyroDelta = 0.0;
-    }
-
-    public static Command driveTest(Drive drive, double speed)
-    {
-        return Commands.sequence(
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(speed, speed, 0))),
-            Commands.waitUntil(() -> drive.isAtDriveSpeed(Math.hypot(speed, speed))),
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(-speed, -speed, 0))),
-            Commands.waitUntil(() -> drive.isAtDriveSpeed(Math.hypot(-speed, -speed))),
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(-speed, speed, 0))),
-            Commands.waitUntil(() -> drive.isAtDriveSpeed(Math.hypot(-speed, speed))),
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(0, 0, 0))));
-    }
-
-    public static Command steerTest(Drive drive, double speed)
-    {
-        return Commands.sequence(
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(0, 0, speed))),
-            Commands.waitUntil(() -> drive.isAtSteerSpeed(speed)),
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(0, 0, -speed))),
-            Commands.waitUntil(() -> drive.isAtSteerSpeed(-speed)),
-            Commands.runOnce(() -> drive.runVelocity(new ChassisSpeeds(0, 0, 0))));
     }
 }
