@@ -1,4 +1,4 @@
-package frc.robot.subsystems.GenericMotionProfiledSubsystem;
+package frc.robot.subsystems.GenericMotorSubsystem;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -8,7 +8,7 @@ import frc.robot.util.sim.ElevatorSimConfiguration;
 import frc.robot.util.sim.MotorSimConfiguration;
 
 /** Wrapper class for TalonFX config params (Recommend initializing in a static block!) */
-public class GenericMotionProfiledSubsystemConstants {
+public class GenericMotorSubsystemConstants {
 
     public String kName = "ERROR_ASSIGN_A_NAME";
 

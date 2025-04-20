@@ -1,4 +1,4 @@
-package frc.robot.subsystems.GenericMotionProfiledSubsystem;
+package frc.robot.subsystems.GenericMotorSubsystem;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import edu.wpi.first.math.util.Units;
@@ -10,7 +10,7 @@ import frc.robot.util.LoggedTunableNumber;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
-public abstract class GenericMotionProfiledSubsystem<G extends GenericMotionProfiledSubsystem.TargetState>
+public abstract class GenericMotorSubsystem<G extends GenericMotorSubsystem.TargetState>
     extends SubsystemBase {
 
     // Tunable numbers
@@ -45,28 +45,26 @@ public abstract class GenericMotionProfiledSubsystem<G extends GenericMotionProf
     public abstract G getState();
 
     private final String name;
-    private final GenericMotionProfiledSubsystemConstants constants;
-    protected final GenericMotionProfiledSubsystemIO io;
-    private boolean isSim = false;
+    private final GenericMotorSubsystemConstants constants;
+    protected final GenericMotorSubsystemIO io;
     private ProfileType proType;
 
-    protected final GenericMotionProfiledIOInputsAutoLogged inputs =
-        new GenericMotionProfiledIOInputsAutoLogged();
+    protected final GenericMotorIOInputsAutoLogged inputs =
+        new GenericMotorIOInputsAutoLogged();
     private final Alert leaderMotorDisconnected;
     private final Alert followerMotorDisconnected;
     private final Alert CANcoderDisconnected;
 
-    public GenericMotionProfiledSubsystem(
+    public GenericMotorSubsystem(
         ProfileType defaultProfileType,
-        GenericMotionProfiledSubsystemConstants constants,
-        GenericMotionProfiledSubsystemIO io,
+        GenericMotorSubsystemConstants constants,
+        GenericMotorSubsystemIO io,
         boolean isSim)
     {
 
         this.proType = defaultProfileType;
         this.constants = constants;
         this.io = io;
-        this.isSim = isSim;
         this.name = constants.kName;
 
         this.leaderMotorDisconnected =

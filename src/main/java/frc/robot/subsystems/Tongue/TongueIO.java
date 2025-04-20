@@ -1,6 +1,6 @@
 package frc.robot.subsystems.Tongue;
 
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemIO;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystemIO;
 
-public interface TongueIO extends GenericMotionProfiledSubsystemIO {
+public interface TongueIO extends GenericMotorSubsystemIO {
 }

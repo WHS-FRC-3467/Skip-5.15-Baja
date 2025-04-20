@@ -1,8 +1,8 @@
 package frc.robot.subsystems.Tongue;
 
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemIOImpl;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystemIOImpl;
 
-public class TongueIOTalonFX extends GenericMotionProfiledSubsystemIOImpl implements TongueIO {
+public class TongueIOTalonFX extends GenericMotorSubsystemIOImpl implements TongueIO {
 
     public TongueIOTalonFX()
     {

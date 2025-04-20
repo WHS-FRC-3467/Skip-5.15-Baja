@@ -1,8 +1,8 @@
 package frc.robot.subsystems.Arm;
 
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemIOImpl;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystemIOImpl;
 
-public class ArmIOTalonFX extends GenericMotionProfiledSubsystemIOImpl implements ArmIO {
+public class ArmIOTalonFX extends GenericMotorSubsystemIOImpl implements ArmIO {
 
     public ArmIOTalonFX()
     {

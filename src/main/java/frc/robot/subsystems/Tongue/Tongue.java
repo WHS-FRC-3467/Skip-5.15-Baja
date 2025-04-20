@@ -8,8 +8,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.TargetState;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem.TargetState;
 import frc.robot.util.LoggedTunableNumber;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class Tongue extends GenericMotionProfiledSubsystem<Tongue.State> {
+public class Tongue extends GenericMotorSubsystem<Tongue.State> {
 
     static LoggedTunableNumber positionTuning =
         new LoggedTunableNumber("Tongue/PositionTuningSP", 10.0);

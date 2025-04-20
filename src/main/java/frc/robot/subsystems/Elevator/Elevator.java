@@ -8,8 +8,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotState;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.TargetState;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem.TargetState;
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.sim.mechanisms.ArmElevComboReplay;
 import lombok.Getter;
@@ -18,7 +18,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
+public class Elevator extends GenericMotorSubsystem<Elevator.State> {
 
     ArmElevComboReplay Replay = null;
 

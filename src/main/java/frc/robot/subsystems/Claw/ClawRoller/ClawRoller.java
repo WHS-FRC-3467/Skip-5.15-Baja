@@ -3,8 +3,8 @@ package frc.robot.subsystems.Claw.ClawRoller;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.TargetState;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem.TargetState;
 import frc.robot.util.LoggedTunableNumber;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class ClawRoller
-    extends GenericMotionProfiledSubsystem<ClawRoller.State> {
+    extends GenericMotorSubsystem<ClawRoller.State> {
 
     private static final LoggedTunableNumber L1_SPEED =
         new LoggedTunableNumber("ClawRoller/L1 Speed", 0.45);

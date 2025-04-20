@@ -1,8 +1,8 @@
 package frc.robot.subsystems.Elevator;
 
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemIOImpl;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystemIOImpl;
 
-public class ElevatorIOTalonFX extends GenericMotionProfiledSubsystemIOImpl implements ElevatorIO {
+public class ElevatorIOTalonFX extends GenericMotorSubsystemIOImpl implements ElevatorIO {
 
     public ElevatorIOTalonFX()
     {

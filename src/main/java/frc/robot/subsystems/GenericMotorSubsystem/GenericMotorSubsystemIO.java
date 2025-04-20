@@ -1,11 +1,11 @@
-package frc.robot.subsystems.GenericMotionProfiledSubsystem;
+package frc.robot.subsystems.GenericMotorSubsystem;
 
 import org.littletonrobotics.junction.AutoLog;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.ProfileType;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem.ProfileType;
 
-public interface GenericMotionProfiledSubsystemIO {
+public interface GenericMotorSubsystemIO {
     @AutoLog
-    abstract class GenericMotionProfiledIOInputs {
+    abstract class GenericMotorIOInputs {
 
         // Flags to indicate which components are active and connected
         public boolean leaderMotorConnected = false;
@@ -27,7 +27,7 @@ public interface GenericMotionProfiledSubsystemIO {
         public double relativeEncoderPositionRot = 0.0;
     }
 
-    default void updateInputs(GenericMotionProfiledIOInputs inputs)
+    default void updateInputs(GenericMotorIOInputs inputs)
     {}
 
     /** Run Open Loop at the specified voltage */

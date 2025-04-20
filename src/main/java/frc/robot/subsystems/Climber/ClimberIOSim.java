@@ -1,8 +1,8 @@
 package frc.robot.subsystems.Climber;
 
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemIOImpl;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystemIOImpl;
 
-public class ClimberIOSim extends GenericMotionProfiledSubsystemIOImpl implements ClimberIO {
+public class ClimberIOSim extends GenericMotorSubsystemIOImpl implements ClimberIO {
 
     public ClimberIOSim()
     {

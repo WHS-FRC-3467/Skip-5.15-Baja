@@ -6,8 +6,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.TargetState;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem.TargetState;
 import frc.robot.util.LoggedTunableNumber;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
-public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
+public class Climber extends GenericMotorSubsystem<Climber.State> {
 
     private static final LoggedTunableNumber climbHeight =
         new LoggedTunableNumber("Climber/ClimbHeight", -0.1);

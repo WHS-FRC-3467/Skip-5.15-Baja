@@ -9,16 +9,16 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotType;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystemConstants;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystemConstants.simType;
 import frc.robot.Ports;
 import frc.robot.Robot;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemConstants;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemConstants.simType;
 
 /** Add your docs here. */
 public final class ArmConstants {
 
-    public static final GenericMotionProfiledSubsystemConstants kSubSysConstants =
-        new GenericMotionProfiledSubsystemConstants();
+    public static final GenericMotorSubsystemConstants kSubSysConstants =
+        new GenericMotorSubsystemConstants();
 
     public static final double kHomingCurrent = 2.0;
 

@@ -3,15 +3,15 @@ package frc.robot.subsystems.Arm;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.TargetState;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem.TargetState;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
-public class Arm extends GenericMotionProfiledSubsystem<Arm.State> {
+public class Arm extends GenericMotorSubsystem<Arm.State> {
 
     @RequiredArgsConstructor
     @Getter

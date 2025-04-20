@@ -9,14 +9,14 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Ports;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemConstants;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystemConstants.simType;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystemConstants;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystemConstants.simType;
 
 /** Add your docs here. */
 public final class ClimberConstants {
 
-    public static final GenericMotionProfiledSubsystemConstants kSubSysConstants =
-        new GenericMotionProfiledSubsystemConstants();
+    public static final GenericMotorSubsystemConstants kSubSysConstants =
+        new GenericMotorSubsystemConstants();
 
     public static final double kSupplyCurrentLimit = 75.0;
 

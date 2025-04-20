@@ -1,4 +1,4 @@
-package frc.robot.subsystems.GenericMotionProfiledSubsystem;
+package frc.robot.subsystems.GenericMotorSubsystem;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -21,7 +21,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.ProfileType;
+import frc.robot.subsystems.GenericMotorSubsystem.GenericMotorSubsystem.ProfileType;
 import frc.robot.util.drivers.Phoenix6Util;
 import frc.robot.util.sim.PhysicsSim;
 import java.util.ArrayList;
@@ -31,13 +31,13 @@ import java.util.List;
  * Generic motion IO implementation for any motion mechanism using a TalonFX motor controller, an
  * optional follower motor, and an optional remote CANcoder encoder.
  */
-public class GenericMotionProfiledSubsystemIOImpl implements GenericMotionProfiledSubsystemIO {
+public class GenericMotorSubsystemIOImpl implements GenericMotorSubsystemIO {
 
     private boolean mIsSim;
     private PhysicsSim mSim;
 
     // Constants data struct
-    GenericMotionProfiledSubsystemConstants mConstants;
+    GenericMotorSubsystemConstants mConstants;
 
     // Local motor objects
     private TalonFX mMainMotor = null;
@@ -96,8 +96,8 @@ public class GenericMotionProfiledSubsystemIOImpl implements GenericMotionProfil
     /*
      * Constructor
      */
-    public GenericMotionProfiledSubsystemIOImpl(
-        GenericMotionProfiledSubsystemConstants constants, boolean isSim)
+    public GenericMotorSubsystemIOImpl(
+        GenericMotorSubsystemConstants constants, boolean isSim)
     {
 
         mIsSim = isSim;
@@ -255,7 +255,7 @@ public class GenericMotionProfiledSubsystemIOImpl implements GenericMotionProfil
     }
 
     @Override
-    public void updateInputs(GenericMotionProfiledIOInputs inputs)
+    public void updateInputs(GenericMotorIOInputs inputs)
     {
 
         if (mIsSim) {
