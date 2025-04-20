@@ -5,18 +5,13 @@
 package frc.robot;
 
 import static frc.robot.subsystems.Vision.VisionConstants.*;
-import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
-import com.ctre.phoenix.Util;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -70,9 +65,9 @@ public class RobotContainer {
 
     // Subsystems
     public final Drive drive;
-    private final Arm profiledArm;
-    private final Elevator profiledElevator;
-    private final Climber profiledClimber;
+    private final Arm arm;
+    private final Elevator elevator;
+    private final Climber climber;
     private final ClawRoller clawRoller;
     private final Tongue tongue;
     private final ClawRollerLaserCAN clawRollerLaserCAN;
@@ -107,12 +102,12 @@ public class RobotContainer {
                         new ModuleIOTalonFX(TunerConstants.BackLeft),
                         new ModuleIOTalonFX(TunerConstants.BackRight));
 
-                profiledArm = new Arm(new ArmIOTalonFX(), false);
-                profiledElevator = new Elevator(new ElevatorIOTalonFX(), false);
+                arm = new Arm(new ArmIOTalonFX(), false);
+                elevator = new Elevator(new ElevatorIOTalonFX(), false);
                 if (Constants.getRobot() == RobotType.BAJA) {
-                    profiledClimber = new Climber(new ClimberIOTalonFX(), false);
+                    climber = new Climber(new ClimberIOTalonFX(), false);
                 } else {
-                    profiledClimber = new Climber(new ClimberIO() {}, false);
+                    climber = new Climber(new ClimberIO() {}, false);
                 }
                 clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 tongue = new Tongue(new TongueIOTalonFX(), false);
@@ -127,7 +122,7 @@ public class RobotContainer {
                 // Instantiate LED Subsystem on BAJA only
                 if (Constants.getRobot() == RobotType.BAJA) {
                     LED = new LEDSubsystem(new LEDSubsystemIOCANdle(),
-                        clawRoller, profiledArm, profiledElevator, profiledClimber,
+                        clawRoller, arm, elevator, climber,
                         vision, clawRollerLaserCAN.triggered, isCoralMode);
                 } else {
                     LED = null;
@@ -146,23 +141,17 @@ public class RobotContainer {
                         new ModuleIOSim(TunerConstants.BackLeft),
                         new ModuleIOSim(TunerConstants.BackRight));
 
-
-                profiledArm = new Arm(new ArmIOSim(), true);
-                profiledElevator = new Elevator(new ElevatorIOSim(), true);
-                profiledClimber = new Climber(new ClimberIOSim(), true);
+                arm = new Arm(new ArmIOSim(), true);
+                elevator = new Elevator(new ElevatorIOSim(), true);
+                climber = new Climber(new ClimberIOSim(), true);
                 clawRoller = new ClawRoller(new ClawRollerIOSim(), true);
                 tongue = new Tongue(new TongueIOSim(), true);
                 clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIOSim());
                 isCoralMode = new Trigger(clawRollerLaserCAN.triggered.debounce(0.25));
 
-                // vision =
-                // new Vision(
-                // drive,
-                // new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
-                // new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
                 vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
                 LED = new LEDSubsystem(new LEDSubsystemIOWPILib(),
-                    clawRoller, profiledArm, profiledElevator, profiledClimber,
+                    clawRoller, arm, elevator, climber,
                     vision, clawRollerLaserCAN.triggered, isCoralMode);
 
                 hasVision = new Trigger(() -> true);
@@ -178,28 +167,27 @@ public class RobotContainer {
                         new ModuleIO() {},
                         new ModuleIO() {});
 
-                profiledArm = new Arm(new ArmIO() {}, true);
-                profiledElevator = new Elevator(new ElevatorIOSim(), true);
-                profiledClimber = new Climber(new ClimberIO() {}, true);
+                arm = new Arm(new ArmIO() {}, true);
+                elevator = new Elevator(new ElevatorIOSim(), true);
+                climber = new Climber(new ClimberIO() {}, true);
                 clawRoller = new ClawRoller(new ClawRollerIO() {}, true);
                 tongue = new Tongue(new TongueIO() {}, true);
                 clawRollerLaserCAN = new ClawRollerLaserCAN(new ClawRollerLaserCANIO() {});
                 isCoralMode = new Trigger(clawRollerLaserCAN.triggered.debounce(0.25));
                 vision = new Vision(drive, new VisionIO() {}, new VisionIO() {});
-                LED = new LEDSubsystem(new LEDSubsystemIO() {}, clawRoller, profiledArm,
-                    profiledElevator, profiledClimber, vision, clawRollerLaserCAN.triggered,
+                LED = new LEDSubsystem(new LEDSubsystemIO() {}, clawRoller, arm,
+                    elevator, climber, vision, clawRollerLaserCAN.triggered,
                     isCoralMode);
 
                 hasVision = new Trigger(() -> vision.anyCameraConnected);
                 break;
-
         }
 
         // Fallback Triggers
         hasLaserCAN = new Trigger(clawRollerLaserCAN.validMeasurement);
 
         // Superstructure coordinates Arm and Elevator motions
-        superStruct = new Superstructure(profiledArm, profiledElevator);
+        superStruct = new Superstructure(arm, elevator);
 
         // Configure the controller button and joystick bindings
         configureControllerBindings();
@@ -282,10 +270,10 @@ public class RobotContainer {
                     () -> strafeCommand.withinTolerance(
                         Units.inchesToMeters(2.0),
                         Rotation2d.fromDegrees(4.0))),
-                profiledArm.setStateCommand(Arm.State.STOW),
-                Commands.waitUntil(() -> profiledArm.atPosition(Units.degreesToRotations(10))),
-                profiledElevator.setStateCommand(Elevator.State.BARGE),
-                Commands.waitUntil(profiledElevator.launchHeightTrigger),
+                arm.setStateCommand(Arm.State.STOW),
+                Commands.waitUntil(() -> arm.atPosition(Units.degreesToRotations(10))),
+                elevator.setStateCommand(Elevator.State.BARGE),
+                Commands.waitUntil(elevator.launchHeightTrigger),
                 clawRoller.setStateCommand(ClawRoller.State.ALGAE_REVERSE),
                 Commands.waitUntil(clawRoller.stopped.negate()),
                 Commands.waitSeconds(0.2),
@@ -513,31 +501,31 @@ public class RobotContainer {
             .back()
             .onTrue(
                 Commands.sequence(
-                    profiledClimber.setClimbRequestCommand(true),
-                    profiledClimber.indexClimbState()));
+                    climber.setClimbRequestCommand(true),
+                    climber.indexClimbState()));
 
         // Deploy climber and move arm out for clearance
-        profiledClimber.getClimbRequest().and(profiledClimber.getClimbStep1())
+        climber.getClimbRequest().and(climber.getClimbStep1())
             .onTrue(
                 Commands.sequence(
-                    profiledClimber.setStateCommand(Climber.State.PREP),
+                    climber.setStateCommand(Climber.State.PREP),
                     superStruct.getDefaultTransitionCommand(Arm.State.CLIMB,
                         Elevator.State.STOW)));
 
         // Retract climber
-        profiledClimber.getClimbRequest().and(profiledClimber.getClimbStep2())
+        climber.getClimbRequest().and(climber.getClimbStep2())
             .onTrue(
-                profiledClimber.setStateCommand(Climber.State.CLIMB));
+                climber.setStateCommand(Climber.State.CLIMB));
 
         // Manually climb more on hold
         driver
-            .back().and(profiledClimber.getClimbRequest()).and(profiledClimber.getClimbStep3())
+            .back().and(climber.getClimbRequest()).and(climber.getClimbStep3())
             .whileTrue(
-                profiledClimber.setStateCommand(Climber.State.MANUAL_CLIMB))
-            .onFalse(profiledClimber.setStateCommand(Climber.State.HOLD));
+                climber.setStateCommand(Climber.State.MANUAL_CLIMB))
+            .onFalse(climber.setStateCommand(Climber.State.HOLD));
 
         // Slow drivetrain to 75% while climbing
-        profiledClimber.getClimbRequest().whileTrue(
+        climber.getClimbRequest().whileTrue(
             DriveCommands.joystickDrive(
                 drive,
                 () -> -driver.getLeftY() * .75,
@@ -546,7 +534,7 @@ public class RobotContainer {
 
         driver.povLeft().onTrue(
             Commands.sequence(
-                profiledElevator.setStateCommand(Elevator.State.STOW),
+                elevator.setStateCommand(Elevator.State.STOW),
                 tongue.setStateCommand(Tongue.State.DOWN),
                 clawRoller.setStateCommand(State.SCORE)))
             .onFalse(clawRoller.setStateCommand(State.OFF)
@@ -556,21 +544,21 @@ public class RobotContainer {
         driver.povRight()
             .onTrue(
                 Commands.sequence(
-                    profiledClimber.resetClimb(),
+                    climber.resetClimb(),
                     superStruct.getTransitionCommand(Arm.State.STOW, Elevator.State.STOW)));
 
         // Driver POV Down: Zero the Elevator (HOMING)
         driver
             .povDown().onTrue(
                 Commands.sequence(
-                    profiledArm.setStateCommand(Arm.State.STOW),
-                    profiledElevator.getHomeCommand()));
+                    arm.setStateCommand(Arm.State.STOW),
+                    elevator.getHomeCommand()));
 
         driver
             .povUp().onTrue(
                 Commands.parallel(
-                    profiledElevator.setStateCommand(Elevator.State.LEVEL_3),
-                    profiledArm.setStateCommand(Arm.State.LEVEL_2)));
+                    elevator.setStateCommand(Elevator.State.LEVEL_3),
+                    arm.setStateCommand(Arm.State.LEVEL_2)));
     }
 
     /**
