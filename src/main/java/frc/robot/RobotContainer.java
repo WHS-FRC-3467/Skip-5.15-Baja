@@ -76,10 +76,6 @@ public class RobotContainer {
     @AutoLogOutput
     private Trigger isCoralMode;
 
-    // Override Triggers
-    public Trigger hasVision;
-    public Trigger hasLaserCAN;
-
     /** Constructs the RobotContainer. Initializes all hardware and simulation IO. */
     public RobotContainer()
     {
@@ -114,7 +110,6 @@ public class RobotContainer {
                         climber, vision, clawRollerLaserCAN.triggered, isCoralMode)
                     : null;
 
-                hasVision = new Trigger(() -> vision.anyCameraConnected);
                 break;
 
             case SIM:
@@ -138,7 +133,6 @@ public class RobotContainer {
                 LED = new LEDSubsystem(new LEDSubsystemIOWPILib(), clawRoller, arm, elevator,
                     climber, vision, clawRollerLaserCAN.triggered, isCoralMode);
 
-                hasVision = new Trigger(() -> true);
                 break;
 
             default:
@@ -160,11 +154,9 @@ public class RobotContainer {
                 LED = new LEDSubsystem(new LEDSubsystemIO() {}, clawRoller, arm, elevator, climber,
                     vision, clawRollerLaserCAN.triggered, isCoralMode);
 
-                hasVision = new Trigger(() -> vision.anyCameraConnected);
                 break;
         }
 
-        hasLaserCAN = new Trigger(clawRollerLaserCAN.validMeasurement);
         superstruct = new Superstructure(arm, elevator);
         configureControllerBindings();
 
@@ -266,10 +258,10 @@ public class RobotContainer {
     {
         drive.setDefaultCommand(joystickDrive());
 
-        driver.rightBumper().and(hasVision).whileTrue(
+        driver.rightBumper().and(vision.hasVision).whileTrue(
             Commands.either(approachReefBranch(ReefSide.RIGHT), Commands.none(), isCoralMode));
 
-        driver.leftBumper().and(hasVision).whileTrue(
+        driver.leftBumper().and(vision.hasVision).whileTrue(
             Commands.either(approachReefBranch(ReefSide.LEFT), Commands.none(), isCoralMode));
 
         driver.leftBumper().and(driver.rightBumper()).and(isCoralMode.negate())

@@ -22,12 +22,11 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import lombok.Getter;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.LinkedList;
 import java.util.List;
 import org.littletonrobotics.junction.Logger;
@@ -40,10 +39,12 @@ public class Vision extends SubsystemBase {
     public boolean visionHasTarget = false;
     private boolean seesThisTarget = false;
     private boolean[] cameraConnected = new boolean[] {true, true};
-    @Getter
-    public boolean anyCameraConnected = true;
 
-    public Vision(VisionConsumer consumer, VisionIO... io)
+    private boolean anyCameraConnected = true;
+    public Trigger hasVision = new Trigger(() -> anyCameraConnected);
+
+    public Vision(
+        VisionConsumer consumer, VisionIO... io)
     {
         this.consumer = consumer;
         this.io = io;
