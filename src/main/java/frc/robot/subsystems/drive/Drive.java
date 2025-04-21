@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.drive;
+package frc.robot.subsystems.Drive;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -44,6 +44,7 @@ import frc.robot.RobotState;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Vision.Vision;
+import frc.robot.subsystems.drive.GyroIOInputsAutoLogged;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;

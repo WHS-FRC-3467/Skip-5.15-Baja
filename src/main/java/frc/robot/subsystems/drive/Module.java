@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 // GNU General Public License for more details.
 
-package frc.robot.subsystems.drive;
+package frc.robot.subsystems.Drive;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -22,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import frc.robot.subsystems.drive.ModuleIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
 
 public class Module {
@@ -124,8 +125,8 @@ public class Module {
     /** Returns the current turn velocity of the module in radians per second. */
     public double getTurnVelocityRadPerSec()
     {
-        return inputs.turnVelocityRadPerSec;
-    }
+     
+
     
     /** Returns the module position (turn angle and drive position). */
     public SwerveModulePosition getPosition()
