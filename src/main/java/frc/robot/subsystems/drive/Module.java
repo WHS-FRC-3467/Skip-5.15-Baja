@@ -125,9 +125,9 @@ public class Module {
     /** Returns the current turn velocity of the module in radians per second. */
     public double getTurnVelocityRadPerSec()
     {
-     
+        return inputs.turnVelocityRadPerSec;
+    }
 
-    
     /** Returns the module position (turn angle and drive position). */
     public SwerveModulePosition getPosition()
     {
