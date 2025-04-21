@@ -198,7 +198,7 @@ public class LEDSubsystem extends SubsystemBase {
             runMatchTimerPattern();
 
             // Vision Out? For 2 seconds, quickly flash the LEDs red
-            if (!vision.anyCameraConnected) {
+            if (vision.hasVision.negate().getAsBoolean()) {
                 if (visionOutCounter < 10) {
                     visionOutCounter++;
                     newState = LEDState.VISION_OUT;
