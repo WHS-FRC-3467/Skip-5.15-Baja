@@ -317,7 +317,7 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
         // * 0:10 -> 0:00: Strobing Red
         // * Non-auto periods & Disabled: White
 
-        if (mtState != mtState) {
+        if (this.mtState != mtState) {
 
             switch (mtState) {
 
@@ -341,7 +341,7 @@ public class LEDSubsystemIOWPILib implements LEDSubsystemIO {
                     solidWhite.applyTo(MatchTime);
                     break;
             }
-            mtState = mtState;
+            this.mtState = mtState;
             led.setData(ledBuffer);
         }
     }
