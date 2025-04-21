@@ -49,6 +49,11 @@ public class Climber extends GenericMotorSubsystem<Climber.State> {
         return this.runOnce(() -> this.state = state);
     }
 
+    public Command climbMore()
+    {
+        return this.startEnd(() -> setState(State.MANUAL_CLIMB), () -> setState(State.HOLD));
+    }
+
     public boolean atPosition(double tolerance)
     {
         return io.atPosition(state.profileType, tolerance);
@@ -59,36 +64,6 @@ public class Climber extends GenericMotorSubsystem<Climber.State> {
         return Commands
             .sequence(Commands.runOnce(() -> io.zeroSensors()), this.setStateCommand(State.HOME));
     }
-
-    public Command setClimbRequestCommand(boolean enabled)
-    {
-        return Commands.runOnce(() -> this.climbRequested = enabled);
-    }
-
-    public Command indexClimbState()
-    {
-        return Commands.runOnce(() -> this.climbStep += 1);
-    }
-
-    public Command resetClimb()
-    {
-        return Commands.runOnce(() -> {
-            this.climbRequested = false;
-            this.climbStep = 0;
-        }).andThen(this.setStateCommand(State.HOME));
-    }
-
-    // Climbing Triggers
-    private boolean climbRequested = false; // Whether or not a climb request is active
-    private Trigger climbRequest = new Trigger(() -> climbRequested); // Trigger for climb request
-    private int climbStep = 0; // Tracking what step in the climb sequence we are on, is at zero
-                               // when
-                               // not climbing
-
-    // Triggers for each step of the climb sequence
-    public Trigger climbStep1 = new Trigger(() -> climbStep == 1);
-    public Trigger climbStep2 = new Trigger(() -> climbStep == 2);
-    public Trigger climbStep3 = new Trigger(() -> climbStep >= 3);
 
     private Debouncer homedDebouncer = new Debouncer(0.75, DebounceType.kRising);
 

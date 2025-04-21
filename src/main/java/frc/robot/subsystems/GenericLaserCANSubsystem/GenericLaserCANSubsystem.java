@@ -20,7 +20,7 @@ public abstract class GenericLaserCANSubsystem
     public void periodic()
     {
         io.updateInputs(inputs);
-        Logger.processInputs(name, inputs); // TODO: Get this to stop crashing the replay
+        Logger.processInputs(name, inputs);
 
         displayInfo();
     }

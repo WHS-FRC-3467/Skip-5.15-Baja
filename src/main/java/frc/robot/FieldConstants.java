@@ -29,8 +29,12 @@ public class FieldConstants {
     // line
 
     public static class Processor {
-        public static final Pose2d centerFace =
+        public static final Pose2d redCenterFace =
             new Pose2d(Units.inchesToMeters(235.726), 0, Rotation2d.fromDegrees(90));
+        public static final Pose2d blueCenterFace =
+            new Pose2d(fieldLength - redCenterFace.getX(), fieldWidth - redCenterFace.getY(),
+                redCenterFace.getRotation().rotateBy(Rotation2d.k180deg));
+        public static List<Pose2d> processors = List.of(redCenterFace, blueCenterFace);
     }
 
     public static class Barge {
@@ -192,6 +196,8 @@ public class FieldConstants {
             new Pose2d(Units.inchesToMeters(48), Units.inchesToMeters(158.5), new Rotation2d());
         public static final Pose2d rightIceCream =
             new Pose2d(Units.inchesToMeters(48), Units.inchesToMeters(86.5), new Rotation2d());
+        public static final List<Pose2d> iceCreams =
+            List.of(leftIceCream, middleIceCream, rightIceCream);
     }
 
     public enum ReefHeight {
@@ -210,46 +216,10 @@ public class FieldConstants {
         public final double pitch;
     }
 
-    public static Pose2d getNearestReefFace(Pose2d currentPose)
-    {
-        return currentPose.nearest(List.of(FieldConstants.Reef.centerFaces));
-    }
+
 
     public enum ReefSide {
         LEFT,
         RIGHT
-    }
-
-    public static Pose2d getNearestReefBranch(Pose2d currentPose, ReefSide side)
-    {
-        return FieldConstants.Reef.branchPositions
-            .get(List.of(FieldConstants.Reef.centerFaces).indexOf(getNearestReefFace(currentPose))
-                * 2 + (side == ReefSide.LEFT ? 1 : 0))
-            .get(FieldConstants.ReefHeight.L1).toPose2d();
-    }
-
-    public static boolean isAlgaeHigh(Pose2d currentPose)
-    {
-        return List.of(FieldConstants.Reef.centerFaces).indexOf(getNearestReefFace(currentPose))
-            % 2 == 0;
-    }
-
-    public static Pose2d getNearestCoralStation(Pose2d currentPose)
-    {
-        if (currentPose.getTranslation().getX() > FieldConstants.fieldLength / 2) {
-            if (currentPose.getTranslation().getY() > FieldConstants.fieldWidth / 2) {
-                return FieldConstants.CoralStation.rightCenterFace
-                    .rotateAround(FieldConstants.fieldCenter, Rotation2d.k180deg);
-            } else {
-                return FieldConstants.CoralStation.leftCenterFace
-                    .rotateAround(FieldConstants.fieldCenter, Rotation2d.k180deg);
-            }
-        } else {
-            if (currentPose.getTranslation().getY() > FieldConstants.fieldWidth / 2) {
-                return FieldConstants.CoralStation.leftCenterFace;
-            } else {
-                return FieldConstants.CoralStation.rightCenterFace;
-            }
-        }
     }
 }

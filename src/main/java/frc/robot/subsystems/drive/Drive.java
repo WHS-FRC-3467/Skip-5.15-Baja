@@ -40,6 +40,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
+import frc.robot.RobotState;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.Vision.Vision;
@@ -85,6 +86,8 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     private final SwerveDrivePoseEstimator poseEstimator =
         new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions,
             new Pose2d());
+
+    public final RobotState robotState = RobotState.getInstance();
 
     public Drive(
         GyroIO gyroIO,
@@ -176,6 +179,10 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         }
 
         fieldMap.setRobotPose(getPose());
+
+        // Update RobotState
+        robotState.setRobotPose(getPose());
+        robotState.setRobotVelocity(getChassisSpeeds());
 
         // Update gyro alert
         gyroDisconnectedAlert.set(!gyroInputs.connected && Constants.currentMode != Mode.SIM);

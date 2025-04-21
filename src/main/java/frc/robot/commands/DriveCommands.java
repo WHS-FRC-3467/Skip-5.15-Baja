@@ -15,7 +15,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -27,6 +26,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.Constants;
+import frc.robot.FieldConstants;
+import frc.robot.RobotState;
+import frc.robot.FieldConstants.ReefSide;
 import frc.robot.subsystems.drive.Drive;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,6 +47,8 @@ public class DriveCommands {
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
     private static final double WHEEL_RADIUS_RAMP_RATE = 0.05; // Rad/Sec^2
 
+    private static final RobotState robotState = RobotState.getInstance();
+
     private DriveCommands()
     {}
 
@@ -56,9 +61,7 @@ public class DriveCommands {
         linearMagnitude = linearMagnitude * linearMagnitude;
 
         // Return new linear velocity
-        return new Pose2d(new Translation2d(), linearDirection)
-            .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
-            .getTranslation();
+        return new Translation2d(linearMagnitude, linearDirection);
     }
 
     /**
@@ -157,6 +160,241 @@ public class DriveCommands {
             // Reset PID controller when command starts
             .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()))
             .withName("Drivetrain: Drive At Angle");
+    }
+
+    /**
+     * Creates a {@link DriveToPose} command that drives to the nearest reef branch on the specified
+     * side, with an optional prediction into the future.
+     *
+     * @param drive The drive subsystem.
+     * @param side The side of the reef to approach (LEFT or RIGHT).
+     * @param predictionSeconds Time in seconds to predict ahead when determining the reef branch
+     *        position.
+     * @return A DriveToPose command targeting the predicted reef branch pose.
+     */
+    public static DriveToPose driveToReefBranch(Drive drive, ReefSide side,
+        DoubleSupplier predictionSeconds)
+    {
+        return new DriveToPose(drive,
+            () -> robotState.getNearestReefBranch(side, predictionSeconds.getAsDouble())
+                .transformBy(new Transform2d(Constants.bumperWidth / 2 + Units.inchesToMeters(1),
+                    0.0, Rotation2d.k180deg)));
+    }
+
+    /**
+     * Overload of {@link #driveToReefBranch(Drive, ReefSide, DoubleSupplier)} with zero prediction
+     * time.
+     *
+     * @param drive The drive subsystem.
+     * @param side The side of the reef to approach (LEFT or RIGHT).
+     * @return A DriveToPose command targeting the nearest reef branch.
+     */
+    public static DriveToPose driveToReefBranch(Drive drive, ReefSide side)
+    {
+        return driveToReefBranch(drive, side, () -> 0.0);
+    }
+
+    /**
+     * Creates a {@link DriveToPose} command that drives to the nearest reef face, with an optional
+     * prediction into the future.
+     *
+     * @param drive The drive subsystem.
+     * @param predictionSeconds Time in seconds to predict ahead when determining the reef face
+     *        position.
+     * @return A DriveToPose command targeting the predicted reef face pose.
+     */
+    public static DriveToPose driveToReefFace(Drive drive, DoubleSupplier predictionSeconds)
+    {
+        return new DriveToPose(drive,
+            () -> robotState.getNearestReefFace(predictionSeconds.getAsDouble())
+                .transformBy(new Transform2d(Constants.bumperWidth / 2 + Units.inchesToMeters(1),
+                    0.0, Rotation2d.k180deg)));
+    }
+
+    /**
+     * Overload of {@link #driveToReefFace(Drive, DoubleSupplier)} with zero prediction time.
+     *
+     * @param drive The drive subsystem.
+     * @return A DriveToPose command targeting the nearest reef face.
+     */
+    public static DriveToPose driveToReefFace(Drive drive)
+    {
+        return driveToReefFace(drive, () -> 0.0);
+    }
+
+    /**
+     * Creates a {@link JoystickApproachCommand} that allows manual joystick-controlled approach to
+     * the nearest reef branch on the given side, with pose prediction.
+     *
+     * @param drive The drive subsystem.
+     * @param ySupplier Supplies the joystick Y input.
+     * @param side The side of the reef to approach (LEFT or RIGHT).
+     * @param predictionSeconds Time in seconds to predict ahead when determining the reef branch
+     *        position.
+     * @return A JoystickApproachCommand for approaching the reef branch.
+     */
+    public static JoystickApproachCommand approachReefBranch(Drive drive, DoubleSupplier ySupplier,
+        ReefSide side, DoubleSupplier predictionSeconds)
+    {
+        return new JoystickApproachCommand(drive, ySupplier,
+            () -> robotState.getNearestReefBranch(side, predictionSeconds.getAsDouble()));
+    }
+
+    /**
+     * Overload of {@link #approachReefBranch(Drive, DoubleSupplier, ReefSide, DoubleSupplier)} with
+     * zero prediction time.
+     *
+     * @param drive The drive subsystem.
+     * @param ySupplier Supplies the joystick Y input.
+     * @param side The side of the reef to approach (LEFT or RIGHT).
+     * @return A JoystickApproachCommand for approaching the reef branch.
+     */
+    public static JoystickApproachCommand approachReefBranch(Drive drive, DoubleSupplier ySupplier,
+        ReefSide side)
+    {
+        return approachReefBranch(drive, ySupplier, side, () -> 0.0);
+    }
+
+    /**
+     * Creates a {@link JoystickApproachCommand} that allows manual joystick-controlled approach to
+     * the nearest reef face, with pose prediction.
+     *
+     * @param drive The drive subsystem.
+     * @param ySupplier Supplies the joystick Y input.
+     * @param predictionSeconds Time in seconds to predict ahead when determining the reef face
+     *        position.
+     * @return A JoystickApproachCommand for approaching the reef face.
+     */
+    public static JoystickApproachCommand approachReefFace(Drive drive, DoubleSupplier ySupplier,
+        DoubleSupplier predictionSeconds)
+    {
+        return new JoystickApproachCommand(drive,
+            ySupplier,
+            () -> robotState.getNearestReefFace(predictionSeconds.getAsDouble()));
+    }
+
+    /**
+     * Overload of {@link #approachReefFace(Drive, DoubleSupplier, DoubleSupplier)} with zero
+     * prediction time.
+     *
+     * @param drive The drive subsystem.
+     * @param ySupplier Supplies the joystick Y input.
+     * @return A JoystickApproachCommand for approaching the reef face.
+     */
+    public static DriveToPose approachReefFace(Drive drive, DoubleSupplier ySupplier)
+    {
+        return approachReefFace(drive, ySupplier, () -> 0.0);
+    }
+
+    /**
+     * Creates a command that orients the robot to face the nearest reef face while allowing
+     * joystick-based translational control.
+     *
+     * @param drive The drive subsystem used to control the robot.
+     * @param xSupplier Supplies the joystick X input.
+     * @param ySupplier Supplies the joystick Y input.
+     * @param predictionSeconds A supplier for the amount of time into the future to predict reef
+     *        face position (not used directly here but included for API consistency).
+     * @return A command that drives the robot with joystick input while rotating it to face the
+     *         reef.
+     */
+    public static Command faceReef(Drive drive, DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier, DoubleSupplier predictionSeconds)
+    {
+        return joystickDriveAtAngle(
+            drive,
+            xSupplier,
+            ySupplier,
+            // Calculate the angle 180° away from the nearest reef face rotation
+            () -> robotState.getNearestReefFace(predictionSeconds.getAsDouble())
+                .getRotation()
+                .rotateBy(Rotation2d.k180deg));
+    }
+
+    /**
+     * Overload of {@link #faceReef(Drive, DoubleSupplier, DoubleSupplier, DoubleSupplier)} with
+     * zero prediction time.
+     *
+     * @param drive The drive subsystem.
+     * @param xSupplier Supplies the joystick X input.
+     * @param ySupplier Supplies the joystick Y input.
+     * @return A command that drives the robot with joystick input while rotating it to face the
+     *         reef.
+     */
+    public static Command faceReef(Drive drive, DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier)
+    {
+        return faceReef(drive, xSupplier, ySupplier, () -> 0.0);
+    }
+
+    /**
+     * Creates a command that orients the robot to face the processor while allowing joystick-based
+     * translational control.
+     *
+     * @param drive The drive subsystem used to control the robot.
+     * @param xSupplier Supplies the joystick X input.
+     * @param ySupplier Supplies the joystick Y input.
+     * @param predictionSeconds A supplier for the amount of time into the future to predict reef
+     *        face position (not used directly here but included for API consistency).
+     * @return A command that drives the robot with joystick input while rotating it to face the
+     *         nearest processor.
+     */
+    public static Command faceProcessor(Drive drive, DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier, DoubleSupplier predictionSeconds)
+    {
+        return joystickDriveAtAngle(
+            drive,
+            xSupplier,
+            ySupplier,
+            // Calculate the angle 180° away from the nearest processor rotation
+            () -> robotState.getNearestProcessor(predictionSeconds.getAsDouble()).getRotation()
+                .rotateBy(Rotation2d.k180deg));
+    }
+
+    /**
+     * Overload of {@link #faceProcessor(Drive, DoubleSupplier, DoubleSupplier, DoubleSupplier)}
+     * with zero prediction time.
+     *
+     * @param drive The drive subsystem.
+     * @param xSupplier Supplies the joystick X input.
+     * @param ySupplier Supplies the joystick Y input.
+     * @return A command that drives the robot with joystick input while rotating it to face the
+     *         reef.
+     */
+    public static Command faceProcessor(Drive drive, DoubleSupplier xSupplier,
+        DoubleSupplier ySupplier)
+    {
+        return faceProcessor(drive, xSupplier, ySupplier, () -> 0.0);
+    }
+
+    /**
+     * Creates a {@link JoystickApproachCommand} that allows manual joystick-controlled approach to
+     * the nearest processor, with pose prediction.
+     *
+     * @param drive The drive subsystem.
+     * @param ySupplier Supplies the joystick Y input.
+     * @param predictionSeconds Time in seconds to predict ahead when determining the processor
+     *        position.
+     * @return A JoystickApproachCommand for approaching the reef branch.
+     */
+    public static JoystickApproachCommand approachProcessor(Drive drive, DoubleSupplier ySupplier,
+        DoubleSupplier predictionSeconds)
+    {
+        return new JoystickApproachCommand(drive, ySupplier,
+            () -> robotState.getNearestProcessor());
+    }
+
+    /**
+     * Overload of {@link #approachProcessor(Drive, DoubleSupplier, DoubleSupplier)} with zero
+     * prediction time.
+     *
+     * @param drive The drive subsystem.
+     * @param ySupplier Supplies the joystick Y input.
+     * @return A JoystickApproachCommand for approaching the reef branch.
+     */
+    public static JoystickApproachCommand approachProcessor(Drive drive, DoubleSupplier ySupplier)
+    {
+        return approachProcessor(drive, ySupplier, () -> 0.0);
     }
 
     /**

@@ -52,7 +52,6 @@ public class WindupXboxController extends CommandXboxController {
                 driveRmbl.setRumble(GenericHID.RumbleType.kBothRumble, 0);
             })
             .until(() -> timer.get() >= seconds);
-
     }
 
     /**

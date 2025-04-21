@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
@@ -22,23 +21,55 @@ import java.util.function.Supplier;
 import lombok.Getter;
 import org.littletonrobotics.junction.Logger;
 
+/**
+ * A command that drives the robot to a target {@link Pose2d} using PID control and motion
+ * profiling.
+ * <p>
+ * This command generates linear and angular motion profiles to smoothly drive toward the target
+ * pose. It supports tolerance checking, dynamic velocity/acceleration limits based on elevator
+ * extension, and manual overrides or feedforwards for advanced control.
+ *
+ * <p>
+ * Features:
+ * <ul>
+ * <li>Trapezoidal profiling for linear and angular motion</li>
+ * <li>PID control for both translation and rotation</li>
+ * <li>Support for dynamic tuning of PID and constraints via {@link LoggedTunableNumber}</li>
+ * <li>Overrides and feedforwards for advanced driver or autonomous control</li>
+ * </ul>
+ */
 public class DriveToPose extends Command {
 
-    private final Drive drive;
-    private final Supplier<Pose2d> target;
+    // === Subsystems and pose suppliers ===
+
+    private final Drive drive; // Drive subsystem
+    private final Supplier<Pose2d> target; // Target pose supplier
+    private Supplier<Pose2d> robot; // Robot pose supplier (usually from drive)
+
+    // === Tolerances and state tracking ===
 
     private double driveTolerance = 0.0;
     private Rotation2d thetaTolerance = Rotation2d.kZero;
-
     private boolean finishWithinTolerance = true;
+    @Getter
+    private boolean running = false;
 
-    private TrapezoidProfile driveProfile;
+    // === Controllers and profiles ===
+
     private final TunablePIDController driveController =
         new TunablePIDController("DriveToPose/DriveController", 3.0, 0.0, 0.1);
     private final TuneableProfiledPID thetaController =
-        new TuneableProfiledPID(
-            "DriveToPose/ThetaController",
-            4.0, 0.0, 0.0, 0.0, 0.0);
+        new TuneableProfiledPID("DriveToPose/ThetaController", 4.0, 0.0, 0.0, 0.0, 0.0);
+    private TrapezoidProfile driveProfile;
+
+    // === Feedforward and override support ===
+
+    private Supplier<Translation2d> linearFF = () -> Translation2d.kZero;
+    private DoubleSupplier omegaFF = () -> 0.0;
+    private Supplier<Translation2d> linearOverride = () -> Translation2d.kZero;
+    private DoubleSupplier omegaOverride = () -> 0.0;
+
+    // === Setpoint tracking ===
 
     private Translation2d lastSetpointTranslation = Translation2d.kZero;
     private Translation2d lastSetpointVelocity = Translation2d.kZero;
@@ -46,51 +77,59 @@ public class DriveToPose extends Command {
     private double lastTime = 0.0;
     private double driveErrorAbs = 0.0;
     private double thetaErrorAbs = 0.0;
-    @Getter
-    private boolean running = false;
-    private Supplier<Pose2d> robot;
 
-    private Supplier<Translation2d> linearFF = () -> Translation2d.kZero;
-    private DoubleSupplier omegaFF = () -> 0.0;
+    // === Tunable motion limits ===
 
-    private Supplier<Translation2d> linearOverride = () -> Translation2d.kZero;
-    private DoubleSupplier omegaOverride = () -> 0.0;
-
-    private LoggedTunableNumber driveMaxVelocity =
+    private final LoggedTunableNumber driveMaxVelocity =
         new LoggedTunableNumber("DriveToPose/DriveMaxVelocity", 3);
-    private LoggedTunableNumber driveMaxVelocityTop =
+    private final LoggedTunableNumber driveMaxVelocityTop =
         new LoggedTunableNumber("DriveToPose/DriveMaxVelocityTop", 2);
-    private LoggedTunableNumber driveMaxAcceleration =
+    private final LoggedTunableNumber driveMaxAcceleration =
         new LoggedTunableNumber("DriveToPose/DriveMaxAcceleration", 4);
-    private LoggedTunableNumber driveMaxAccelerationTop =
+    private final LoggedTunableNumber driveMaxAccelerationTop =
         new LoggedTunableNumber("DriveToPose/DriveMaxAccelerationTop", 3);
-    private LoggedTunableNumber thetaMaxVelocity =
+    private final LoggedTunableNumber thetaMaxVelocity =
         new LoggedTunableNumber("DriveToPose/ThetaMaxVelocity", 9.27);
-    private LoggedTunableNumber thetaMaxVelocityTop =
+    private final LoggedTunableNumber thetaMaxVelocityTop =
         new LoggedTunableNumber("DriveToPose/ThetaMaxVelocityTop", 2.31);
-    private LoggedTunableNumber thetaMaxAcceleration =
+    private final LoggedTunableNumber thetaMaxAcceleration =
         new LoggedTunableNumber("DriveToPose/ThetaMaxAcceleration", 92.7);
-    private LoggedTunableNumber thetaMaxAccelerationTop =
+    private final LoggedTunableNumber thetaMaxAccelerationTop =
         new LoggedTunableNumber("DriveToPose/ThetaMaxAccelerationTop", 4);
 
+    /**
+     * Constructs a new DriveToPose command using the given drive subsystem and target pose
+     * supplier.
+     *
+     * @param drive The drive subsystem.
+     * @param target The pose to drive to.
+     */
     public DriveToPose(Drive drive, Supplier<Pose2d> target)
     {
         this.drive = drive;
         this.robot = drive::getPose;
         this.target = target;
 
-        // Enable continuous input for theta controller
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
-
         addRequirements(drive);
     }
 
+    /**
+     * Constructs a new DriveToPose with an alternate robot pose supplier.
+     *
+     * @param drive The drive subsystem.
+     * @param target The pose to drive to.
+     * @param robot Robot's current pose supplier.
+     */
     public DriveToPose(Drive drive, Supplier<Pose2d> target, Supplier<Pose2d> robot)
     {
         this(drive, target);
         this.robot = robot;
     }
 
+    /**
+     * Sets feedforward terms for linear and angular motion.
+     */
     public DriveToPose withFeedforward(Supplier<Translation2d> linearFF, DoubleSupplier omegaFF)
     {
         this.linearFF = linearFF;
@@ -98,6 +137,9 @@ public class DriveToPose extends Command {
         return this;
     }
 
+    /**
+     * Sets driver override inputs for linear and angular control.
+     */
     public DriveToPose withOverride(Supplier<Translation2d> linearOverride,
         DoubleSupplier omegaOverride)
     {
@@ -106,164 +148,180 @@ public class DriveToPose extends Command {
         return this;
     }
 
+    /**
+     * Sets tolerances for determining when the command is finished.
+     */
     public DriveToPose withTolerance(double driveTolerance, Rotation2d thetaTolerance)
     {
         this.driveTolerance = driveTolerance;
         this.thetaTolerance = thetaTolerance;
-        this.driveController.setTolerance(driveTolerance);
-        this.thetaController.setTolerance(thetaTolerance.getRadians());
+        driveController.setTolerance(driveTolerance);
+        thetaController.setTolerance(thetaTolerance.getRadians());
         return this;
     }
 
+    /**
+     * Configures whether this command should end automatically when within tolerance.
+     */
     public DriveToPose finishWithinTolerance(boolean finish)
     {
         this.finishWithinTolerance = finish;
         return this;
     }
 
+    /** Initializes the PID controllers and motion profile from current state. */
     @Override
     public void initialize()
     {
+        // Get the current pose of the robot and the target pose to drive toward
         Pose2d currentPose = robot.get();
         Pose2d targetPose = target.get();
+
+        // Get the robot's current field-relative velocity
         ChassisSpeeds fieldVelocity = drive.getChassisSpeeds();
         Translation2d linearFieldVelocity =
             new Translation2d(fieldVelocity.vxMetersPerSecond, fieldVelocity.vyMetersPerSecond);
 
-        driveProfile =
-            new TrapezoidProfile(new TrapezoidProfile.Constraints(
-                driveMaxVelocity.get(), driveMaxAcceleration.get()));
+        // Initialize the drive motion profile with current velocity and acceleration constraints
+        driveProfile = new TrapezoidProfile(
+            new TrapezoidProfile.Constraints(driveMaxVelocity.get(), driveMaxAcceleration.get()));
 
-        this.driveController.setTolerance(driveTolerance);
-        this.thetaController.setTolerance(thetaTolerance.getRadians());
-        this.driveController.reset();
-        this.thetaController.reset(
-            currentPose.getRotation().getRadians(), fieldVelocity.omegaRadiansPerSecond);
-        lastSetpointTranslation = currentPose.getTranslation();
-        lastSetpointVelocity = linearFieldVelocity;
-        lastGoalRotation = targetPose.getRotation();
-        lastTime = Timer.getTimestamp();
+        // Configure the drive and theta (rotation) controllers with tolerance values
+        driveController.setTolerance(driveTolerance);
+        thetaController.setTolerance(thetaTolerance.getRadians());
+
+        // Reset the controllers to begin a new motion
+        driveController.reset();
+        thetaController.reset(
+            currentPose.getRotation().getRadians(),
+            fieldVelocity.omegaRadiansPerSecond);
+
+        // Store initial conditions for use in motion profiling
+        lastSetpointTranslation = currentPose.getTranslation(); // Starting position
+        lastSetpointVelocity = linearFieldVelocity; // Starting linear velocity
+        lastGoalRotation = targetPose.getRotation(); // Initial target orientation
+        lastTime = Timer.getTimestamp(); // Record the current timestamp
     }
 
+    /** Executes one cycle of the PID update and motion profiling. */
     @Override
     public void execute()
     {
+        // Update PID based on tunable numbers
         driveController.updatePID();
         thetaController.updatePID();
 
         running = true;
 
-        // Update constraints
-        double extensionS =
-            MathUtil.clamp(
-                RobotState.getInstance().getElevatorHeight() / 5.4,
-                0.0,
-                1.0);
-        driveProfile =
-            new TrapezoidProfile(
-                new TrapezoidProfile.Constraints(
-                    MathUtil.interpolate(
-                        driveMaxVelocity.get(), driveMaxVelocityTop.get(), extensionS),
-                    MathUtil.interpolate(
-                        driveMaxAcceleration.get(), driveMaxAccelerationTop.get(),
-                        extensionS)));
-        thetaController.setConstraints(
-            new TrapezoidProfile.Constraints(
-                MathUtil.interpolate(
-                    thetaMaxVelocity.get(), thetaMaxVelocityTop.get(), extensionS),
-                MathUtil.interpolate(
-                    thetaMaxAcceleration.get(), thetaMaxAccelerationTop.get(), extensionS)));
+        // Dynamically adjust motion profile constraints based on elevator extension
+        double extensionS = RobotState.getInstance().getElevatorExtensionPercent();
+        driveProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
+            MathUtil.interpolate(driveMaxVelocity.get(), driveMaxVelocityTop.get(), extensionS),
+            MathUtil.interpolate(driveMaxAcceleration.get(), driveMaxAccelerationTop.get(),
+                extensionS)));
+        thetaController.setConstraints(new TrapezoidProfile.Constraints(
+            MathUtil.interpolate(thetaMaxVelocity.get(), thetaMaxVelocityTop.get(), extensionS),
+            MathUtil.interpolate(thetaMaxAcceleration.get(), thetaMaxAccelerationTop.get(),
+                extensionS)));
 
-        // Get current pose and target pose
+        // Retrieve current and target robot poses
         Pose2d currentPose = robot.get();
         Pose2d targetPose = target.get();
 
+        // Calculate positional and angular error
         Pose2d poseError = currentPose.relativeTo(targetPose);
         driveErrorAbs = poseError.getTranslation().getNorm();
         thetaErrorAbs = Math.abs(poseError.getRotation().getRadians());
-        double linearFFScaler =
-            MathUtil.clamp(
-                (driveErrorAbs - 0.01) / (0.5 - 0.01),
-                0.0,
-                1.0);
-        double thetaFFScaler =
-            MathUtil.clamp(
-                Units.radiansToDegrees(thetaErrorAbs) / 0,
-                0.0,
-                1.0);
 
-        // Calculate drive velocity
-        // Calculate setpoint velocity towards target pose
+        // Calculate scaling factors for motion profile feedforward based on distance from target
+        double linearFFScaler = MathUtil.clamp((driveErrorAbs - 0.01) / (0.5 - 0.01), 0.0, 1.0);
+
+        // --- Compute linear velocity toward the target ---
+
+        // Determine motion direction from last setpoint
         var direction = targetPose.getTranslation().minus(lastSetpointTranslation).toVector();
-        double setpointVelocity =
-            direction.norm() <= 0.01 // Don't calculate velocity in direction when really close
-                ? lastSetpointVelocity.getNorm()
-                : Math.abs(lastSetpointVelocity.toVector().dot(direction)) / direction.norm();
-        setpointVelocity = Math.max(setpointVelocity, -0.5);
-        State driveSetpoint =
-            driveProfile.calculate(
-                Constants.loopPeriodSecs,
-                new State(
-                    direction.norm(), -setpointVelocity), // Use negative as profile has zero at
-                                                          // target
-                new State(0.0, 0.0));
 
+        // Estimate setpoint velocity in the direction of travel
+        double setpointVelocity = direction.norm() <= 0.01
+            ? lastSetpointVelocity.getNorm()
+            : Math.abs(lastSetpointVelocity.toVector().dot(direction)) / direction.norm();
+        setpointVelocity = Math.max(setpointVelocity, -0.5);
+
+        // Calculate position and velocity setpoint using trapezoidal profile
+        State driveSetpoint = driveProfile.calculate(
+            Constants.loopPeriodSecs,
+            new State(direction.norm(), -setpointVelocity), // Inverted: target is the profile's
+                                                            // zero point
+            new State(0.0, 0.0));
+
+        // Apply PID + feedforward to determine desired linear velocity
         double driveVelocityScalar =
             driveController.calculate(driveErrorAbs, driveSetpoint.position)
                 + driveSetpoint.velocity * linearFFScaler;
-        // if (driveErrorAbs < driveController.getErrorTolerance())
-        // driveVelocityScalar = 0.0;
 
+        // Calculate vector pointing from target to current position
         Rotation2d targetToCurrentAngle =
             currentPose.getTranslation().minus(targetPose.getTranslation()).getAngle();
         Translation2d driveVelocity = new Translation2d(driveVelocityScalar, targetToCurrentAngle);
-        lastSetpointTranslation =
-            new Pose2d(targetPose.getTranslation(), targetToCurrentAngle)
-                .transformBy(new Transform2d(driveSetpoint.position, 0.0, Rotation2d.kZero))
-                .getTranslation();
+
+        // Update last setpoint info
+        lastSetpointTranslation = new Pose2d(targetPose.getTranslation(), targetToCurrentAngle)
+            .transformBy(new Transform2d(driveSetpoint.position, 0.0, Rotation2d.kZero))
+            .getTranslation();
         lastSetpointVelocity = new Translation2d(driveSetpoint.velocity, targetToCurrentAngle);
 
-        // Calculate theta speed
+        // --- Compute rotational velocity (theta) ---
+
+        // Estimate target angular velocity based on change in goal rotation
         double thetaSetpointVelocity =
-            Math.abs((targetPose.getRotation().minus(lastGoalRotation)).getDegrees()) < 10.0
+            Math.abs(targetPose.getRotation().minus(lastGoalRotation).getDegrees()) < 10.0
                 ? (targetPose.getRotation().minus(lastGoalRotation)).getRadians()
                     / (Timer.getTimestamp() - lastTime)
                 : thetaController.getSetpoint().velocity;
-        double thetaVelocity =
-            thetaController.calculate(
-                currentPose.getRotation().getRadians(),
-                new State(targetPose.getRotation().getRadians(), thetaSetpointVelocity))
-                + thetaController.getSetpoint().velocity * thetaFFScaler;
-        if (thetaErrorAbs < thetaController.getPositionTolerance())
+
+        // Apply PID + feedforward to determine desired angular velocity
+        double thetaVelocity = thetaController.calculate(
+            currentPose.getRotation().getRadians(),
+            new State(targetPose.getRotation().getRadians(), thetaSetpointVelocity))
+            + thetaController.getSetpoint().velocity;
+
+        // Zero out small errors for stability
+        if (thetaErrorAbs < thetaController.getPositionTolerance()) {
             thetaVelocity = 0.0;
+        }
+
+        // Update last goal and timestamp
         lastGoalRotation = targetPose.getRotation();
         lastTime = Timer.getTimestamp();
 
-        // Scale feedback velocities by override
-        if (linearOverride.get() != Translation2d.kZero) {
-            final double linearS = MathUtil.clamp(linearOverride.get().getNorm() * 3.0, 0.0, 1.0);
-            driveVelocity =
-                driveVelocity.interpolate(linearOverride.get().times(driveMaxVelocity.get()),
-                    linearS);
+        // --- Manual input override blending (e.g. joystick assist) ---
 
-            // Reset profiles if enough input
+        if (!linearOverride.get().equals(Translation2d.kZero)) {
+            final double linearS = MathUtil.clamp(linearOverride.get().getNorm() * 3.0, 0.0, 1.0);
+
+            // Blend PID output with manual input
+            driveVelocity = driveVelocity.interpolate(
+                linearOverride.get().times(driveMaxVelocity.get()), linearS);
+
+            // Reset profile tracking if override is significant
             if (linearS >= 0.2) {
                 ChassisSpeeds fieldVelocity = drive.getChassisSpeeds();
-                Translation2d linearFieldVelocity =
-                    new Translation2d(fieldVelocity.vxMetersPerSecond,
-                        fieldVelocity.vyMetersPerSecond);
+                Translation2d linearFieldVelocity = new Translation2d(
+                    fieldVelocity.vxMetersPerSecond, fieldVelocity.vyMetersPerSecond);
                 lastSetpointTranslation = currentPose.getTranslation();
                 lastSetpointVelocity = linearFieldVelocity;
             }
         }
+
         if (omegaOverride.getAsDouble() != 0.0) {
             final double thetaS =
                 MathUtil.clamp(Math.abs(omegaOverride.getAsDouble()) * 3.0, 0.0, 1.0);
 
-            thetaVelocity =
-                MathUtil.interpolate(
-                    thetaVelocity, omegaOverride.getAsDouble() * thetaMaxVelocity.get(), thetaS);
-            // Reset profiles if enough input
+            // Blend PID output with manual angular input
+            thetaVelocity = MathUtil.interpolate(
+                thetaVelocity, omegaOverride.getAsDouble() * thetaMaxVelocity.get(), thetaS);
+
+            // Reset theta profile if input is significant
             if (thetaS >= 0.1) {
                 ChassisSpeeds fieldVelocity = drive.getChassisSpeeds();
                 thetaController.reset(
@@ -271,63 +329,67 @@ public class DriveToPose extends Command {
             }
         }
 
-        // Add input ff
-        driveVelocity =
-            driveVelocity.plus(linearFF.get().times(driveMaxVelocity.get()));
-        thetaVelocity = thetaVelocity + omegaFF.getAsDouble() * thetaMaxVelocity.get();
+        // --- Apply feedforward additions ---
 
-        // Command speeds
-        drive.runVelocity(
-            ChassisSpeeds.fromFieldRelativeSpeeds(
-                driveVelocity.getX(), driveVelocity.getY(), thetaVelocity,
-                currentPose.getRotation()));
+        driveVelocity = driveVelocity.plus(linearFF.get().times(driveMaxVelocity.get()));
+        thetaVelocity += omegaFF.getAsDouble() * thetaMaxVelocity.get();
 
-        // Log data
+        // Command the chassis with the computed velocities in field-relative frame
+        drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(
+            driveVelocity.getX(), driveVelocity.getY(), thetaVelocity, currentPose.getRotation()));
+
+        // Logging for diagnostics and tuning
         Logger.recordOutput("DriveToPose/DistanceMeasured", driveErrorAbs);
         Logger.recordOutput("DriveToPose/DistanceSetpoint", driveSetpoint.position);
         Logger.recordOutput("DriveToPose/VelocitySetpoint", driveSetpoint.velocity);
         Logger.recordOutput("DriveToPose/ThetaMeasured", currentPose.getRotation().getRadians());
         Logger.recordOutput("DriveToPose/ThetaSetpoint", thetaController.getSetpoint().position);
-        Logger.recordOutput(
-            "DriveToPose/Setpoint",
-            new Pose2d[] {
-                    new Pose2d(
-                        lastSetpointTranslation,
-                        Rotation2d.fromRadians(thetaController.getSetpoint().position))
-            });
+        Logger.recordOutput("DriveToPose/Setpoint", new Pose2d[] {
+                new Pose2d(lastSetpointTranslation,
+                    Rotation2d.fromRadians(thetaController.getSetpoint().position))
+        });
         Logger.recordOutput("DriveToPose/Goal", new Pose2d[] {targetPose});
         Logger.recordOutput("DriveToPose/IOutput",
             driveController.getAccumulatedError() * driveController.getI());
     }
 
-    /** Checks if the robot pose is within the allowed drive and theta tolerances. */
+
+    /**
+     * Returns true if the robot is within the configured tolerances.
+     */
     public boolean withinTolerance()
     {
-        return running
-            && driveErrorAbs <= driveTolerance
+        return running && driveErrorAbs <= driveTolerance
             && thetaErrorAbs <= thetaTolerance.getRadians();
     }
 
+    /**
+     * Returns true if the robot is within the specified tolerances.
+     */
     public boolean withinTolerance(double driveTolerance, Rotation2d thetaTolerance)
     {
-        return running
-            && driveErrorAbs <= driveTolerance
+        return running && driveErrorAbs <= driveTolerance
             && thetaErrorAbs <= thetaTolerance.getRadians();
     }
 
-    @Override
-    public boolean isFinished()
-    {
-        return finishWithinTolerance && withinTolerance();
-    }
-
+    /**
+     * Ends the command by stopping the drive and resetting logs.
+     */
     @Override
     public void end(boolean interrupted)
     {
         drive.stop();
         running = false;
-        // Clear logs
         Logger.recordOutput("DriveToPose/Setpoint", new Pose2d[] {});
         Logger.recordOutput("DriveToPose/Goal", new Pose2d[] {});
+    }
+
+    /**
+     * Returns true if the robot is within tolerance and the command is configured to end.
+     */
+    @Override
+    public boolean isFinished()
+    {
+        return finishWithinTolerance && withinTolerance();
     }
 }

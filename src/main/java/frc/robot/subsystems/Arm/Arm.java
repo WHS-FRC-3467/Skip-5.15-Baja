@@ -49,7 +49,6 @@ public class Arm extends GenericMotorSubsystem<Arm.State> {
         SmartDashboard.putData("Arm Brake Command", setBrakeStateCommand());
     }
 
-    /** Constructor */
     public Command setStateCommand(State state)
     {
         return this.runOnce(() -> this.state = state).withName("Arm Set State: " + state.name());

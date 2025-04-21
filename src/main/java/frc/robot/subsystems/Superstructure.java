@@ -34,10 +34,11 @@ public class Superstructure {
      * @param elevatorState
      * @param armTolerance
      * @param elevTolerance
+     * @param blocking Whether or not to wait for the elevator to raise
      * @return A Command
      */
     public Command getTransitionCommand(Arm.State armState, Elevator.State elevatorState,
-        double armTolerance, double elevTolerance)
+        double armTolerance, double elevTolerance, boolean blocking)
     {
         return Commands.sequence(
 
@@ -52,7 +53,8 @@ public class Superstructure {
             // Move Elevator to new position
             Commands.sequence(
                 elevator.setStateCommand(elevatorState),
-                Commands.waitUntil(() -> elevator.atPosition(elevTolerance))),
+                Commands.waitUntil(() -> elevator.atPosition(elevTolerance))
+                    .unless(() -> blocking)),
 
             // Reposition Arm to new position
             Commands.sequence(
@@ -60,10 +62,11 @@ public class Superstructure {
                 Commands.waitUntil(() -> arm.atPosition(armTolerance))));
     }
 
-    public Command getTransitionCommand(Arm.State armState, Elevator.State elevatorState)
+    public Command getTransitionCommand(Arm.State armState, Elevator.State elevatorState,
+        boolean blocking)
     {
         return getTransitionCommand(armState, elevatorState, 0.0,
-            0.0).withName(
+            0.0, blocking).withName(
                 "Superstructure Transition Command: Arm -> " + armState.name() +
                     " Elevator -> " + elevatorState.name());
     }
@@ -75,13 +78,36 @@ public class Superstructure {
      * 
      * @param armState
      * @param elevatorState
-     * @return Transtition Command with normal tolerances
+     * @param blocking Whether or not to wait for the elevator to raise
+     * @return Transition Command with normal tolerances
      */
+    public Command getDefaultTransitionCommand(Arm.State armState, Elevator.State elevatorState,
+        boolean blocking)
+    {
+        return getTransitionCommand(armState, elevatorState, Units.degreesToRotations(10),
+            0.4, blocking).withName(
+                "Superstructure Transition Command: Arm -> " + armState.name() +
+                    " Elevator -> " + elevatorState.name());
+    }
+
     public Command getDefaultTransitionCommand(Arm.State armState, Elevator.State elevatorState)
     {
         return getTransitionCommand(armState, elevatorState, Units.degreesToRotations(10),
-            0.4).withName(
+            0.4, true).withName(
                 "Superstructure Transition Command: Arm -> " + armState.name() +
                     " Elevator -> " + elevatorState.name());
+    }
+
+    /**
+     * Get a Command to move the superstructure to the barging position, finishing at the elevator's
+     * barge height to have velocity while spitting
+     * 
+     * @return A barge command
+     */
+    public Command bargeCommand()
+    {
+        return Commands.sequence(
+            this.getDefaultTransitionCommand(Arm.State.STOW, Elevator.State.BARGE, false),
+            Commands.waitUntil(elevator.launchHeightTrigger));
     }
 }
