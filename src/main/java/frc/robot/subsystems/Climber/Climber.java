@@ -18,14 +18,14 @@ import lombok.Setter;
 public class Climber extends GenericMotionProfiledSubsystem<Climber.State> {
 
     private static final LoggedTunableNumber climbHeight =
-        new LoggedTunableNumber("Climber/ClimbHeight", 0.05);
+        new LoggedTunableNumber("Climber/ClimbHeight", -0.1);
 
     @RequiredArgsConstructor
     @Getter
     public enum State implements TargetState {
         HOLD(new ProfileType.DISABLED_BRAKE()),
         HOME(new ProfileType.POSITION(() -> 0, 0)),
-        PREP(new ProfileType.POSITION(() -> -1.2, 0)),
+        PREP(new ProfileType.POSITION(() -> -1.4, 0)),
         CLIMB(new ProfileType.MM_POSITION(climbHeight, 1)),
         MANUAL_CLIMB(new ProfileType.OPEN_VOLTAGE(() -> 8)),
         HOMING(new ProfileType.OPEN_VOLTAGE(() -> 4));

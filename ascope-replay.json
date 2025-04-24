@@ -3,8 +3,8 @@
     {
       "x": -8,
       "y": -8,
-      "width": 1936,
-      "height": 1168,
+      "width": 1552,
+      "height": 832,
       "state": {
         "sidebar": {
           "width": 300,
@@ -43,11 +43,12 @@
             "/RealOutputs/LoggedRobot",
             "/SystemStats",
             "/RealOutputs/Alerts",
-            "/RealOutputs/Elevator"
+            "/RealOutputs/Elevator",
+            "/RealOutputs/Vision"
           ]
         },
         "tabs": {
-          "selected": 3,
+          "selected": 1,
           "tabs": [
             {
               "type": 0,
@@ -71,7 +72,7 @@
                   },
                   {
                     "type": "ghost",
-                    "logKey": "/RealOutputs/Vision/Camera0/RobotPoses",
+                    "logKey": "/RealOutputs/Vision/Camera0/RobotPosesAccepted",
                     "logType": "Pose3d[]",
                     "visible": true,
                     "options": {
@@ -79,12 +80,32 @@
                     }
                   },
                   {
-                    "type": "ghost",
-                    "logKey": "/RealOutputs/Vision/Camera1/RobotPoses",
+                    "type": "vision",
+                    "logKey": "/RealOutputs/Vision/Camera0/TagPoses",
                     "logType": "Pose3d[]",
                     "visible": true,
                     "options": {
-                      "color": "#ff0000"
+                      "color": "#00ff00",
+                      "size": "normal"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "/RealOutputs/Vision/Camera1/RobotPosesAccepted",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#0000ff"
+                    }
+                  },
+                  {
+                    "type": "vision",
+                    "logKey": "/RealOutputs/Vision/Camera1/TagPoses",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "color": "#0000ff",
+                      "size": "normal"
                     }
                   }
                 ],
@@ -373,5 +394,5 @@
     }
   ],
   "satellites": [],
-  "version": "4.1.2"
+  "version": "4.1.1"
 }

@@ -1,6 +1,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -15,7 +16,6 @@ import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.LoggedTunableNumber;
-import frc.robot.util.TunablePIDController;
 import frc.robot.util.TuneableProfiledPID;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -33,8 +33,8 @@ public class DriveToPose extends Command {
     private boolean finishWithinTolerance = true;
 
     private TrapezoidProfile driveProfile;
-    private final TunablePIDController driveController =
-        new TunablePIDController("DriveToPose/DriveController", 2.0, 0.0, 0.0);
+    private final PIDController driveController =
+        new PIDController(3.0, 0.0, 0.1);
     private final TuneableProfiledPID thetaController =
         new TuneableProfiledPID(
             "DriveToPose/ThetaController",
@@ -57,13 +57,13 @@ public class DriveToPose extends Command {
     private DoubleSupplier omegaOverride = () -> 0.0;
 
     private LoggedTunableNumber driveMaxVelocity =
-        new LoggedTunableNumber("DriveToPose/DriveMaxVelocity", 3.79);
+        new LoggedTunableNumber("DriveToPose/DriveMaxVelocity", 3);
     private LoggedTunableNumber driveMaxVelocityTop =
         new LoggedTunableNumber("DriveToPose/DriveMaxVelocityTop", 2);
     private LoggedTunableNumber driveMaxAcceleration =
-        new LoggedTunableNumber("DriveToPose/DriveMaxAcceleration", 6);
+        new LoggedTunableNumber("DriveToPose/DriveMaxAcceleration", 4);
     private LoggedTunableNumber driveMaxAccelerationTop =
-        new LoggedTunableNumber("DriveToPose/DriveMaxAccelerationTop", 4);
+        new LoggedTunableNumber("DriveToPose/DriveMaxAccelerationTop", 3);
     private LoggedTunableNumber thetaMaxVelocity =
         new LoggedTunableNumber("DriveToPose/ThetaMaxVelocity", 9.27);
     private LoggedTunableNumber thetaMaxVelocityTop =
@@ -115,6 +115,14 @@ public class DriveToPose extends Command {
         return this;
     }
 
+    public DriveToPose withPID(double p, double i, double d)
+    {
+        this.driveController.setP(p);
+        this.driveController.setI(i);
+        this.driveController.setD(d);
+        return this;
+    }
+
     public DriveToPose finishWithinTolerance(boolean finish)
     {
         this.finishWithinTolerance = finish;
@@ -148,8 +156,8 @@ public class DriveToPose extends Command {
     @Override
     public void execute()
     {
-        driveController.updatePID();
-        thetaController.updatePID();
+        // driveController.updatePID();
+        // thetaController.updatePID();
 
         running = true;
 
@@ -211,8 +219,8 @@ public class DriveToPose extends Command {
         double driveVelocityScalar =
             driveController.calculate(driveErrorAbs, driveSetpoint.position)
                 + driveSetpoint.velocity * linearFFScaler;
-        if (driveErrorAbs < driveController.getErrorTolerance())
-            driveVelocityScalar = 0.0;
+        // if (driveErrorAbs < driveController.getErrorTolerance())
+        // driveVelocityScalar = 0.0;
 
         Rotation2d targetToCurrentAngle =
             currentPose.getTranslation().minus(targetPose.getTranslation()).getAngle();
@@ -296,6 +304,8 @@ public class DriveToPose extends Command {
                         Rotation2d.fromRadians(thetaController.getSetpoint().position))
             });
         Logger.recordOutput("DriveToPose/Goal", new Pose2d[] {targetPose});
+        Logger.recordOutput("DriveToPose/IOutput",
+            driveController.getAccumulatedError() * driveController.getI());
     }
 
     /** Checks if the robot pose is within the allowed drive and theta tolerances. */
