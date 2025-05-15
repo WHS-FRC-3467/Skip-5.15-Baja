@@ -689,7 +689,7 @@ public class RobotContainer {
     {
 
         LoggedTunableNumber linearRaiseElevatorToleranceMeters =
-            new LoggedTunableNumber("Auto/LinearRaiseElevatorToleranceMeters", 0.6);
+            new LoggedTunableNumber("Auto/LinearRaiseElevatorToleranceMeters", 1);
         LoggedTunableNumber thetaRaiseElevatorToleranceDegrees =
             new LoggedTunableNumber("Auto/ThetaRaiseElevatorToleranceDegrees", 60);
         switch (Constants.currentMode) {
