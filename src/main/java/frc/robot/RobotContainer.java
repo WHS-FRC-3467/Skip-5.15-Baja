@@ -260,7 +260,7 @@ public class RobotContainer {
     {
         return new JoystickApproachCommand(
             m_drive,
-            () -> m_driver.getLeftY(),
+            () -> -m_driver.getLeftY(),
             approachPose);
     }
 
@@ -268,7 +268,7 @@ public class RobotContainer {
     {
         var approachCommand = new JoystickApproachCommand(
             m_drive,
-            () -> m_driver.getLeftY(),
+            () -> -m_driver.getLeftY(),
             () -> FieldConstants.getNearestReefFace(getFuturePose(alignPredictionSeconds.get())));
 
         return Commands.deadline(
@@ -290,7 +290,7 @@ public class RobotContainer {
     {
         var approachCommand = new JoystickApproachCommand(
             m_drive,
-            () -> m_driver.getLeftY(),
+            () -> -m_driver.getLeftY(),
             () -> FieldConstants.getNearestReefFace(getFuturePose(alignPredictionSeconds.get())));
 
         return Commands.deadline(
@@ -413,7 +413,6 @@ public class RobotContainer {
                     joystickApproach(
                         () -> FieldConstants.getNearestReefBranch(
                             getFuturePose(alignPredictionSeconds.get()), ReefSide.RIGHT))
-                                .withPID(2, 0.05, 0)
                                 .until(isCoralMode.negate()),
                     Commands.none(),
                     isCoralMode));
@@ -426,7 +425,6 @@ public class RobotContainer {
                     joystickApproach(
                         () -> FieldConstants.getNearestReefBranch(
                             getFuturePose(alignPredictionSeconds.get()), ReefSide.LEFT))
-                                .withPID(2, 0.05, 0)
                                 .until(isCoralMode.negate()),
                     Commands.none(),
                     isCoralMode));
