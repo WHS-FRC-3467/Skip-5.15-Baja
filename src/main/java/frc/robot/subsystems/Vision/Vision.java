@@ -22,7 +22,6 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -103,7 +102,7 @@ public class Vision extends SubsystemBase {
             // Add tag poses
             for (int tagId : inputs[cameraIndex].tagIds) {
                 var tagPose = aprilTagLayout.getTagPose(tagId);
-                if (tagPose.isPresent() && !rejectedTags.contains(tagId)) {
+                if (tagPose.isPresent()) {
                     tagPoses.add(tagPose.get());
                     seesThisTarget = true;
                 }
@@ -150,7 +149,8 @@ public class Vision extends SubsystemBase {
 
                 // Calculate standard deviations
                 double stdDevFactor =
-                    Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
+                    (Math.pow(observation.averageTagDistance(), 2.0) + 10 * observation.ambiguity())
+                        / observation.tagCount();
                 double linearStdDev = linearStdDevBaseline * stdDevFactor;
                 double angularStdDev = angularStdDevBaseline * stdDevFactor;
                 if (cameraIndex < cameraStdDevFactors.length) {

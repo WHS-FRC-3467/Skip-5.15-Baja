@@ -63,7 +63,7 @@ public class VisionConstants {
     // Standard deviation baselines, for 1 meter distance and 1 tag
     // (Adjusted automatically based on distance and # of tags)
     public static double linearStdDevBaseline = 0.02; // Meters
-    public static double angularStdDevBaseline = 0.06; // Radians
+    public static double angularStdDevBaseline = 0.2; // Radians
 
     // Standard deviation multipliers for each camera
     // (Adjust to trust some cameras more than others)
@@ -72,6 +72,4 @@ public class VisionConstants {
                 1.0, // Camera 0
                 1.0 // Camera 1
         };
-
-    public static List<Integer> rejectedTags = Arrays.asList(2, 3, 4, 5, 14, 15, 16);
 }

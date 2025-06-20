@@ -16,6 +16,7 @@ import frc.robot.Constants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.LoggedTunableNumber;
+import frc.robot.util.TunablePIDController;
 import frc.robot.util.TuneableProfiledPID;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -33,8 +34,8 @@ public class DriveToPose extends Command {
     private boolean finishWithinTolerance = true;
 
     private TrapezoidProfile driveProfile;
-    private final PIDController driveController =
-        new PIDController(3.0, 0.0, 0.1);
+    private final TunablePIDController driveController =
+        new TunablePIDController("DriveToPose/DriveController", 3.0, 0.0, 0.1);
     private final TuneableProfiledPID thetaController =
         new TuneableProfiledPID(
             "DriveToPose/ThetaController",

@@ -413,7 +413,6 @@ public class RobotContainer {
                     joystickApproach(
                         () -> FieldConstants.getNearestReefBranch(
                             getFuturePose(alignPredictionSeconds.get()), ReefSide.RIGHT))
-                                .withPID(2, 0.05, 0)
                                 .until(isCoralMode.negate()),
                     Commands.none(),
                     isCoralMode));
@@ -426,7 +425,6 @@ public class RobotContainer {
                     joystickApproach(
                         () -> FieldConstants.getNearestReefBranch(
                             getFuturePose(alignPredictionSeconds.get()), ReefSide.LEFT))
-                                .withPID(2, 0.05, 0)
                                 .until(isCoralMode.negate()),
                     Commands.none(),
                     isCoralMode));
