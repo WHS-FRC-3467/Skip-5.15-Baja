@@ -694,7 +694,6 @@ public class RobotContainer {
             new LoggedTunableNumber("Auto/ThetaRaiseElevatorToleranceDegrees", 60);
         switch (Constants.currentMode) {
             default:
-
                 // Go to the L4 Position
                 NamedCommands.registerCommand(
                     "L4",
