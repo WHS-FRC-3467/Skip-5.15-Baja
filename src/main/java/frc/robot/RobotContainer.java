@@ -8,7 +8,6 @@ import static frc.robot.subsystems.Vision.VisionConstants.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-import com.ctre.phoenix.Util;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
@@ -16,7 +15,6 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -71,7 +69,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
 
     // Driver Controller
-    private final WindupXboxController m_driver = new WindupXboxController(0).withDeadband(0.1);
+    private final WindupXboxController m_driver =
+        new WindupXboxController(0).withDeadband(0.1).withMultiplier(0.8);
 
     // Autonomous Selector
     private final LoggedDashboardChooser<Command> m_autoChooser;

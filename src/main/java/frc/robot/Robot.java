@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -160,9 +159,6 @@ public class Robot extends LoggedRobot {
     @Override
     public void disabledPeriodic()
     {
-        var m_alliance = DriverStation.getAlliance().isPresent()
-            && DriverStation.getAlliance().get() == Alliance.Red;
-
         // Get currently selected command
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
         m_shouldMirror = m_robotContainer.shouldMirrorPath();
