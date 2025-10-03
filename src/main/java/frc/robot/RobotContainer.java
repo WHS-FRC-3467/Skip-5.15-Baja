@@ -70,7 +70,7 @@ public class RobotContainer {
 
     // Driver Controller
     private final WindupXboxController m_driver =
-        new WindupXboxController(0).withDeadband(0.1).withMultiplier(0.8);
+        new WindupXboxController(0).withDeadband(0.1).withMultiplier(1.0);
 
     // Autonomous Selector
     private final LoggedDashboardChooser<Command> m_autoChooser;
