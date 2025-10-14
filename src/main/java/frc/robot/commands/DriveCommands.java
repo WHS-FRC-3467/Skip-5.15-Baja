@@ -13,7 +13,6 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -26,15 +25,18 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.util.TuneableProfiledPID;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class DriveCommands {
     private static final double ANGLE_KP = 5.0;
@@ -175,6 +177,93 @@ public class DriveCommands {
             // Reset PID controller when command starts
             .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()))
             .withName("Drivetrain: Drive At Angle");
+    }
+
+    public static Command joystickApproach(
+        Drive drive,
+        DoubleSupplier ySupplier,
+        Supplier<Pose2d> approachSupplier)
+    {
+
+        // Create PID controller
+        TuneableProfiledPID angleController =
+            new TuneableProfiledPID(
+                "angleController",
+                ANGLE_KP,
+                0.0,
+                ANGLE_KD,
+                ANGLE_MAX_VELOCITY,
+                ANGLE_MAX_ACCELERATION);
+        angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+        TuneableProfiledPID alignController =
+            new TuneableProfiledPID(
+                "alignController",
+                0.6,
+                0.0,
+                0,
+                20,
+                8);
+        alignController.setGoal(0);
+
+        // Construct command
+        return Commands.run(
+            () -> {
+                currentDriveMode = DriveMode.dmApproach;
+                // Name constants
+                Translation2d currentTranslation = drive.getPose().getTranslation();
+                Translation2d approachTranslation = approachSupplier.get().getTranslation();
+                double distanceToApproach = currentTranslation.getDistance(approachTranslation);
+
+                Rotation2d alignmentDirection = approachSupplier.get().getRotation();
+
+                // Find lateral distance from goal
+                Translation2d goalTranslation = new Translation2d(
+                    alignmentDirection.getCos() * distanceToApproach + approachTranslation.getX(),
+                    alignmentDirection.getSin() * distanceToApproach + approachTranslation.getY());
+
+                Translation2d robotToGoal = currentTranslation.minus(goalTranslation);
+                double distanceToGoal =
+                    Math.hypot(robotToGoal.getX(), robotToGoal.getY());
+
+                // Calculate lateral linear velocity
+                Translation2d offsetVector =
+                    new Translation2d(alignController.calculate(distanceToGoal), 0)
+                        .rotateBy(robotToGoal.getAngle());
+
+                Logger.recordOutput("AlignDebug/Current", distanceToGoal);
+
+                // Calculate total linear velocity
+                Translation2d linearVelocity =
+                    getLinearVelocityFromJoysticks(0,
+                        ySupplier.getAsDouble()).rotateBy(
+                            approachSupplier.get().getRotation()).rotateBy(Rotation2d.kCCW_90deg)
+                            .plus(offsetVector);
+
+                SmartDashboard.putData(alignController);
+                Logger.recordOutput("AlignDebug/approachTarget", approachTranslation);
+
+                // Calculate angular speed
+                double omega =
+                    angleController.calculate(
+                        drive.getRotation().getRadians(), approachSupplier.get().getRotation()
+                            .rotateBy(Rotation2d.k180deg).getRadians());
+
+                // Convert to field relative speeds & send command
+                ChassisSpeeds speeds =
+                    new ChassisSpeeds(
+                        linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
+                        linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                        omega);
+                drive.runVelocity(
+                    ChassisSpeeds.fromFieldRelativeSpeeds(
+                        speeds,
+                        drive.getRotation()));
+            },
+            drive)
+
+            // Reset PID controller when command starts
+            .beforeStarting(() -> angleController.reset(drive.getRotation().getRadians()));
     }
 
     /**

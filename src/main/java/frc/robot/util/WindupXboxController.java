@@ -13,6 +13,7 @@ public class WindupXboxController extends CommandXboxController {
     Timer timer = new Timer();
     private GenericHID m_driveRmbl;
     private double deadband = 0.0;
+    private double muliplier = 1.0;
 
     /**
      * Construct an instance of a controller.
@@ -35,6 +36,18 @@ public class WindupXboxController extends CommandXboxController {
     public WindupXboxController withDeadband(double deadband)
     {
         this.deadband = deadband;
+        return this;
+    }
+
+    /**
+     * Apply a muliplier to all sticks
+     * 
+     * @param deadband The percent deadband to apply
+     * @return this
+     */
+    public WindupXboxController withMultiplier(double multiplier)
+    {
+        this.muliplier = multiplier;
         return this;
     }
 
@@ -74,24 +87,24 @@ public class WindupXboxController extends CommandXboxController {
     @Override
     public double getLeftX()
     {
-        return MathUtil.applyDeadband(super.getLeftX(), deadband);
+        return MathUtil.applyDeadband(super.getLeftX(), deadband) * muliplier;
     }
 
     @Override
     public double getLeftY()
     {
-        return MathUtil.applyDeadband(super.getLeftY(), deadband);
+        return MathUtil.applyDeadband(super.getLeftY(), deadband) * muliplier;
     }
 
     @Override
     public double getRightX()
     {
-        return MathUtil.applyDeadband(super.getRightX(), deadband);
+        return MathUtil.applyDeadband(super.getRightX(), deadband) * muliplier;
     }
 
     @Override
     public double getRightY()
     {
-        return MathUtil.applyDeadband(super.getRightY(), deadband);
+        return MathUtil.applyDeadband(super.getRightY(), deadband) * muliplier;
     }
 }
