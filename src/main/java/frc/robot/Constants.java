@@ -6,14 +6,15 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.RobotBase;
 
-public class Constants {
+public final class Constants {
 
+    public static final Mode simMode = Mode.SIM;
+    public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
     public static double loopPeriodSecs = 0.02;
 
     // Use LoggedTunableNumbers
     public static final boolean tuningMode = true;
 
-    private static RobotType robotType = RobotType.BAJA;
 
     public static RobotType getRobot()
     {
@@ -27,9 +28,7 @@ public class Constants {
      * running on a roboRIO. Change the value of "simMode" to switch between "sim" (physics sim) and
      * "replay" (log replay from a file).
      */
-    public static final Mode simMode = Mode.SIM;
 
-    public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
 
     public static enum Mode {
         /** Running on a real robot. */
@@ -40,10 +39,37 @@ public class Constants {
         REPLAY
     }
 
-    public enum RobotType {
-        GORT,
-        BAJA
+
+
+    public static class RobotConstants {
+        public static String serial;
+        public static boolean isComp;
+        public static boolean isAlpha;
+
+        public static final String compSerial = "0001";
+        public static final String alphaSerial = "0000";
+        static {
+            if (Robot.isReal()) {
+                serial = System.getenv("serialnum");
+            } else {
+                serial = "3467";
+            }
+
+
+            RobotConstants.isComp = serial.startsWith(RobotConstants.compSerial);
+            RobotConstants.isAlpha = serial.startsWith(RobotConstants.alphaSerial);
+        }
     }
+
+    public static RobotType robotType = RobotConstants.isComp ? RobotType.BAJA
+        : RobotConstants.isAlpha ? RobotType.GORT : RobotType.NONE;
+
+    public enum RobotType {
+        BAJA,
+        GORT,
+        NONE
+    }
+
 }
 
 
