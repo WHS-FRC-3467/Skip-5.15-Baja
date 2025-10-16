@@ -47,7 +47,7 @@ public final class Constants {
         public static boolean isAlpha;
 
         public static final String compSerial = "0001";
-        public static final String alphaSerial = "0000";
+        public static final String alphaSerial = "03223885";
         static {
             if (Robot.isReal()) {
                 serial = System.getenv("serialnum");
