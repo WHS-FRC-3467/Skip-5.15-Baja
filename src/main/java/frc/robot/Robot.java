@@ -37,7 +37,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
     private Command m_autonomousCommand;
-    private RobotContainer m_robotContainer;
+    // private RobotContainer m_robotContainer;
     private Field2d m_autoTraj = new Field2d();
     public static final double fieldLength = Units.inchesToMeters(690.876);
     public static final double fieldWidth = Units.inchesToMeters(317);
@@ -134,7 +134,7 @@ public class Robot extends LoggedRobot {
 
         // Instantiate our RobotContainer. This will perform all our button bindings,
         // and put our autonomous chooser on the dashboard.
-        m_robotContainer = new RobotContainer();
+        // m_robotContainer = new RobotContainer();
     }
 
     /** This function is called periodically during all modes. */
@@ -160,54 +160,55 @@ public class Robot extends LoggedRobot {
     public void disabledPeriodic()
     {
         // Get currently selected command
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-        m_shouldMirror = m_robotContainer.shouldMirrorPath();
+        // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        // m_shouldMirror = m_robotContainer.shouldMirrorPath();
         // Check if is the same as the last one
-        if ((m_autonomousCommand != m_lastAutonomousCommand || m_shouldMirror != m_lastShouldMirror)
-            && m_autonomousCommand != null) {
-            // Check if its contained in the list of our autos
-            if (AutoBuilder.getAllAutoNames().contains(m_autonomousCommand.getName())) {
-                // Clear the current path
-                m_pathsToShow.clear();
-                // Grabs all paths from the auto
-                try {
-                    for (PathPlannerPath path : PathPlannerAuto
-                        .getPathGroupFromAutoFile(m_autonomousCommand.getName())) {
-                        // Adds all trajectories to master list
-                        var finalPath = path;
-                        // if (m_alliance) {
-                        // finalPath = path.flipPath();
-                        // }
-                        if (m_shouldMirror) {
-                            finalPath = path.mirrorPath();
-                        }
-                        m_pathsToShow.addAll(finalPath.getPathPoses());
-                    }
-                } catch (IOException | ParseException e) {
-                    e.printStackTrace();
-                }
-                // Displays all poses on Field2d widget
-                m_autoTraj.getObject("traj").setPoses(m_pathsToShow);
-            }
-        }
-        m_lastAutonomousCommand = m_autonomousCommand;
-        m_lastShouldMirror = m_shouldMirror;
+        // if ((m_autonomousCommand != m_lastAutonomousCommand || m_shouldMirror !=
+        // m_lastShouldMirror)
+        // && m_autonomousCommand != null) {
+        // // Check if its contained in the list of our autos
+        // if (AutoBuilder.getAllAutoNames().contains(m_autonomousCommand.getName())) {
+        // // Clear the current path
+        // m_pathsToShow.clear();
+        // // Grabs all paths from the auto
+        // try {
+        // for (PathPlannerPath path : PathPlannerAuto
+        // .getPathGroupFromAutoFile(m_autonomousCommand.getName())) {
+        // // Adds all trajectories to master list
+        // var finalPath = path;
+        // // if (m_alliance) {
+        // // finalPath = path.flipPath();
+        // // }
+        // if (m_shouldMirror) {
+        // finalPath = path.mirrorPath();
+        // }
+        // m_pathsToShow.addAll(finalPath.getPathPoses());
+        // }
+        // } catch (IOException | ParseException e) {
+        // e.printStackTrace();
+        // }
+        // // Displays all poses on Field2d widget
+        // m_autoTraj.getObject("traj").setPoses(m_pathsToShow);
+        // }
+        // }
+        // m_lastAutonomousCommand = m_autonomousCommand;
+        // m_lastShouldMirror = m_shouldMirror;
 
-        var firstPose = m_robotContainer.getFirstAutoPose();
-        if (firstPose.isPresent()) {
-            Logger.recordOutput("Alignment/StartPose", firstPose.get());
-            SmartDashboard.putBoolean("Alignment/Translation",
-                firstPose.get().getTranslation().getDistance(
-                    m_robotContainer.m_drive.getPose().getTranslation()) <= Units
-                        .inchesToMeters(4));
-            SmartDashboard.putBoolean("Alignment/Rotation",
-                firstPose.get().getRotation()
-                    .minus(m_robotContainer.m_drive.getPose().getRotation())
-                    .getDegrees() < 5);
-            SmartDashboard.putNumber("Alignment/Distance To Auto Start",
-                Math.round(Units.metersToInches(firstPose.get().getTranslation().getDistance(
-                    m_robotContainer.m_drive.getPose().getTranslation()))));
-        }
+        // var firstPose = m_robotContainer.getFirstAutoPose();
+        // if (firstPose.isPresent()) {
+        // Logger.recordOutput("Alignment/StartPose", firstPose.get());
+        // SmartDashboard.putBoolean("Alignment/Translation",
+        // firstPose.get().getTranslation().getDistance(
+        // m_robotContainer.m_drive.getPose().getTranslation()) <= Units
+        // .inchesToMeters(4));
+        // SmartDashboard.putBoolean("Alignment/Rotation",
+        // firstPose.get().getRotation()
+        // .minus(m_robotContainer.m_drive.getPose().getRotation())
+        // .getDegrees() < 5);
+        // SmartDashboard.putNumber("Alignment/Distance To Auto Start",
+        // Math.round(Units.metersToInches(firstPose.get().getTranslation().getDistance(
+        // m_robotContainer.m_drive.getPose().getTranslation()))));
+        // }
     }
 
 
@@ -217,13 +218,13 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit()
     {
-        m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
-        m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+        // m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
+        // m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-        // schedule the autonomous command (example)
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.schedule();
-        }
+        // // schedule the autonomous command (example)
+        // if (m_autonomousCommand != null) {
+        // m_autonomousCommand.schedule();
+        // }
     }
 
     /** This function is called periodically during autonomous. */
@@ -245,12 +246,13 @@ public class Robot extends LoggedRobot {
 
         if (DriverStation.isFMSAttached()) {
             Elastic.selectTab(0);
-        } else {
-            m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
         }
+        // } else {
+        // m_robotContainer.zeroTongue().schedule(); // Zeros the tongue on enable
+        // }
 
-        // Bring the Tongue back down after auto
-        m_robotContainer.lowerTongueTele();
+        // // Bring the Tongue back down after auto
+        // m_robotContainer.lowerTongueTele();
 
 
     }
