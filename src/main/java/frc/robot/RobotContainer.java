@@ -131,7 +131,7 @@ public class RobotContainer {
                 if (Constants.getRobot() == RobotType.BAJA) {
                     m_profiledClimber = new Climber(new ClimberIOTalonFX(), false);
                 } else {
-                    m_profiledClimber = new Climber(new ClimberIO() {}, false);
+                    m_profiledClimber = new Climber(new ClimberIO() {}, true);
                 }
                 m_clawRoller = new ClawRoller(new ClawRollerIOTalonFX(), false);
                 m_tongue = new Tongue(new TongueIOTalonFX(), false);
