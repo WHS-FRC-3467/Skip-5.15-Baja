@@ -49,16 +49,10 @@ public final class ArmConstants {
         kSubSysConstants.kMotorConfig.Feedback.FeedbackRemoteSensorID =
             Ports.ARM_CANCODER.getDeviceNumber();
         kSubSysConstants.kMotorConfig.Feedback.FeedbackSensorSource =
-            FeedbackSensorSourceValue.FusedCANcoder;
+            FeedbackSensorSourceValue.RemoteCANcoder;
         kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio = 1;
-        if (Constants.getRobot() == RobotType.BAJA) {
-            kSubSysConstants.kMotorConfig.Feedback.RotorToSensorRatio =
-                (5.0 / 1.0) * (4.0 / 1.0) * (48.0 / 22.0) * (70.0 / 22.0);
-
-        } else {
-            kSubSysConstants.kMotorConfig.Feedback.RotorToSensorRatio =
-                (9.0 / 1.0) * (48.0 / 22.0) * (70.0 / 22.0);
-        }
+        kSubSysConstants.kMotorConfig.Feedback.RotorToSensorRatio =
+            (5.0 / 1.0) * (4.0 / 1.0) * (48.0 / 22.0) * (70.0 / 22.0);
 
         // Different encoder offsets for each robot
         double kGortCANcoderOffset = -0.185791015625;
