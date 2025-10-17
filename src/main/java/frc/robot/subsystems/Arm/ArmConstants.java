@@ -49,7 +49,7 @@ public final class ArmConstants {
         kSubSysConstants.kMotorConfig.Feedback.FeedbackRemoteSensorID =
             Ports.ARM_CANCODER.getDeviceNumber();
         kSubSysConstants.kMotorConfig.Feedback.FeedbackSensorSource =
-            FeedbackSensorSourceValue.RemoteCANcoder;
+            FeedbackSensorSourceValue.FusedCANcoder;
         kSubSysConstants.kMotorConfig.Feedback.SensorToMechanismRatio = 1;
         kSubSysConstants.kMotorConfig.Feedback.RotorToSensorRatio =
             (5.0 / 1.0) * (4.0 / 1.0) * (48.0 / 22.0) * (70.0 / 22.0);
