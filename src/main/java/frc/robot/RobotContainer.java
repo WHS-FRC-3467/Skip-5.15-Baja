@@ -264,7 +264,7 @@ public class RobotContainer {
             m_drive,
             approachPose,
             AlignMode.APPROACH,
-            () -> m_driver.getLeftY());
+            () -> -m_driver.getLeftY());
     }
 
     private Command descoreAlgae()
@@ -273,7 +273,7 @@ public class RobotContainer {
             m_drive,
             () -> FieldConstants.getNearestReefFace(getFuturePose(alignPredictionSeconds.get())),
             AlignMode.APPROACH,
-            () -> m_driver.getLeftY());
+            () -> -m_driver.getLeftY());
 
         return Commands.deadline(
             Commands.sequence(
@@ -296,7 +296,7 @@ public class RobotContainer {
             m_drive,
             () -> FieldConstants.getNearestReefFace(getFuturePose(alignPredictionSeconds.get())),
             AlignMode.APPROACH,
-            () -> m_driver.getLeftY());
+            () -> -m_driver.getLeftY());
 
         return Commands.deadline(
             Commands.sequence(
