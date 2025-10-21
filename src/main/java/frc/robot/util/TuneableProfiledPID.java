@@ -6,6 +6,7 @@ package frc.robot.util;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import frc.robot.Constants;
 
 /** Add your docs here. */
 public class TuneableProfiledPID extends ProfiledPIDController {
@@ -19,7 +20,13 @@ public class TuneableProfiledPID extends ProfiledPIDController {
     public TuneableProfiledPID(String name, double kP, double kI,
         double kD, double maxV, double maxA)
     {
-        super(kP, kI, kD, new TrapezoidProfile.Constraints(maxV, maxA));
+        this(name, kP, kI, kD, maxV, maxA, Constants.loopPeriodSecs);
+    }
+
+    public TuneableProfiledPID(String name, double kP, double kI,
+        double kD, double maxV, double maxA, double period)
+    {
+        super(kP, kI, kD, new TrapezoidProfile.Constraints(maxV, maxA), period);
 
         m_name = name;
 
@@ -30,7 +37,6 @@ public class TuneableProfiledPID extends ProfiledPIDController {
 
         m_maxV = new LoggedTunableNumber(m_name + "/maxV", maxV);
         m_maxA = new LoggedTunableNumber(m_name + "/maxA", maxA);
-
     }
 
     public void updatePID()

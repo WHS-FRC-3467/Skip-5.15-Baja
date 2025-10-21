@@ -52,6 +52,7 @@ public class FieldConstants {
     }
 
     public static class CoralStation {
+        public static final double stationLength = Units.inchesToMeters(79.750);
         public static final Pose2d leftCenterFace =
             new Pose2d(
                 Units.inchesToMeters(33.526),
@@ -65,6 +66,7 @@ public class FieldConstants {
     }
 
     public static class Reef {
+        public static final double faceLength = Units.inchesToMeters(36.792600);
         public static final Translation2d centerOfReef =
             new Translation2d(Units.inchesToMeters(176.746), Units.inchesToMeters(158.501));
         public static final double faceToZoneLine =

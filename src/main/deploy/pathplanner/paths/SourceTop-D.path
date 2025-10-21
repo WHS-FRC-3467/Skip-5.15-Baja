@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 1.5344262295081967,
-        "y": 0.8063012295081955
+        "x": 1.4864754098360655,
+        "y": 0.7823258196721316
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.7433188572103215,
-        "y": 0.9962925990770926
+        "x": 1.9885092580088397,
+        "y": 1.145665345311043
       },
       "isLocked": false,
       "linkedName": "SourceTop"
     },
     {
       "anchor": {
-        "x": 3.5723360655737704,
-        "y": 2.2568135245901635
+        "x": 3.1287909836065575,
+        "y": 2.0170594262295083
       },
       "prevControl": {
-        "x": 3.1887295081967215,
-        "y": 1.885194672131147
+        "x": 2.707178624007159,
+        "y": 1.7016276236917782
       },
       "nextControl": null,
       "isLocked": false,
@@ -34,7 +34,7 @@
   "eventMarkers": [
     {
       "name": "IntakeCoral",
-      "waypointRelativePos": 0.0,
+      "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
         "type": "sequential",
@@ -66,11 +66,11 @@
     "unlimited": false
   },
   "goalEndState": {
-    "velocity": 0.0,
+    "velocity": 0.8,
     "rotation": 59.99999999999999
   },
   "reversed": false,
-  "folder": "Normal",
+  "folder": null,
   "idealStartingState": {
     "velocity": 0,
     "rotation": 54.0

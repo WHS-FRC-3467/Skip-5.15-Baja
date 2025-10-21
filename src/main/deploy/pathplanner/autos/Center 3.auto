@@ -1,0 +1,105 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Cage-H"
+          }
+        },
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "parallel",
+                "data": {
+                  "commands": [
+                    {
+                      "type": "named",
+                      "data": {
+                        "name": "AutoAlignRight"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "Score"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "H-Algae"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DescoreAlgae"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "H-Barge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "BargeAlgae"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Barge-I"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DescoreAlgae"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "I-Barge"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "BargeAlgae"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Stow"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Barge-Back"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": false,
+  "folder": null,
+  "choreoAuto": false
+}

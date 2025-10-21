@@ -50,9 +50,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.generated.TunerConstants;
-import frc.robot.subsystems.RobotState;
 import frc.robot.subsystems.Vision.Vision;
-import frc.robot.util.LoggedTunableNumber;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
@@ -83,7 +81,8 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             ROBOT_MOI,
             new ModuleConfig(
                 TunerConstants.FrontLeft.WheelRadius,
-                TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+                // TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+                4.49,
                 WHEEL_COF,
                 DCMotor.getKrakenX60Foc(1)
                     .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
@@ -113,13 +112,6 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     private final SwerveDrivePoseEstimator poseEstimator =
         new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions,
             new Pose2d());
-
-    private RobotState robotState = RobotState.getInstance();
-    private LoggedTunableNumber elevatorSlowdownHeight =
-        new LoggedTunableNumber("Drive/Elevator Slowdown Height", 5.0);
-    private LoggedTunableNumber elevatorSlowdownMultiplier =
-        new LoggedTunableNumber("Drive/Elevator Slowdown Multiplier", 0.5);
-
 
     public Drive(
         GyroIO gyroIO,
@@ -259,11 +251,6 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     public void runVelocity(ChassisSpeeds speeds)
     {
         Logger.recordOutput("SwerveStates/InitSpeed", speeds);
-
-        if (robotState.getElevatorHeight() >= elevatorSlowdownHeight.getAsDouble()) {
-            speeds = speeds.times(elevatorSlowdownMultiplier.getAsDouble());
-        }
-        Logger.recordOutput("SwerveStates/LimitedSpeed", speeds);
 
         // Calculate module setpoints
         ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);

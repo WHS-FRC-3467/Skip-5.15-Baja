@@ -15,7 +15,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -48,10 +47,6 @@ public class Robot extends LoggedRobot {
     private List<Pose2d> m_pathsToShow = new ArrayList<Pose2d>();
     public static final Translation2d fieldCenter =
         new Translation2d(fieldLength / 2, fieldWidth / 2);
-
-    private boolean withinStartingXYTol = false;
-    private boolean withinStartingRotTol = false;
-
 
     public Robot()
     {
@@ -164,9 +159,6 @@ public class Robot extends LoggedRobot {
     @Override
     public void disabledPeriodic()
     {
-        var m_alliance = DriverStation.getAlliance().isPresent()
-            && DriverStation.getAlliance().get() == Alliance.Red;
-
         // Get currently selected command
         m_autonomousCommand = m_robotContainer.getAutonomousCommand();
         m_shouldMirror = m_robotContainer.shouldMirrorPath();
@@ -183,9 +175,9 @@ public class Robot extends LoggedRobot {
                         .getPathGroupFromAutoFile(m_autonomousCommand.getName())) {
                         // Adds all trajectories to master list
                         var finalPath = path;
-                        if (m_alliance) {
-                            finalPath = path.flipPath();
-                        }
+                        // if (m_alliance) {
+                        // finalPath = path.flipPath();
+                        // }
                         if (m_shouldMirror) {
                             finalPath = path.mirrorPath();
                         }
