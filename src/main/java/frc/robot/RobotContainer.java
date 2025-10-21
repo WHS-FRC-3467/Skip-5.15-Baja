@@ -339,7 +339,8 @@ public class RobotContainer {
     {
         var strafeCommand = new AlignToPose(
             m_drive,
-            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine),
+            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine)
+                .rotateBy(Rotation2d.k180deg),
             AlignMode.STRAFE,
             () -> -m_driver.getLeftX());
 
@@ -365,7 +366,8 @@ public class RobotContainer {
     {
         var strafeCommand = new AlignToPose(
             m_drive,
-            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine),
+            () -> m_drive.getPose().nearest(FieldConstants.Barge.bargeLine)
+                .rotateBy(Rotation2d.k180deg),
             AlignMode.STRAFE,
             () -> -m_driver.getLeftX());
 
@@ -420,7 +422,8 @@ public class RobotContainer {
                 Commands.either(
                     joystickApproach(
                         () -> FieldConstants.getNearestReefBranch(
-                            getFuturePose(alignPredictionSeconds.get()), ReefSide.RIGHT))
+                            getFuturePose(alignPredictionSeconds.get()), ReefSide.RIGHT)
+                            .rotateBy(Rotation2d.k180deg))
                                 .until(isCoralMode.negate()),
                     Commands.none(),
                     isCoralMode));
@@ -432,7 +435,8 @@ public class RobotContainer {
                 Commands.either(
                     joystickApproach(
                         () -> FieldConstants.getNearestReefBranch(
-                            getFuturePose(alignPredictionSeconds.get()), ReefSide.LEFT))
+                            getFuturePose(alignPredictionSeconds.get()), ReefSide.LEFT)
+                            .rotateBy(Rotation2d.k180deg))
                                 .until(isCoralMode.negate()),
                     Commands.none(),
                     isCoralMode));
