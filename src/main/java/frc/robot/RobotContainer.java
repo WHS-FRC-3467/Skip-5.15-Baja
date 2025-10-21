@@ -319,7 +319,7 @@ public class RobotContainer {
             m_drive,
             () -> FieldConstants.getNearestReefFace(m_drive.getPose()).transformBy(
                 new Transform2d((Constants.bumperWidth / 2) + Units.inchesToMeters(0), 0.0,
-                    Rotation2d.kZero))).withTolerance(Inches.of(1.0), Degrees.of(1.0));
+                    Rotation2d.k180deg))).withTolerance(Inches.of(1.0), Degrees.of(1.0));
 
         return Commands.deadline(
             Commands.sequence(
@@ -474,7 +474,7 @@ public class RobotContainer {
                         () -> -m_driver.getLeftX(),
                         () -> FieldConstants
                             .getNearestReefFace(getFuturePose(alignPredictionSeconds.get()))
-                            .getRotation()),
+                            .getRotation().plus(Rotation2d.k180deg)),
                     Commands.none(),
                     isCoralMode));
 
@@ -684,7 +684,7 @@ public class RobotContainer {
             () -> FieldConstants.getNearestReefBranch(m_drive.getPose(),
                 ReefSide.LEFT)
                 .transformBy(new Transform2d(Constants.bumperWidth / 2 + Units.inchesToMeters(1),
-                    0.0, Rotation2d.kZero)))
+                    0.0, Rotation2d.k180deg)))
                         .withTolerance(Inches.of(1.0), Degrees.of(1.0)));
     }
 
@@ -723,7 +723,7 @@ public class RobotContainer {
                         m_flipChooser.get() ? ReefSide.RIGHT : ReefSide.LEFT)
                         .transformBy(new Transform2d(
                             Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
-                            Rotation2d.kZero)))
+                            Rotation2d.k180deg)))
                                 .withTolerance(Inches.of(linearAlignToleranceInches.get()),
                                     Degrees.of(thetaAlignToleranceDegrees.get()));
 
@@ -739,7 +739,7 @@ public class RobotContainer {
                         m_flipChooser.get() ? ReefSide.RIGHT : ReefSide.LEFT)
                         .transformBy(new Transform2d(
                             Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
-                            Rotation2d.kZero)))
+                            Rotation2d.k180deg)))
                                 .withTolerance(Inches.of(linearAlignToleranceInches.get()),
                                     Degrees.of(thetaAlignToleranceDegrees.get()));
 
@@ -755,7 +755,7 @@ public class RobotContainer {
                         m_flipChooser.get() ? ReefSide.LEFT : ReefSide.RIGHT)
                         .transformBy(new Transform2d(
                             Constants.bumperWidth / 2 + Units.inchesToMeters(1), 0.0,
-                            Rotation2d.kZero)))
+                            Rotation2d.k180deg)))
                                 .withTolerance(Inches.of(linearAlignToleranceInches.get()),
                                     Degrees.of(thetaAlignToleranceDegrees.get()));
 
@@ -899,7 +899,7 @@ public class RobotContainer {
                             getFuturePose(alignPredictionSeconds.get()),
                             ReefSide.LEFT)
                             .transformBy(new Transform2d(Constants.bumperWidth, 0.0,
-                                Rotation2d.kZero)))
+                                Rotation2d.k180deg)))
                                     .withTolerance(Inches.of(linearAlignToleranceInches.get()),
                                         Degrees.of(thetaAlignToleranceDegrees.get())));
 
@@ -909,7 +909,7 @@ public class RobotContainer {
                             getFuturePose(alignPredictionSeconds.get()),
                             ReefSide.RIGHT)
                             .transformBy(new Transform2d(Constants.bumperWidth / 2, 0.0,
-                                Rotation2d.kZero)))
+                                Rotation2d.k180deg)))
                                     .withTolerance(Inches.of(linearAlignToleranceInches.get()),
                                         Degrees.of(thetaAlignToleranceDegrees.get())));
 
@@ -1033,7 +1033,7 @@ public class RobotContainer {
                         .transformBy(new Transform2d(
                             Constants.bumperWidth / 2 - Units.inchesToMeters(1),
                             Units.inchesToMeters(24),
-                            Rotation2d.kZero))),
+                            Rotation2d.k180deg))),
                 new DriveToPose(
                     m_drive,
                     () -> FieldConstants.getNearestReefBranch(
@@ -1041,7 +1041,7 @@ public class RobotContainer {
                         .transformBy(new Transform2d(
                             Constants.bumperWidth / 2 - Units.inchesToMeters(1),
                             Units.inchesToMeters(-24),
-                            Rotation2d.kZero))),
+                            Rotation2d.k180deg))),
                 () -> side == ReefSide.RIGHT));
     }
 
