@@ -7,6 +7,8 @@ package frc.robot.commands;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.LoggedTuneableProfiledPID;
 
@@ -22,7 +24,7 @@ public class AlignToPose extends AlignToPoseBase {
         DoubleSupplier joystickInput)
     {
         super(drive,
-            targetPose,
+            () -> targetPose.get().transformBy(new Transform2d(0, 0, Rotation2d.k180deg)),
             mode,
             joystickInput,
             linearController,
