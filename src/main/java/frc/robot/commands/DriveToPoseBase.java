@@ -17,11 +17,11 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.Drive; // TODO: refactor drive to exist in lib
 import frc.robot.util.LoggedTunableNumber;
 import frc.robot.util.LoggedTuneableProfiledPID;
 
-public class DriveToPoseBase extends Command {
+public abstract class DriveToPoseBase extends Command {
     private final Drive drive;
     private final Supplier<Pose2d> targetPose;
 
@@ -154,24 +154,17 @@ public class DriveToPoseBase extends Command {
 
     }
 
-    // Called once the command ends or is interrupted.
-    @Override
-    public void end(boolean interrupted)
-    {
-        Logger.recordOutput("DriveToPose/Target Pose", new Pose2d());
-    }
-
     // Returns true when the command should end.
     @Override
     public boolean isFinished()
     {
         boolean withinDistanceTolerance = distanceTolerance
             .map(tolerance -> Math.abs(linearController.getPositionError()) < tolerance)
-            .orElse(false);
+            .orElse(true);
 
         boolean withinAngularTolerance = angleTolerance
             .map(tolerance -> Math.abs(angularController.getPositionError()) < tolerance)
-            .orElse(false);
+            .orElse(true);
 
         Logger.recordOutput("DriveToPose/Distance Tolerance Present",
             distanceTolerance.isPresent());
@@ -180,15 +173,12 @@ public class DriveToPoseBase extends Command {
             angleTolerance.isPresent());
         Logger.recordOutput("DriveToPose/Within Angular Tolerance", withinAngularTolerance);
 
-        if (distanceTolerance.isPresent() && angleTolerance.isPresent()) {
-            return withinDistanceTolerance && withinAngularTolerance;
-        } else if (distanceTolerance.isPresent()) {
-            return withinDistanceTolerance;
-        } else if (angleTolerance.isPresent()) {
-            return withinAngularTolerance;
-        } else {
-            return false;
-        }
+        boolean bothTolerancesSupplied =
+            distanceTolerance.isPresent() && angleTolerance.isPresent();
+
+        return bothTolerancesSupplied
+            ? (withinDistanceTolerance && withinAngularTolerance)
+            : (withinDistanceTolerance || withinAngularTolerance);
     }
 
     public Distance getDistanceError()

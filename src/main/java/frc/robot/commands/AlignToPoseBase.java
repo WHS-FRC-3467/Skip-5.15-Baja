@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.util.LoggedTuneableProfiledPID;
 
-public class AlignToPoseBase extends Command {
+public abstract class AlignToPoseBase extends Command {
 
     private final Drive drive;
     private final Supplier<Pose2d> targetPose;
@@ -124,11 +124,6 @@ public class AlignToPoseBase extends Command {
         drive.runVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, drive.getRotation()));
     }
 
-    // Called once the command ends or is interrupted.
-    @Override
-    public void end(boolean interrupted)
-    {}
-
     // Returns true when the command should end.
     @Override
     public boolean isFinished()
@@ -138,13 +133,8 @@ public class AlignToPoseBase extends Command {
 
     private static Translation2d getLinearVelocityFromJoysticks(double x, double y)
     {
-        // Apply deadband
-        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), 0.1); // TODO: figure out
-                                                                                // deadband
+        double linearMagnitude = Math.pow(Math.hypot(x, y), 2);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
-
-        // Square magnitude for more precise control
-        linearMagnitude = linearMagnitude * linearMagnitude;
 
         // Return new linear velocity
         return new Pose2d(new Translation2d(), linearDirection)
