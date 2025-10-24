@@ -264,7 +264,7 @@ public class RobotContainer {
             m_drive,
             approachPose,
             AlignMode.APPROACH,
-            () -> -m_driver.getLeftY());
+            () -> m_driver.getLeftY());
     }
 
     private Command descoreAlgae()
