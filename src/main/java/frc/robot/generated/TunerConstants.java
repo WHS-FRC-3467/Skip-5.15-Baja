@@ -180,7 +180,7 @@ public class TunerConstants {
     public static final Angle kGortBackRightEncoderOffset = Rotations.of(-0.0615234375);
 
     public static final Angle kBajaFrontLeftEncoderOffset = Rotations.of(-0.168212890625);
-    public static final Angle kBajaFrontRightEncoderOffset = Rotations.of(-0.470947265625);
+    public static final Angle kBajaFrontRightEncoderOffset = Rotations.of(0.0517578125);
     public static final Angle kBajaBackLeftEncoderOffset = Rotations.of(-0.01513671875);
     public static final Angle kBajaBackRightEncoderOffset = Rotations.of(-0.13330078125);
 
