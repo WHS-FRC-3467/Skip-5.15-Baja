@@ -14,7 +14,6 @@ public class WindupXboxController extends CommandXboxController {
     private GenericHID m_driveRmbl;
     private double deadband = 0.0;
     private double muliplier = 1.0;
-    private double idontcare = 1.0;
 
 
     /**
@@ -29,11 +28,7 @@ public class WindupXboxController extends CommandXboxController {
 
     }
 
-    public WindupXboxController caring(double idontcare)
-    {
-        this.idontcare = idontcare;
-        return this;
-    }
+
 
     /**
      * Apply a deadband to all sticks
@@ -92,37 +87,38 @@ public class WindupXboxController extends CommandXboxController {
             .until(condition);
     }
 
-    double thing(double joy)
+    // an exponential input curve for the joysticks
+    // good for precise movemnet while still maintaining good full speed
+    double inputCurve(double joystickInput)
     {
-        // joy = MathUtil.applyDeadband(joy, deadband);
         return MathUtil.applyDeadband(
             // Math.pow(joy, 5) - Math.pow(joy, 3) / 2 + (joy * 0.23),
-            0.5 * Math.pow(joy, 5) + (joy * 0.4),
+            0.5 * Math.pow(joystickInput, 5) + (joystickInput * 0.4),
             deadband);
     }
 
     @Override
     public double getLeftX()
     {
-        return thing(super.getLeftX());
+        return inputCurve(super.getLeftX());
     }
 
     @Override
     public double getLeftY()
     {
-        return thing(super.getLeftY());
+        return inputCurve(super.getLeftY());
     }
 
     @Override
     public double getRightX()
     {
-        return thing(super.getRightX());
+        return inputCurve(super.getRightX());
     }
 
     @Override
     public double getRightY()
     {
-        return thing(super.getRightY());
+        return inputCurve(super.getRightY());
 
     }
 }

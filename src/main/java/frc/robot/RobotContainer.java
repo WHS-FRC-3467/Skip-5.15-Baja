@@ -72,8 +72,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
 
     // Driver Controller
+    // modified the deadband to be 0 change as needed
     private final WindupXboxController m_driver =
-        new WindupXboxController(0).withDeadband(0.0).withMultiplier(1.0).caring(0.75);
+        new WindupXboxController(0).withDeadband(0.0).withMultiplier(1.0);
 
     // Autonomous Selector
     private final LoggedDashboardChooser<Command> m_autoChooser;
