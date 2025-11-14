@@ -14,6 +14,8 @@ public class WindupXboxController extends CommandXboxController {
     private GenericHID m_driveRmbl;
     private double deadband = 0.0;
     private double muliplier = 1.0;
+    private double idontcare = 1.0;
+
 
     /**
      * Construct an instance of a controller.
@@ -25,6 +27,12 @@ public class WindupXboxController extends CommandXboxController {
         super(port);
         m_driveRmbl = this.getHID();
 
+    }
+
+    public WindupXboxController caring(double idontcare)
+    {
+        this.idontcare = idontcare;
+        return this;
     }
 
     /**
@@ -84,31 +92,37 @@ public class WindupXboxController extends CommandXboxController {
             .until(condition);
     }
 
+    double thing(double joy)
+    {
+        // joy = MathUtil.applyDeadband(joy, deadband);
+        return MathUtil.applyDeadband(
+            // Math.pow(joy, 5) - Math.pow(joy, 3) / 2 + (joy * 0.23),
+            0.5 * Math.pow(joy, 5) + (joy * 0.4),
+            deadband);
+    }
+
     @Override
     public double getLeftX()
     {
-        return MathUtil.applyDeadband(
-            (super.getLeftX() * ((super.getLeftX() * muliplier) * super.getLeftX())), deadband);
+        return thing(super.getLeftX());
     }
 
     @Override
     public double getLeftY()
     {
-        return MathUtil.applyDeadband(
-            (super.getLeftY() * ((super.getLeftY() * muliplier) * super.getLeftY())), deadband);
+        return thing(super.getLeftY());
     }
 
     @Override
     public double getRightX()
     {
-        return MathUtil.applyDeadband(
-            (super.getRightX() * ((super.getRightX() * muliplier) * super.getRightX())), deadband);
+        return thing(super.getRightX());
     }
 
     @Override
     public double getRightY()
     {
-        return MathUtil.applyDeadband(
-            (super.getRightY() * ((super.getRightY() * muliplier) * super.getRightY())), deadband);
+        return thing(super.getRightY());
+
     }
 }
