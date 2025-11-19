@@ -1,5 +1,7 @@
 package frc.robot.subsystems.Elevator;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -33,6 +35,7 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
     public enum State implements TargetState {
         HOMING(new ProfileType.OPEN_VOLTAGE(() -> homingTuning.getAsDouble())),
         STOW(new ProfileType.MM_POSITION(() -> 0.09, 0)),
+        HOME(new ProfileType.MM_POSITION(() -> 0.0, 0)),
         CORAL_INTAKE(new ProfileType.MM_POSITION(() -> 0.0, 0)),
         LEVEL_1(new ProfileType.MM_POSITION(() -> 0.3, 0)),
         LEVEL_2(new ProfileType.MM_POSITION(() -> 1.217, 0)),
@@ -59,6 +62,9 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
 
     @Getter
     @Setter
+    private Debouncer homeDebouncer = new Debouncer(0.1, DebounceType.kRising);
+    private Trigger homedTrigger;
+
     private State state = State.STOW;
 
     private RobotState robotState = RobotState.getInstance();
@@ -68,6 +74,9 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         super(State.STOW.profileType, ElevatorConstants.kSubSysConstants, io, isSim);
         SmartDashboard.putData("Elevator Coast Command", setCoastStateCommand());
         SmartDashboard.putData("Elevator Brake Command", setBrakeStateCommand());
+        homedTrigger =
+            new Trigger(() -> homeDebouncer.calculate(
+                io.getSupplyCurrentForElevator().gte(Amps.of(10))));
 
     }
 
@@ -114,17 +123,21 @@ public class Elevator extends GenericMotionProfiledSubsystem<Elevator.State> {
         }
     }
 
-    private Debouncer homedDebouncer = new Debouncer(0.1, DebounceType.kRising);
-
-    public Trigger homedTrigger =
-        new Trigger(
-            () -> homedDebouncer.calculate(
-                (this.state == State.HOMING && Math.abs(io.getSupplyCurrent()) > 3)));
 
     public Command getHomeCommand()
     {
         return this.setStateCommand(State.HOMING).andThen(Commands.waitUntil(homedTrigger))
             .andThen(this.zeroSensorCommand()).andThen(this.setStateCommand(State.STOW));
+    }
+
+    public Command homeCommand()
+    {
+        return Commands.sequence(runOnce(() -> io.runVoltage(-2.0)),
+            Commands.waitUntil(homedTrigger),
+            runOnce(() -> this.zeroSensorCommand()),
+            this.setStateCommand(state.STOW))
+            .withName("Homing");
+
     }
 
     public Command zeroSensorCommand()

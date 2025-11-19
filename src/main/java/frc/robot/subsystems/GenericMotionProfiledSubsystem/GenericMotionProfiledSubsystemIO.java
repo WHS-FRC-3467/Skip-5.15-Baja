@@ -1,6 +1,8 @@
 package frc.robot.subsystems.GenericMotionProfiledSubsystem;
 
+import static edu.wpi.first.units.Units.Amps;
 import org.littletonrobotics.junction.AutoLog;
+import edu.wpi.first.units.measure.Current;
 import frc.robot.subsystems.GenericMotionProfiledSubsystem.GenericMotionProfiledSubsystem.ProfileType;
 
 public interface GenericMotionProfiledSubsystemIO {
@@ -105,8 +107,14 @@ public interface GenericMotionProfiledSubsystemIO {
     /* Get current lead motor supply current) */
     public default double getSupplyCurrent()
     {
-        return 0;
+        return 0.0;
     }
+
+    public default Current getSupplyCurrentForElevator()
+    {
+        return Amps.of(0.0);
+    }
+
 
     /* Has the closed loop completed (within tolerance)? */
     public default boolean atPosition(ProfileType profileType, double tolerance)
